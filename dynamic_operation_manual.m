@@ -4,7 +4,7 @@ function [time, forces, motor_position] = dynamic_operation_manual(CF, F, DTOV, 
     % -----------------------------------------------------------------------
     
     % CONSTANT PARAMETERS
-    DATA_CYCLES = 20; % Cycles of data for phase averaging
+    DATA_CYCLES = 40; % Cycles of data for phase averaging
     SRATE = daq_obj.Rate; % Data sampling rate, Hz
 
     % EXPERIMENT EXECUTION
@@ -12,10 +12,15 @@ function [time, forces, motor_position] = dynamic_operation_manual(CF, F, DTOV, 
     pause(1)
     system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
 
+    tic;
+
     disp("Collecting data...");
     duration = DATA_CYCLES / F; % Waveform duration, s
     time = 0 : 1/SRATE : duration;
     data_voltages = readwrite(daq_obj, zeros(length(time), 1), 'OutputFormat', 'Matrix');
+
+    toc;
+    
     system("ssh anoop@138.16.161.135 ./throttle.sh 0");
 
     % DATA EXTRACTION

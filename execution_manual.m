@@ -40,7 +40,7 @@ pause(1);
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % ACQUIRE DATA
-for F = 0.3:0.1:1 % Traverse frequency, Hz
+for F = 0.3:0.3:1 % Traverse frequency, Hz
     for A = 0.025:0.025:0.1 % Traverse amplitude, m  
         disp("Zeroing output...");
         tare_output = zeros(OFFSET_DURATION * SRATE, 1);
@@ -52,7 +52,7 @@ for F = 0.3:0.1:1 % Traverse frequency, Hz
         fprintf("Run traverse at F = %.3f, A = %.3f. Press ENTER when ready.\n", F, A);
         pause()
 
-        for CF = [25 50 75] % Crazyflie throttle, %
+        for CF = 75 % Crazyflie throttle, %
             % Gather data
             [time, forces, motor_position] = dynamic_operation_manual(CF, F, DTOV, daq_obj, cal_mat, tare_voltages);
             
