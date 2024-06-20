@@ -8,8 +8,7 @@ def main():
     swarm = Crazyswarm()
     allcfs = swarm.allcfs
 
-    thrust = np.clip(throttle / 100 * 65535, 0, 65535)
-    print(thrust)
+    thrust = np.clip(throttle / 100 * 65535, 0, 65535 - 1)
 
     for cf in allcfs.crazyflies:
         cf.setParam("motorPowerSet.m1", int(thrust))

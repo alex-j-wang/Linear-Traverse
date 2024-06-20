@@ -73,7 +73,7 @@ for CF = [0 25 50 75] % Crazyflie throttle, %
                 pause(1);
 
                 % Gather data
-                [time, forces, motor_position] = dynamic_operation(F, A, DTOV, daq_obj, cal_mat);
+                [time, forces, motor_position] = dynamic_operation_manual(F, A, DTOV, daq_obj, cal_mat);
                 
                 % Save data
                 case_name = sprintf("CF%d_SD%d_F%d_A%d", CF, SD * 100, F, A * 100);
