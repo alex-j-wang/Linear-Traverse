@@ -23,9 +23,9 @@ input(7).Name = "MotorPosition";
 load("cal_FT21128.mat");
 
 % Create folder for record-keeping
-date_string = datetime("now", "Format", "yyyy_MM_dd_HH_mm_ss");
+date_string = string(datetime("now", "Format", "yyyy_MM_dd"));
 if exist(date_string, "dir")
-    disp("Experiment will overwrite data. Press enter to continue...");
+    disp("Experiment will overwrite data. Press ENTER to continue...");
     pause;
     rmdir(date_string, 's');
 end
@@ -40,17 +40,17 @@ pause(1);
 disp("Calibrating stopping distance. Press ENTER to begin...");
 pause;
 
-CAL_SPEED = -0.05; % m/s
+CAL_SPEED = 0.05; % m/s
 END = 0.2; % m
 prev = read(daq_obj);
 start(daq_obj);
-cal_output = DTOV * (prev(7) : CAL_SPEED / SRATE : END);
-write(daq_obj, cal_output);
+cal_output = DTOV * (prev.MotorPosition : CAL_SPEED / SRATE : END);
+write(daq_obj, cal_output');
 
 while true
     pause(0.1);
     curr = read(daq_obj, "OutputFormat", "Matrix");
-    if abs(curr(7) - prev(7)) / DTOV < 0.001
+    if abs(curr.MotorPosition - prev.MotorPosition) / DTOV < 0.001
         break;
     end
     prev = curr;
@@ -60,7 +60,7 @@ stop(daq_obj);
 ground = curr(7) - input("Enter distance from ground plane (cm): ") / 100;
 
 % ACQUIRE DATA
-for CF = [0 25 50 75] % Crazyflie throttle, %
+for CF = [25 50 75] % Crazyflie throttle, %
     for SD = [0.5 1 2 5 10] / 100 % Stopping distance, m
         for F = 0.3:0.1:1 % Traverse frequency, Hz
             for A = 0.025:0.025:0.1 % Traverse amplitude, m
@@ -73,10 +73,10 @@ for CF = [0 25 50 75] % Crazyflie throttle, %
                 pause(1);
 
                 % Gather data
-                [time, forces, motor_position] = dynamic_operation_manual(F, A, DTOV, daq_obj, cal_mat);
+                [time, forces, motor_position] = dynamic_operation_manual(CF, F, A, DTOV, daq_obj, cal_mat);
                 
                 % Save data
-                case_name = sprintf("CF%d_SD%d_F%d_A%d", CF, SD * 100, F, A * 100);
+                case_name = sprintf("CF%d_SD%.1f_F%.1f_A%.1f", CF, SD * 100, F, A * 100);
                 filename = fullfile(date_string, case_name + '.mat');
                 save(filename, "time", "forces", "motor_position");
                 disp(['Data saved to: ' filename]);
