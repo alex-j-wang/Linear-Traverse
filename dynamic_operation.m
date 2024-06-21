@@ -1,18 +1,11 @@
-function [time, forces, motor_position] = dynamic_operation(F, A, DTOV, daq_obj, cal_mat)
+function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
     % -----------------------------------------------------------------------
     % Data Gathering Code for Dynamic Quadrotor Experiments
     % -----------------------------------------------------------------------
     
-    % CONSTANT PARAMETERS
-    DATA_CYCLES = 40; % Cycles of data for phase averaging
-    RAMP_CYCLES = 4; % Cycles for ramping up and down
-
-    OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
-    SRATE = daq_obj.Rate; % Data sampling rate, Hz
-
     % EXPERIMENT EXECUTION
     disp("Zeroing output...");
-    tare_output = zeros(OFFSET_DURATION * SRATE, 1);
+    tare_output = zeros(offset_dur * SRATE, 1);
     tare_inputs = readwrite(daq_obj, tare_output, "OutputFormat", "Matrix");
 
     % Calculate channel biases
@@ -20,28 +13,31 @@ function [time, forces, motor_position] = dynamic_operation(F, A, DTOV, daq_obj,
 
     disp("Starting Crazyflie...");
     pause(1)
-    system(['ssh anoop@138.16.161.135 ./throttle.sh ' CF]);
+    system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
     pause(3)
     
     disp("Generating voltage profile...");
-    [time, position] = generate_profile(DATA_CYCLES, F, SRATE, RAMP_CYCLES, A);
+    position = generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
     data_output = DTOV * position;
 
+    tic;
     disp("Collecting data...");
-    data_inputs = readwrite(daq_obj, data_output, "OutputFormat", "Matrix");
-    system('ssh anoop@138.16.161.135 ./throttle.sh 0');
+    [data_inputs, time, ~] = readwrite(daq_obj, data_output, "OutputFormat", "Matrix");
+    toc;
+    
+    system("ssh anoop@138.16.161.135 ./throttle.sh 0");
 
     % DATA EXTRACTION
     disp("Extracting data...");
     data_voltages = data_inputs(RAMP_CYCLES*SRATE : end-RAMP_CYCLES*SRATE, :);
     motor_position = data_voltages(:, 7) / DTOV;
-    sensor_voltages = data_voltages(:, 1:6) - tare_voltages;
+    sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
 
     disp("Data collection complete.");
 end
 
-function [time, position] = generate_profile(data_cycles, traverse_freq, sampling_freq, ramp_cycles, amplitude)
+function position = generate_profile(data_cycles, traverse_freq, sampling_freq, ramp_cycles, amplitude)
     % -----------------------------------------------------------------------
     % % Generates a Ramping Waveform Using the Given Parameters
     % -----------------------------------------------------------------------

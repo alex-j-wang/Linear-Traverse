@@ -1,5 +1,19 @@
 clear; clc; close all;
 
+% Set the default datetime display format
+setpref('datetime', 'DefaultFormat', 'hh:mm:ss');
+
+% Constant parameters
+DATA_CYCLES = 40; % Cycles of data for phase averaging
+RAMP_CYCLES = 4; % Cycles for ramping up and down
+OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
+
+% Test parameters
+CFS = [25 50 75]; % Crazyflie throttle, %
+SDS = [0.5 1 2 5 10] / 100; % Stopping distance, m
+FS = 0.3:0.1:1; % Traverse frequency, Hz
+AS = 0.025:0.025:0.1; % Traverse amplitude, m
+
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
@@ -49,7 +63,7 @@ write(daq_obj, cal_output');
 
 while true
     pause(0.1);
-    curr = read(daq_obj, "OutputFormat", "Matrix");
+    curr = read(daq_obj);
     if abs(curr.MotorPosition - prev.MotorPosition) / DTOV < 0.001
         break;
     end
@@ -59,24 +73,38 @@ end
 stop(daq_obj);
 ground = curr(7) - input("Enter distance from ground plane (cm): ") / 100;
 
+est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
+    ((DATA_CYCLES + 2 * RAMP_CYCLES) * sum(1 / FS) + OFFSET_DURATION * length(FS)));
+est_elapsed = seconds(0);
+
+h = waitbar(0, "Initializing...");
+tic
+
 % ACQUIRE DATA
-for CF = [25 50 75] % Crazyflie throttle, %
-    for SD = [0.5 1 2 5 10] / 100 % Stopping distance, m
-        for F = 0.3:0.1:1 % Traverse frequency, Hz
-            for A = 0.025:0.025:0.1 % Traverse amplitude, m
-                    
+for CF = CFS
+    for SD = SDS
+        for F = FS
+            for A = AS
+                case_name = sprintf("CF%d_SD%.1f_F%.1f_A%.1f", CF, SD * 100, F, A * 100);
+                disp(case_name);
+
+                actual_elapsed = seconds(toc);  
+                message = sprintf("Current case: %s\nEstimated execution time: %s\nElapsed time: %s", ...
+                    case_name, est_time, actual_elapsed);
+                waitbar(est_elapsed / est_time, h, message);
+                
                 % Move to starting position
                 target = ground + A + SD;
-                disp(['Moving to ' num2str(target) ' m...']);
+                disp(['Moving to ' (num2str(target) * 100) ' cm...']);
                 pause(1);
                 write(daq_obj, target * DTOV);
-                pause(1);
+                pause(3);
 
                 % Gather data
-                [time, forces, motor_position] = dynamic_operation_manual(CF, F, A, DTOV, daq_obj, cal_mat);
+                [time, forces, motor_position] = ...
+                    dynamic_operation_manual(CF, F, A, DATA_CYCLES, RAMP_CYCLES, OFFSET_DURATION, DTOV, daq_obj, cal_mat);
                 
                 % Save data
-                case_name = sprintf("CF%d_SD%.1f_F%.1f_A%.1f", CF, SD * 100, F, A * 100);
                 filename = fullfile(date_string, case_name + '.mat');
                 save(filename, "time", "forces", "motor_position");
                 disp(['Data saved to: ' filename]);
@@ -90,20 +118,7 @@ for CF = [25 50 75] % Crazyflie throttle, %
                     fprintf("%s: %.2f (%.2f)\n", names(i), mean_forces(i), std_forces(i));
                 end
 
-                % Plot data
-                figure("Position", [100, 100, 800, 600]);
-                for i = 1:6
-                    subplot(3, 2, i);
-                    plot(time, forces(:, i), '-', "LineWidth", 1.5);
-                    xlabel("Time (s)");
-                    ylabel(names(i));
-                    if i <= 3
-                        title(['Force in ' char('X' + i - 1) ' Direction']);
-                    else
-                        title(['Moment about ' char('X' + i - 4) ' Axis']);
-                    end
-                end
-                sgtitle("Preliminary Data", "FontWeight", "bold", "FontSize", 18);
+                est_elapsed = est_elapsed + seconds(DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F) + OFFSET_DURATION;
             end
         end
     end
