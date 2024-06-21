@@ -1,4 +1,4 @@
-clear; clc; close all;
+clear; clc; close all hidden;
 
 % Constant parameters
 DATA_CYCLES = 40; % Cycles of data for phase averaging
@@ -8,14 +8,14 @@ OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 % Test parameters
 CFS = 75; % Crazyflie throttle, %
 SDS = 0.5 / 100; % Stopping distance, m
-FS = 0.3:0.3:1; % Traverse frequency, Hz
+FS = 0.8:0.1:1; % Traverse frequency, Hz
 AS = 0.025:0.025:0.1; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
 
-disp("Setting up DAQ");
+disp("Setting up DAQ.");
 daq_obj = daq("ni");
 daq_obj.Rate = SRATE;
 
@@ -85,7 +85,7 @@ for CF = CFS
         for F = FS
             for A = AS
                 case_name = sprintf("CF%d_SD%.1f_F%.1f_A%.1f", CF, SD * 100, F, A * 100);
-                disp("Running " + case_name);
+                disp("Running <strong>" + case_name + "</strong>.");
 
                 actual_elapsed = seconds(toc);
                 actual_elapsed.Format = 'hh:mm:ss';
@@ -106,7 +106,7 @@ for CF = CFS
                 % Save data
                 filename = fullfile(date_string, case_name + '.mat');
                 save(filename, "time", "forces", "motor_position");
-                disp(['Data saved to: ' filename]);
+                disp("Data saved to " + filename + ".");
 
                 % Preliminary analysis
                 mean_forces = mean(forces);

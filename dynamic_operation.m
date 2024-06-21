@@ -5,7 +5,7 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
     
     % EXPERIMENT EXECUTION
     SRATE = daq_obj.Rate;
-    disp("Zeroing output");
+    disp("Zeroing output.");
     tare_output = zeros(offset_dur * SRATE, 1);
     tare_inputs = readwrite(daq_obj, tare_output, "OutputFormat", "Matrix");
 
@@ -17,19 +17,16 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
     % system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
     % pause(3)
     
-    disp("Generating voltage profile");
     position = generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
     data_output = DTOV * position;
 
-    tic;
-    disp("Collecting data");
+    disp("Collecting data.");
     [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
-    toc;
     
     % system("ssh anoop@138.16.161.135 ./throttle.sh 0");
 
     % DATA EXTRACTION
-    disp("Extracting data");
+    disp("Extracting data.");
     data_voltages = data_inputs(ramp_cyc*SRATE : end-ramp_cyc*SRATE, :);
     motor_position = data_voltages(:, 7) / DTOV;
     sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
