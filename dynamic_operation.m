@@ -12,10 +12,10 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
     % Calculate channel biases
     tare_voltages = mean(tare_inputs);
 
-    % disp("Starting Crazyflie...");
-    % pause(1)
-    % system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
-    % pause(3)
+    disp("Starting Crazyflie...");
+    pause(1)
+    system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
+    pause(3)
     
     position = generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
     data_output = DTOV * position;
@@ -23,11 +23,11 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
     disp("Collecting data.");
     [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
     
-    % system("ssh anoop@138.16.161.135 ./throttle.sh 0");
+    system("ssh anoop@138.16.161.135 ./throttle.sh 0");
 
     % DATA EXTRACTION
     disp("Extracting data.");
-    data_voltages = data_inputs(ramp_cyc*SRATE : end-ramp_cyc*SRATE, :);
+    data_voltages = data_inputs(ramp_cyc/F*SRATE + 1: end-ramp_cyc/F*SRATE, :);
     motor_position = data_voltages(:, 7) / DTOV;
     sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
@@ -42,7 +42,7 @@ function position = generate_profile(data_cycles, traverse_freq, sampling_freq, 
     duration = total_cycles / traverse_freq; % Waveform duration, s
     pts_per_cycle = 1 / traverse_freq * sampling_freq; % Points per cycle
 
-    time = 0 : 1/sampling_freq : duration; % Time vector
+    time = 0 : 1/sampling_freq : duration - 1/sampling_freq; % Time vector
     position = amplitude * sin(2 * pi * traverse_freq * time); % Base waveform
 
     % Modulate ends using sinusoidal multiplier
