@@ -122,3 +122,8 @@ for CF = CFS
         end
     end
 end
+
+actual_elapsed = seconds(toc);
+actual_elapsed.Format = 'hh:mm:ss';
+message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
+waitbar(1, h, message);
