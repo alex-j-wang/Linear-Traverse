@@ -22,8 +22,10 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
 
     disp("Collecting data.");
     [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
+    disp("Data collected.");
     
     system("ssh anoop@138.16.161.135 ./throttle.sh 0");
+    disp("Crazyflie stopped.");
 
     % DATA EXTRACTION
     disp("Extracting data.");

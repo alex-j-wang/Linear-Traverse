@@ -34,8 +34,8 @@ function selected_folder = dropdown_folders
     % Callback function for the select button
     function select(~, ~)
         selected_folder = matching_folders{get(dropdown, 'Value')};
-        delete(fig);
         uiresume(fig);
+        delete(fig);
     end
 end
 
@@ -48,11 +48,11 @@ filenames = sort({items(is_file).name});
 
 processed_folder = fullfile(folder, 'processed_data');
 if exist(processed_folder, 'dir')
-    disp("Processing will overwrite data. Press ENTER to continue...");
+    disp("Processing may overwrite data. Press ENTER to continue...");
     pause;
-    rmdir(processed_folder, 's');
+else
+    mkdir(processed_folder);
 end
-mkdir(processed_folder);
 
 pattern = "CF%d_SD%f_F%f_A%f.mat";
 for i = 1 : length(filenames)
@@ -74,10 +74,9 @@ for i = 1 : length(filenames)
     % Phase averaged forces
     stacked = pagetranspose(reshape(filtered', 6, T * SRATE, []));
     phase_averaged_forces = mean(stacked, 3);
-    stacked = reshape(motor_position, T * SRATE, []);
     
     % Phase averaged position
-    pagetranspose(reshape(filtered', 6, t * SRATE, []));
+    stacked = reshape(motor_position, T * SRATE, []);
     motor_position = mean(stacked, 2);
 
     start = strtok(filename, "_");
@@ -86,6 +85,6 @@ for i = 1 : length(filenames)
         inert(key) = phase_averaged_forces;
     else
         forces = phase_averaged_forces - inert(key);
-        save(fullfile(folder, processed_folder, filename), 'time', 'forces', 'motor_position');
+        save(fullfile(processed_folder, filename), 'time', 'forces', 'motor_position');
     end
 end

@@ -6,10 +6,10 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = 75; % Crazyflie throttle, %
+CFS = 0; % Crazyflie throttle, %
 SDS = 0.5 / 100; % Stopping distance, m
-FS = 0.8:0.1:1; % Traverse frequency, Hz
-AS = 0.025:0.025:0.1; % Traverse amplitude, m
+FS = 1; % Traverse frequency, Hz
+AS = 0.025:0.025:0.05; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
@@ -36,11 +36,11 @@ load("cal_FT21128.mat");
 % Create folder for record-keeping
 date_string = string(datetime("now", "Format", "yyyy_MM_dd"));
 if exist(date_string, "dir")
-    disp("Experiment will overwrite data. Press ENTER to continue...");
+    disp("Experiment may overwrite data. Press ENTER to continue...");
     pause;
-    rmdir(date_string, 's');
+else
+    mkdir(date_string);
 end
-mkdir(date_string);
 
 % Column names
 names = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];
@@ -85,7 +85,7 @@ for CF = CFS
         for F = FS
             for A = AS
                 case_name = sprintf("CF%d_SD%.1f_F%.1f_A%.1f", CF, SD * 100, F, A * 100);
-                disp("Running <strong>" + case_name + "</strong>.");
+                disp("Running <strong>" + strrep(case_name, '_', ' ') + "</strong>.");
 
                 actual_elapsed = seconds(toc);
                 actual_elapsed.Format = 'hh:mm:ss';
