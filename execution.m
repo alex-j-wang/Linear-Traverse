@@ -7,7 +7,7 @@ OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
 CFS = [0 25 50]; % Crazyflie throttle, %
-SDS = [0.02 0.05]; % Stopping distance, m
+SDS = [0.03 0.05]; % Stopping distance, m
 FS = [0.5 1]; % Traverse frequency, Hz
 AS = 0.05; % Traverse amplitude, m
 
@@ -88,15 +88,16 @@ for CF = CFS
                 
                 % Move to starting position
                 shift = ground + A + SD;
-                if position > shift * DTOV
+                if position > shift
                     gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
-                else
-                    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                    disp("Moving to " + shift * 100 + " cm.");
+                    readwrite(daq_obj, gradual_shift');
+                elseif position < shift
+                    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;                
+                    disp("Moving to " + shift * 100 + " cm.");
+                    readwrite(daq_obj, gradual_shift');
                 end
-                disp("Moving to " + shift * 100 + " cm.");
-                pause(1);
-                readwrite(daq_obj, gradual_shift');
-                position = shift * DTOV;
+                position = shift;
                 pause(1);
 
                 % Gather data
