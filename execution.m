@@ -69,7 +69,10 @@ est_time.Format = 'hh:mm:ss';
 est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
 
-h = waitbar(0, "Initializing...", "Name", "Dynamic Testing");
+% Create waitbar
+h = uifigure('Name', 'Dynamic Testing');
+d = uiprogressdlg(h, 'Title', 'Initializing...', 'Message', '', 'Indeterminate', 'on');
+
 position = 0;
 tic
 
@@ -84,8 +87,9 @@ for CF = CFS
                 actual_elapsed = seconds(toc);
                 actual_elapsed.Format = 'hh:mm:ss';
                 message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
-                waitbar(est_elapsed / est_time, h, message);
-                
+                d.Value = est_elapsed / est_time;
+                d.Message = message;
+
                 % Move to starting position
                 shift = ground + A + SD;
                 if position > shift * DTOV
@@ -102,7 +106,7 @@ for CF = CFS
                 % Gather data
                 [time, forces, motor_position] = ...
                     dynamic_operation(CF, shift, F, A, DATA_CYCLES, RAMP_CYCLES, OFFSET_DURATION, DTOV, daq_obj, cal_mat);
-                
+
                 % Save data
                 filename = fullfile(date_string, case_name + '.mat');
                 save(filename, "time", "forces", "motor_position");
@@ -126,7 +130,10 @@ end
 actual_elapsed = seconds(toc);
 actual_elapsed.Format = 'hh:mm:ss';
 message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
-waitbar(1, h, message);
+d.Value = 1;
+d.Message = message;
+pause(3);
+close(h);
 
 function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
     position = zeros(CAL_SAMPLES, 1);
