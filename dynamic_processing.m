@@ -7,44 +7,17 @@ clear; clc; close all;
 SRATE = 20000; % Sampling frequency
 FC = 20; % Cut-off frequency
 
-function selected_folder = dropdown_folders
-    items = dir();
-    is_dir = [items.isdir];
-    dir_names = {items(is_dir).name};
-    pattern = '^\d{4}_\d{2}_\d{2}$';
-    matching_folders = dir_names(~cellfun('isempty', regexp(dir_names, pattern)));
-
-    % Create a GUI figure
-    screen_size = get(0, 'ScreenSize');
-    fig_width = 300;
-    fig_height = 150;
-    fig_x = (screen_size(3) - fig_width) / 2;
-    fig_y = (screen_size(4) - fig_height) / 2;
-    fig = figure('Name', 'Select a Folder', 'NumberTitle', 'off', 'Position', [fig_x, fig_y, fig_width, fig_height], ...
-                 'MenuBar', 'none', 'ToolBar', 'none', 'CloseRequestFcn', @select);
-
-    % Create buttons
-    dropdown = uicontrol('Style', 'popupmenu', 'String', matching_folders, 'Position', [50, 80, 200, 30]);
-    uicontrol('Style', 'pushbutton', 'String', 'Select', 'Position', [100, 30, 100, 30], ...
-              'Callback', @select);
-
-    selected_folder = '';
-    uiwait(fig);
-
-    % Callback function for the select button
-    function select(~, ~)
-        selected_folder = matching_folders{get(dropdown, 'Value')};
-        uiresume(fig);
-        delete(fig);
-    end
-end
-
 inert = containers.Map();
 
-folder = dropdown_folders();
-items = dir(folder);
-is_file = ~[items.isdir];
-filenames = sort({items(is_file).name});
+items = dir();
+is_dir = [items.isdir];
+dir_names = {items(is_dir).name};
+pattern = '^\d{4}_\d{2}_\d{2}$';
+matching_folders = dir_names(~cellfun('isempty', regexp(dir_names, pattern)));
+
+folder = interface.dropdown(matching_folders, 'Select a folder');
+items = dir(fullfile(folder, "*.mat"));
+filenames = sort({items.name});
 
 processed_folder = fullfile(folder, 'processed_data');
 if exist(processed_folder, 'dir')
@@ -55,8 +28,21 @@ else
 end
 
 pattern = "CF%d_SD%f_F%f_A%f.mat";
+
+% Create a uifigure
+fig = uifigure('Name', 'Dynamic Processing');
+
+% Create the uiprogressdlg
+d = uiprogressdlg(fig, 'Title', 'Processing', 'Message', 'Initializing...', 'Indeterminate', 'on');
+
+pause(1); % Simulate some initialization time
+
+d.Indeterminate = 'off';
 for i = 1 : length(filenames)
     filename = filenames{i};
+    d.Value = (i - 1) / length(filenames);
+    d.Message = strrep(filename, '_', ' ');
+    
     load(fullfile(folder, filename));
 
     parameters = num2cell(sscanf(filename, pattern));
@@ -83,8 +69,13 @@ for i = 1 : length(filenames)
     key = extractAfter(filename, start);
     if CF == 0   
         inert(key) = phase_averaged_forces;
-    else
-        forces = phase_averaged_forces - inert(key);
-        save(fullfile(processed_folder, filename), 'time', 'forces', 'motor_position');
     end
+    forces = phase_averaged_forces - inert(key);
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'motor_position');
 end
+
+d.Value = 1;
+d.Message = 'All files processed';
+pause(3);
+
+close(fig);
