@@ -54,7 +54,14 @@ pause(1);
 disp("Identifying position.")
 position = get_position(daq_obj, DTOV, CAL_SAMPLES);
 disp("Position identified as " + position * 100 + " cm.");
-ground = position - input("Enter distance from ground plane (cm): ") / 100;
+disp("Moving to home.");
+if position > 0
+    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : 0;
+else
+    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : 0;
+end
+readwrite(daq_obj, gradual_shift');
+ground = -input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
     ((DATA_CYCLES + 2 * RAMP_CYCLES) * sum(1 ./ FS) + OFFSET_DURATION * length(FS)));
@@ -63,6 +70,7 @@ est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
 
 h = waitbar(0, "Initializing...", "Name", "Dynamic Testing");
+position = 0;
 tic
 
 % ACQUIRE DATA
@@ -80,7 +88,6 @@ for CF = CFS
                 
                 % Move to starting position
                 shift = ground + A + SD;
-                position = get_position(daq_obj, DTOV, CAL_SAMPLES);
                 if position > shift * DTOV
                     gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
                 else
@@ -89,6 +96,7 @@ for CF = CFS
                 disp("Moving to " + shift * 100 + " cm.");
                 pause(1);
                 readwrite(daq_obj, gradual_shift');
+                position = shift * DTOV;
                 pause(1);
 
                 % Gather data
