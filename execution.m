@@ -6,16 +6,16 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = [0 25]; % Crazyflie throttle, %
-SDS = [0.05 0.10]; % Stopping distance, m
-FS = 1; % Traverse frequency, Hz
+CFS = [0 25 50]; % Crazyflie throttle, %
+SDS = [0.02 0.05]; % Stopping distance, m
+FS = [0.5 1]; % Traverse frequency, Hz
 AS = 0.05; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
-SHIFT_SPEED = 0.01; % m/s
-CAL_SAMPLES = 5000; % Samples for position calibration
+SHIFT_SPEED = 0.02; % m/s
+CAL_SAMPLES = 3000; % Samples for position calibration
 
 disp("Setting up DAQ.");
 daq_obj = daq("ni");
@@ -51,6 +51,7 @@ names = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];
 pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
+disp("Identifying position.")
 position = get_position(daq_obj, DTOV, CAL_SAMPLES);
 disp("Position identified as " + position * 100 + " cm.");
 ground = position - input("Enter distance from ground plane (cm): ") / 100;
