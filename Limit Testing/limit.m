@@ -1,7 +1,9 @@
 clear; clc; close all hidden;
 
 % DAQ setup
-CYCLES = 120;
+CYCLES = 240;
+traverse_freq = 1.5;
+A = 0.10;
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
 
@@ -29,12 +31,12 @@ disp("Offset is " + offset)
 pause(1)
 
 time = linspace(0, CYCLES, SRATE * CYCLES);
-amplitude = [linspace(0, 0.11, SRATE * 10) linspace(0.11, 0.11, SRATE * (CYCLES - 20)) linspace(0.11, 0, SRATE * 10)];
-traverse_freq = 1.25;
+amplitude = [linspace(0, A, SRATE * 10) linspace(A, A, SRATE * (CYCLES - 20)) linspace(A, 0, SRATE * 10)];
 
 position = amplitude .* sin(2 * pi * traverse_freq * time);
 target = DTOV * position;
 
 measured = readwrite(daq_obj, target', "OutputFormat", "Matrix");
 mpos = measured(:, 7)' - offset;
+% plot(time, mpos / DTOV, time, target / DTOV, time, (mpos - target) / DTOV);
 plot(time, (mpos - target) / DTOV);

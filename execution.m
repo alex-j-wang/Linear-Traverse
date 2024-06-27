@@ -6,15 +6,15 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = [0 25 50]; % Crazyflie throttle, %
+CFS = [0 25 50 75]; % Crazyflie throttle, %
 SDS = [0.03 0.05]; % Stopping distance, m
-FS = [0.5 1]; % Traverse frequency, Hz
-AS = 0.05; % Traverse amplitude, m
+FS = [0.5 1 1.25]; % Traverse frequency, Hz
+AS = [0.05 0.08]; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
-SHIFT_SPEED = 0.02; % m/s
+SHIFT_SPEED = 0.05; % m/s
 CAL_SAMPLES = 3000; % Samples for position calibration
 
 disp("Setting up DAQ.");
@@ -71,7 +71,7 @@ est_elapsed.Format = 'hh:mm:ss';
 
 % Create waitbar
 h = uifigure('Name', 'Dynamic Testing');
-d = uiprogressdlg(h, 'Title', 'Initializing...', 'Message', '', 'Indeterminate', 'on');
+d = uiprogressdlg(h, 'Title', 'Dynamic Testing');
 
 position = 0;
 tic
@@ -86,7 +86,8 @@ for CF = CFS
 
                 actual_elapsed = seconds(toc);
                 actual_elapsed.Format = 'hh:mm:ss';
-                message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
+                message = sprintf("Estimated execution time: %s\nElapsed time: %s\nCase: %s", ...
+                    est_time, actual_elapsed, strrep(case_name, '_', ' '));
                 d.Value = est_elapsed / est_time;
                 d.Message = message;
 

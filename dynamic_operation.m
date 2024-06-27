@@ -12,11 +12,12 @@ function [time, forces, motor_position] = dynamic_operation(CF, shift, F, A, dat
     % Calculate channel biases
     tare_voltages = mean(tare_inputs);
 
-    disp("Starting Crazyflie...");
-    pause(1)
-    system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
-    pause(3)
-    
+    if CF ~= 0
+        disp("Starting Crazyflie.");
+        run_drone(CF);
+        pause(3)
+    end
+
     position = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
     data_output = DTOV * position;
 
@@ -24,8 +25,10 @@ function [time, forces, motor_position] = dynamic_operation(CF, shift, F, A, dat
     [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
     disp("Data collected.");
     
-    system("ssh anoop@138.16.161.135 ./throttle.sh 0");
-    disp("Crazyflie stopped.");
+    if CF ~= 0
+        disp("Stopping Crazyflie.")
+        run_drone(0);
+    end
 
     % DATA EXTRACTION
     disp("Extracting data.");
@@ -52,4 +55,15 @@ function position = generate_profile(data_cycles, traverse_freq, sampling_freq, 
     multiplier = 0.5 * (1 - cos(pi * (0 : 1/pts_ramp : 1)));
     position(1 : pts_ramp+1) = position(1 : pts_ramp+1) .* multiplier;
     position(end-pts_ramp : end) = position(end-pts_ramp : end) .* fliplr(multiplier);
+end
+
+function run_drone(throttle)
+    ssh_call = @(CF) system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
+    fut = parfeval(@ssh_call, 0, throttle);
+    ok = wait(fut, 'finished', 15); % Wait for up to 15 seconds for finish
+    if ~ok
+        disp("Unable to contact drone. Manually set " + throttle + " throttle.");
+        disp("Press ENTER when ready...");
+        pause();
+    end
 end
