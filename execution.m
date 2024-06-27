@@ -15,7 +15,7 @@ AS = 0.05; % Traverse amplitude, m
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
 SHIFT_SPEED = 0.01; % m/s
-CAL_SECONDS = 5; % Tolerance for position calibration, m
+CAL_SAMPLES = 5000; % Samples for position calibration
 
 disp("Setting up DAQ.");
 daq_obj = daq("ni");
@@ -51,7 +51,7 @@ names = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];
 pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
-position = get_position(daq_obj, SRATE, DTOV, CAL_SECONDS);
+position = get_position(daq_obj, DTOV, CAL_SAMPLES);
 disp("Position identified as " + position * 100 + " cm.");
 ground = position - input("Enter distance from ground plane (cm): ") / 100;
 
@@ -79,7 +79,7 @@ for CF = CFS
                 
                 % Move to starting position
                 shift = ground + A + SD;
-                position = get_position(daq_obj, SRATE, DTOV, CAL_SECONDS);
+                position = get_position(daq_obj, DTOV, CAL_SAMPLES);
                 if position > shift * DTOV
                     gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
                 else
@@ -119,11 +119,10 @@ actual_elapsed.Format = 'hh:mm:ss';
 message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
 waitbar(1, h, message);
 
-function position = get_position(daq_obj, SRATE, DTOV, CAL_SECONDS)
-    position = zeros(CAL_SECONDS * SRATE, 1);
-    for i = 1 : CAL_SECONDS
+function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
+    position = zeros(CAL_SAMPLES, 1);
+    for i = 1 : CAL_SAMPLES
         position(i) = read(daq_obj).MotorPosition / DTOV;
-        pause(1 / SRATE);
     end
     position = mean(position);
 end
