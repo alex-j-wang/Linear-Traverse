@@ -6,14 +6,15 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = 0; % Crazyflie throttle, %
-SDS = 0.5 / 100; % Stopping distance, m
-FS = 1; % Traverse frequency, Hz
-AS = 0.025:0.025:0.05; % Traverse amplitude, m
+CFS = [0 25]; % Crazyflie throttle, %
+SDS = 0.05; % Stopping distance, m
+FS = 0.5; % Traverse frequency, Hz
+AS = 0.08; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
+SHIFT_SPEED = 0.01; % m/s
 
 disp("Setting up DAQ.");
 daq_obj = daq("ni");
@@ -24,11 +25,11 @@ output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
 output.Name = "voutput";
 
 % Input channels (force sensor and motor position)
-input = addinput(daq_obj, "Dev2", 0:6, "Voltage");
+input_channels = addinput(daq_obj, "Dev2", 0:6, "Voltage");
 for i = 1:6
-    input(i).Name = "ForceSensor" + i;
+    input_channels(i).Name = "ForceSensor" + i;
 end
-input(7).Name = "MotorPosition";
+input_channels(7).Name = "MotorPosition";
 
 % Load the calibration matrix for the force transducer
 load("cal_FT21128.mat");
@@ -48,27 +49,8 @@ names = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];
 % Wait for DAQ setup to stabilize
 pause(1);
 
-% disp("Calibrating stopping distance. Press ENTER to begin...");
-% pause;
-
-% CAL_SPEED = 0.05; % m/s
-% END = 0.2; % m
-% prev = read(daq_obj);
-% start(daq_obj);
-% cal_output = DTOV * (prev.MotorPosition : CAL_SPEED / SRATE : END);
-% write(daq_obj, cal_output');
-
-% while true
-%     pause(0.1);
-%     curr = read(daq_obj);
-%     if abs(curr.MotorPosition - prev.MotorPosition) / DTOV < 0.001
-%         break;
-%     end
-%     prev = curr;
-% end
-% 
-% stop(daq_obj);
-% ground = curr(7) - input("Enter distance from ground plane (cm): ") / 100;
+curr = read(daq_obj);
+ground = curr.MotorPosition / DTOV - input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
     ((DATA_CYCLES + 2 * RAMP_CYCLES) * sum(1 ./ FS) + OFFSET_DURATION * length(FS)));
@@ -93,15 +75,21 @@ for CF = CFS
                 waitbar(est_elapsed / est_time, h, message);
                 
                 % Move to starting position
-                % target = ground + A + SD;
-                % disp(['Moving to ' (num2str(target) * 100) ' cm...']);
-                % pause(1);
-                % write(daq_obj, target * DTOV);
-                % pause(3);
+                shift = ground + A + SD;
+                curr = read(daq_obj);
+                if curr.MotorPosition > shift * DTOV
+                    gradual_shift = curr.MotorPosition : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                else
+                    gradual_shift = curr.MotorPosition : SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                end
+                disp(['Moving to ' num2str(shift * 100) ' cm.']);
+                pause(1);
+                readwrite(daq_obj, gradual_shift');
+                pause(1);
 
                 % Gather data
                 [time, forces, motor_position] = ...
-                    dynamic_operation(CF, F, A, DATA_CYCLES, RAMP_CYCLES, OFFSET_DURATION, DTOV, daq_obj, cal_mat);
+                    dynamic_operation(CF, shift, F, A, DATA_CYCLES, RAMP_CYCLES, OFFSET_DURATION, DTOV, daq_obj, cal_mat);
                 
                 % Save data
                 filename = fullfile(date_string, case_name + '.mat');

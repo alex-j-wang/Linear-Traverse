@@ -1,4 +1,4 @@
-function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
+function [time, forces, motor_position] = dynamic_operation(CF, shift, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
     % -----------------------------------------------------------------------
     % Data Gathering Code for Dynamic Quadrotor Experiments
     % -----------------------------------------------------------------------
@@ -6,7 +6,7 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
     % EXPERIMENT EXECUTION
     SRATE = daq_obj.Rate;
     disp("Zeroing output.");
-    tare_output = zeros(offset_dur * SRATE, 1);
+    tare_output = DTOV * (shift + zeros(offset_dur * SRATE, 1));
     tare_inputs = readwrite(daq_obj, tare_output, "OutputFormat", "Matrix");
 
     % Calculate channel biases
@@ -17,7 +17,7 @@ function [time, forces, motor_position] = dynamic_operation(CF, F, A, data_cyc, 
     system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
     pause(3)
     
-    position = generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
+    position = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
     data_output = DTOV * position;
 
     disp("Collecting data.");
