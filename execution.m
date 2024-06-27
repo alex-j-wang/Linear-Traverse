@@ -7,9 +7,9 @@ OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
 CFS = [0 25]; % Crazyflie throttle, %
-SDS = 0.05; % Stopping distance, m
-FS = 0.5; % Traverse frequency, Hz
-AS = 0.08; % Traverse amplitude, m
+SDS = [0.05 0.10]; % Stopping distance, m
+FS = 1; % Traverse frequency, Hz
+AS = 0.05; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
