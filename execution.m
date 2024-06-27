@@ -15,6 +15,7 @@ AS = 0.08; % Traverse amplitude, m
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
 SHIFT_SPEED = 0.01; % m/s
+CAL_TOLERANCE = 0.002; % Tolerance for position calibration, m
 
 disp("Setting up DAQ.");
 daq_obj = daq("ni");
@@ -49,8 +50,10 @@ names = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];
 % Wait for DAQ setup to stabilize
 pause(1);
 
-curr = read(daq_obj);
-ground = curr.MotorPosition / DTOV - input("Enter distance from ground plane (cm): ") / 100;
+% Temporary solution until possible to read multiple scans without writing
+position = get_position(daq_obj, DTOV, CAL_TOLERANCE);
+disp("Position identified as " + position * 100 + " cm.");
+ground = position - input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
     ((DATA_CYCLES + 2 * RAMP_CYCLES) * sum(1 ./ FS) + OFFSET_DURATION * length(FS)));
@@ -76,13 +79,13 @@ for CF = CFS
                 
                 % Move to starting position
                 shift = ground + A + SD;
-                curr = read(daq_obj);
-                if curr.MotorPosition > shift * DTOV
-                    gradual_shift = curr.MotorPosition : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                position = get_position(daq_obj, DTOV, CAL_TOLERANCE);
+                if position > shift * DTOV
+                    gradual_shift = position : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
                 else
-                    gradual_shift = curr.MotorPosition : SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                    gradual_shift = position : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
                 end
-                disp(['Moving to ' num2str(shift * 100) ' cm.']);
+                disp("Moving to " + shift * 100 + " cm.");
                 pause(1);
                 readwrite(daq_obj, gradual_shift');
                 pause(1);
@@ -115,3 +118,16 @@ actual_elapsed = seconds(toc);
 actual_elapsed.Format = 'hh:mm:ss';
 message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
 waitbar(1, h, message);
+
+function position = get_position(daq_obj, DTOV, CAL_TOLERANCE)
+    position = read(daq_obj).MotorPosition / DTOV;
+    i = 0;
+    while true
+        old_position = position;
+        position = (i * position + read(daq_obj).MotorPosition / DTOV) / (i + 1);
+        if abs(position - old_position) < CAL_TOLERANCE
+            break;
+        end
+        i = i + 1;
+    end
+end
