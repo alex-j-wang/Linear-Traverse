@@ -62,9 +62,11 @@ for i = 1 : length(filenames)
 
     % Check for fractional phase width
     if mod(phase_width, 1) ~= 0
-        idx = floor(phase_width : phase_width : length(filtered));
+        range = phase_width : phase_width : length(filtered);
+        idx = floor(range);
+        select = (mod(range, 1) < mod(phase_width, 1));
         keep = true(length(filtered));
-        keep(idx) = false;
+        keep(idx(select)) = false;
         filtered = filtered(keep, :);
         motor_position = motor_position(keep);
         phase_width = floor(phase_width);
