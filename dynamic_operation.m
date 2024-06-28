@@ -15,7 +15,7 @@ function [time, forces, motor_position] = dynamic_operation(CF, shift, F, A, dat
     if CF ~= 0
         disp("Starting Crazyflie.");
         run_drone(CF);
-        pause(3)
+        pause(1);
     end
 
     position = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
