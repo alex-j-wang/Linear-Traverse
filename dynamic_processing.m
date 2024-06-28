@@ -58,11 +58,23 @@ for i = 1 : length(filenames)
     end
 
     % Phase averaged forces
-    stacked = pagetranspose(reshape(filtered', 6, T * SRATE, []));
+    phase_width = T * SRATE;
+
+    % Check for fractional phase width
+    if mod(phase_width, 1) ~= 0
+        idx = floor(phase_width : phase_width : length(filtered));
+        keep = true(length(filtered));
+        keep(idx) = false;
+        filtered = filtered(keep, :);
+        motor_position = motor_position(keep);
+        phase_width = floor(phase_width);
+    end
+
+    stacked = pagetranspose(reshape(filtered', 6, phase_width, []));
     phase_averaged_forces = mean(stacked, 3);
     
     % Phase averaged position
-    stacked = reshape(motor_position, T * SRATE, []);
+    stacked = reshape(motor_position, phase_width, []);
     motor_position = mean(stacked, 2);
 
     start = strtok(filename, "_");

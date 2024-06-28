@@ -32,7 +32,8 @@ function [time, forces, motor_position] = dynamic_operation(CF, shift, F, A, dat
 
     % DATA EXTRACTION
     disp("Extracting data.");
-    data_voltages = data_inputs(ramp_cyc/F*SRATE + 1: end-ramp_cyc/F*SRATE, :);
+    row_start = floor(ramp_cyc/F*SRATE) + 1;
+    data_voltages = data_inputs(row_start : row_start + floor(data_cyc/F*SRATE) - 1, :);
     motor_position = data_voltages(:, 7) / DTOV;
     sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
@@ -51,7 +52,7 @@ function position = generate_profile(data_cycles, traverse_freq, sampling_freq, 
     position = amplitude * sin(2 * pi * traverse_freq * time); % Base waveform
 
     % Modulate ends using sinusoidal multiplier
-    pts_ramp = round(pts_per_cycle * ramp_cycles); % Number of points to be modulated on either end
+    pts_ramp = floor(pts_per_cycle * ramp_cycles); % Number of points to be modulated on either end
     multiplier = 0.5 * (1 - cos(pi * (0 : 1/pts_ramp : 1)));
     position(1 : pts_ramp+1) = position(1 : pts_ramp+1) .* multiplier;
     position(end-pts_ramp : end) = position(end-pts_ramp : end) .* fliplr(multiplier);
