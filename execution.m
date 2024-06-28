@@ -6,9 +6,9 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = 25; % Crazyflie throttle, %
-SDS = 0.005; % Stopping distance, m
-FS = 1.25; % Traverse frequency, Hz
+CFS = [0 25]; % Crazyflie throttle, %
+SDS = 0.05; % Stopping distance, m
+FS = 0.5:0.1:0.9; % Traverse frequency, Hz
 AS = 0.05; % Traverse amplitude, m
 
 % DAQ setup

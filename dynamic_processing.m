@@ -2,7 +2,7 @@
 % Data Analysis Code for Dynamic Quadrotor Experiments
 % -----------------------------------------------------------------------
 
-clear; clc; close all;
+clear; clc; close all hidden;
 
 SRATE = 20000; % Sampling frequency
 FC = 20; % Cut-off frequency
@@ -59,14 +59,15 @@ for i = 1 : length(filenames)
 
     % Phase averaged forces
     phase_width = T * SRATE;
+    frac = mod(phase_width, 1);
 
     % Check for fractional phase width
-    if mod(phase_width, 1) ~= 0
-        range = phase_width : phase_width : length(filtered);
-        idx = floor(range);
-        select = (mod(range, 1) < mod(phase_width, 1));
-        keep = true(length(filtered));
-        keep(idx(select)) = false;
+    if frac ~= 0
+        range = phase_width : phase_width : length(filtered) + 1;
+        select = mod(frac * (1 : length(range)), 1) < frac;
+        range = floor(range);
+        keep = true(1, length(filtered));
+        keep(range(select)) = false;
         filtered = filtered(keep, :);
         motor_position = motor_position(keep);
         phase_width = floor(phase_width);
