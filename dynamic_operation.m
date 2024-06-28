@@ -57,13 +57,25 @@ function position = generate_profile(data_cycles, traverse_freq, sampling_freq, 
     position(end-pts_ramp : end) = position(end-pts_ramp : end) .* fliplr(multiplier);
 end
 
+function status = ssh_call(throttle)
+    status = system("ssh anoop@138.16.161.135 ./throttle.sh " + throttle);
+end
+
 function run_drone(throttle)
-    ssh_call = @(CF) system("ssh anoop@138.16.161.135 ./throttle.sh " + CF);
-    fut = parfeval(@ssh_call, 0, throttle);
-    ok = wait(fut, 'finished', 15); % Wait for up to 15 seconds for finish
-    if ~ok
-        disp("Unable to contact drone. Manually set " + throttle + " throttle.");
-        disp("Press ENTER when ready...");
-        pause();
+    fut = parfeval(@() ssh_call(throttle), 1);
+    t = timer("TimerFcn", @(~, ~) cancel(fut), "StartDelay", 15);
+    try
+        start(t);
+        fetchOutputs(fut);
+        stop(t);
+    catch
+        if strcmp(e.identifier, "parallel:fevalfuture:Cancelled")
+            disp("Unable to contact drone. Manually set " + throttle + " throttle.");
+            disp("Press ENTER when ready...");
+            pause();
+        else
+            rethrow(e);
+        end
     end
+    delete(t);
 end
