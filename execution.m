@@ -6,10 +6,10 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = [25 50 75]; % Crazyflie throttle, %
-SDS = [0.03 0.05]; % Stopping distance, m
-FS = [0.5 1 1.25]; % Traverse frequency, Hz
-AS = [0.05 0.08]; % Traverse amplitude, m
+CFS = 25; % Crazyflie throttle, %
+SDS = 0.005; % Stopping distance, m
+FS = 1.25; % Traverse frequency, Hz
+AS = 0.05; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
@@ -120,7 +120,7 @@ for CF = CFS
 
                 disp("Measurements: mean (stdev)");
                 for i = 1:6
-                    fprintf("%s: %g (%g)\n", names(i), mean_forces(i), std_forces(i));
+                    fprintf("%s: %.3g (%.3g)\n", names(i), mean_forces(i), std_forces(i));
                 end
 
                 est_elapsed = est_elapsed + seconds((DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F) + OFFSET_DURATION);
