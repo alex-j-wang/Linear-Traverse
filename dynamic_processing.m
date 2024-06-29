@@ -61,7 +61,7 @@ for i = 1 : length(filenames)
     phase_width = T * SRATE;
     frac = mod(phase_width, 1);
 
-    % Check for fractional phase width
+    % Check for fractional phase width, eliminate entries to support integral phase width
     if frac ~= 0
         range = phase_width : phase_width : length(filtered) + 1;
         select = mod(frac * (1 : length(range)), 1) < frac;

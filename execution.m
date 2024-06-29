@@ -55,12 +55,7 @@ disp("Identifying position.")
 position = get_position(daq_obj, DTOV, CAL_SAMPLES);
 disp("Position identified as " + position * 100 + " cm.");
 disp("Moving to home.");
-if position > 0
-    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : 0;
-else
-    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : 0;
-end
-readwrite(daq_obj, gradual_shift');
+gradual_move(position, 0, SHIFT_SPEED, DTOV, SRATE, daq_obj);
 ground = -input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
@@ -93,16 +88,11 @@ for CF = CFS
 
                 % Move to starting position
                 shift = ground + A + SD;
-                if position > shift
-                    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                if position ~= shift
                     disp("Moving to " + shift * 100 + " cm.");
-                    readwrite(daq_obj, gradual_shift');
-                elseif position < shift
-                    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;                
-                    disp("Moving to " + shift * 100 + " cm.");
-                    readwrite(daq_obj, gradual_shift');
+                    gradual_move(position, shift, SHIFT_SPEED, DTOV, SRATE, daq_obj);
+                    position = shift;
                 end
-                position = shift;
                 pause(1);
 
                 % Gather data
@@ -143,4 +133,14 @@ function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
         position(i) = read(daq_obj).MotorPosition / DTOV;
     end
     position = mean(position);
+end
+
+function gradual_move(from, to, SHIFT_SPEED, DTOV, SRATE, daq_obj)
+    if from > to
+        gradual_shift = from * DTOV : -SHIFT_SPEED * DTOV / SRATE : to * DTOV;
+        readwrite(daq_obj, gradual_shift');
+    elseif from < to
+        gradual_shift = from * DTOV : +SHIFT_SPEED * DTOV / SRATE : to * DTOV;
+        readwrite(daq_obj, gradual_shift');
+    end
 end
