@@ -27,7 +27,10 @@ classdef interface
             end
         end
 
-        function dynamic_plotting(folder_path)
+        function dynamic_plotting(folder_path, filenames)
+
+            pattern = "CF%d_SD%f_F%f_A%f.mat";
+
             % Create a figure window
             fig = uifigure('Position', [100 100 800 400]);
         

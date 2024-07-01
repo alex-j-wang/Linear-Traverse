@@ -91,6 +91,7 @@ end
 
 d.Value = 1;
 d.Message = 'All files processed';
-pause(3);
+pause(1);
 
 close(fig);
+
