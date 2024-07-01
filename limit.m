@@ -68,7 +68,7 @@ for A = AS
         save(filename, "time", "position", "motor_position");
         disp("Data saved to " + filename + ".");
 
-        est_elapsed = est_elapsed + seconds((DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F) + OFFSET_DURATION);
+        est_elapsed = est_elapsed + seconds((DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F));
     end
 end
 
