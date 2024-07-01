@@ -1,4 +1,4 @@
-function [time, forces, motor_position] = dynamic_operation(CF, shift, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
+function [time, forces, motor_position, position] = dynamic_operation(CF, shift, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
     % -----------------------------------------------------------------------
     % Data Gathering Code for Dynamic Quadrotor Experiments
     % -----------------------------------------------------------------------

@@ -6,7 +6,7 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 
 % Test parameters
 AS = 0.025:0.025:0.1; % Traverse amplitude, m
-FS = 0.5:0.1:3; % Traverse frequency, Hz
+FS = 0.5:0.1:4; % Traverse frequency, Hz
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
@@ -59,12 +59,13 @@ for A = AS
         d.Message = message;
 
         % Gather data
-        [time, ~, motor_position] = ...
-            dynamic_operation(0, 0, F, A, DATA_CYCLES, RAMP_CYCLES, 0, DTOV, daq_obj, cal_mat);
+        [time, ~, motor_position, position] = ...
+            dynamic_operation(0, 0, F, A, DATA_CYCLES, RAMP_CYCLES, 0.5, DTOV, daq_obj, cal_mat);
+        position = position';
 
         % Save data
         filename = fullfile("Limit Analysis", case_name + '.mat');
-        save(filename, "time", "motor_position");
+        save(filename, "time", "position", "motor_position");
         disp("Data saved to " + filename + ".");
 
         est_elapsed = est_elapsed + seconds((DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F) + OFFSET_DURATION);
