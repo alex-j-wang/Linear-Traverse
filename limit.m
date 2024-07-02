@@ -5,8 +5,10 @@ DATA_CYCLES = 20; % Cycles of data for phase averaging
 RAMP_CYCLES = 4; % Cycles for ramping up and down
 
 % Test parameters
-AS = 0.025:0.025:0.1; % Traverse amplitude, m
-FS = 0.5:0.1:4; % Traverse frequency, Hz
+% AS = 0.025:0.025:0.1; % Traverse amplitude, m
+% FS = 0.5:0.1:4; % Traverse frequency, Hz
+AS = 0.05;
+FS = 0.5;
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
@@ -22,6 +24,9 @@ output.Name = "voutput";
 
 % Input channels (force sensor and motor position)
 input_channels = addinput(daq_obj, "Dev2", 0:6, "Voltage");
+for i = 1:6
+    input_channels(i).Name = "ForceSensor" + i;
+end
 input_channels(7).Name = "MotorPosition";
 
 % Load the calibration matrix for the force transducer

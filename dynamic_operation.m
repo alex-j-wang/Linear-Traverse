@@ -33,7 +33,11 @@ function [time, forces, motor_position, position] = dynamic_operation(CF, shift,
     % DATA EXTRACTION
     disp("Extracting data.");
     row_start = floor(ramp_cyc/F*SRATE) + 1;
-    data_voltages = data_inputs(row_start : row_start + floor(data_cyc/F*SRATE) - 1, :);
+    rows = floor(data_cyc/F*SRATE);
+    data_voltages = data_inputs(row_start : row_start + rows - 1, :);
+    time = time(1 : rows);
+    position = position(row_start : row_start + rows - 1);
+
     motor_position = data_voltages(:, 7) / DTOV;
     sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
