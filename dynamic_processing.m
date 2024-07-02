@@ -29,13 +29,10 @@ end
 
 pattern = "CF%d_SD%f_F%f_A%f.mat";
 
-% Create a uifigure
+% Create progress bar
 fig = uifigure('Name', 'Dynamic Processing');
-
-% Create the uiprogressdlg
 d = uiprogressdlg(fig, 'Title', 'Processing', 'Message', 'Initializing...', 'Indeterminate', 'on');
-
-pause(1); % Simulate some initialization time
+pause(1);
 
 d.Indeterminate = 'off';
 for i = 1 : length(filenames)
@@ -86,6 +83,7 @@ for i = 1 : length(filenames)
         inert(key) = phase_averaged_forces;
     end
     forces = phase_averaged_forces - inert(key);
+    time = time(1 : length(forces));
     save(fullfile(processed_folder, filename), 'time', 'forces', 'motor_position');
 end
 
@@ -95,3 +93,4 @@ pause(1);
 
 close(fig);
 
+interface.dynamic_plotting(processed_folder, filenames);

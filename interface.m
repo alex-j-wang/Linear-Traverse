@@ -10,16 +10,14 @@ classdef interface
             fig = uifigure('Name', title, 'Position', [fig_x, fig_y, fig_width, fig_height], ...
                            'CloseRequestFcn', @select);
         
-            % Create dropdown menu
+            % Create dropdown menu and button
             dropdown = uidropdown(fig, 'Items', options, 'Position', [50, 80, 200, 30]);
-        
-            % Create button
             uibutton(fig, 'Text', 'Select', 'Position', [100, 30, 100, 30], 'ButtonPushedFcn', @select);
         
             selection = '';
             uiwait(fig);
         
-            % Callback function for the select button
+            % Callback function for select button
             function select(~, ~)
                 selection = dropdown.Value;
                 uiresume(fig);
@@ -28,96 +26,50 @@ classdef interface
         end
 
         function dynamic_plotting(folder_path, filenames)
+            NAMES = strcat(["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"], " & Position Versus Time");
+            W = 0.032 * 9.8;
+            L = 35;
 
-            pattern = "CF%d_SD%f_F%f_A%f.mat";
-
-            % Create a figure window
-            fig = uifigure('Position', [100 100 800 400]);
-        
-            % Create four dropdown menus
-            dropdown1 = uidropdown(fig, 'Position', [10 350 150 30], ...
-                'Items', options, ...
-                'ValueChangedFcn', @(src, event) updatePlot(dropdown1, dropdown2, dropdown3, dropdown4, ax));
-        
-            dropdown2 = uidropdown(fig, 'Position', [10 300 150 30], ...
-                'Items', options, ...
-                'ValueChangedFcn', @(src, event) updatePlot(dropdown1, dropdown2, dropdown3, dropdown4, ax));
-        
-            dropdown3 = uidropdown(fig, 'Position', [10 250 150 30], ...
-                'Items', options, ...
-                'ValueChangedFcn', @(src, event) updatePlot(dropdown1, dropdown2, dropdown3, dropdown4, ax));
-        
-            dropdown4 = uidropdown(fig, 'Position', [10 200 150 30], ...
-                'Items', options, ...
-                'ValueChangedFcn', @(src, event) updatePlot(dropdown1, dropdown2, dropdown3, dropdown4, ax));
-        
-            % Create axes for the plot
-            ax = uiaxes(fig, 'Position', [200 50 550 300]);
+            options = squeeze(split(strrep(filenames, ".mat", ""), "_"));            
             
-            % Initial plot
-            updatePlot(dropdown1, dropdown2, dropdown3, dropdown4, ax);
+            % Create a GUI figure
+            fig = uifigure('Position', [100 100 150 180]);
         
-            function updatePlot(dropdown1, dropdown2, dropdown3, dropdown4, ax)
-                % Get the selected values from the dropdown menus
-                selectedValue1 = dropdown1.Value;
-                selectedValue2 = dropdown2.Value;
-                selectedValue3 = dropdown3.Value;
-                selectedValue4 = dropdown4.Value;
+            selection = options(1, :);
+            for i = 1 : size(options, 2)
+                uidropdown(fig, 'Position', [10 350 - 50 * i, 150, 30], ...
+                    'Items', unique(options(:, i)), ...
+                    'ValueChangedFcn', @(src, ~) select(i, src));
+            end
+            update_plot();
         
-                % Generate data based on the selected values
-                x = linspace(0, 2*pi, 1000);
-                y = zeros(size(x)); % Initialize y
-        
-                % Combine effects of the four dropdowns for the plot
-                switch selectedValue1
-                    case 'Sine'
-                        y = y + sin(x);
-                    case 'Cosine'
-                        y = y + cos(x);
-                    case 'Tangent'
-                        y = y + tan(x);
-                    % Add other cases if needed
-                end
-                
-                switch selectedValue2
-                    case 'Sine'
-                        y = y + sin(x);
-                    case 'Cosine'
-                        y = y + cos(x);
-                    case 'Tangent'
-                        y = y + tan(x);
-                    % Add other cases if needed
-                end
-                
-                switch selectedValue3
-                    case 'Sine'
-                        y = y + sin(x);
-                    case 'Cosine'
-                        y = y + cos(x);
-                    case 'Tangent'
-                        y = y + tan(x);
-                    % Add other cases if needed
-                end
-                
-                switch selectedValue4
-                    case 'Sine'
-                        y = y + sin(x);
-                    case 'Cosine'
-                        y = y + cos(x);
-                    case 'Tangent'
-                        y = y + tan(x);
-                    % Add other cases if needed
-                end
-        
-                % Update the plot
-                plot(ax, x, y);
-                title(ax, sprintf('%s, %s, %s, %s', selectedValue1, selectedValue2, selectedValue3, selectedValue4));
-                % Limit the y-axis to avoid extreme values for tangent
-                if contains(selectedValue1, 'Tangent') || contains(selectedValue2, 'Tangent') || ...
-                        contains(selectedValue3, 'Tangent') || contains(selectedValue4, 'Tangent')
-                    ax.YLim = [-10 10];
-                else
-                    ax.YLim = 'auto';
+            function select(i, src)
+                selection(i) = src.Value;
+                update_plot();
+            end
+
+            function update_plot()
+                load(fullfile(folder_path, strcat(strjoin(selection, "_"), ".mat")), ...
+                    "time", "forces", "motor_position");
+
+                t = tiledlayout(2, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+                for idx = 1:6
+                    nexttile(t, idx);
+                    if idx <= 3
+                        factor = W;
+                        yl = "Normalized Force (N)";
+                    else
+                        factor = W * L;
+                        yl = "Normalized Torque (N)";
+                    end
+                    
+                    yyaxis left;
+                    formatplot(NAMES(idx), "Time (s)", yl);
+                    plot(time, forces(:, idx) / factor);
+                    yyaxis right;
+                    ylabel("Position (cm)");
+                    plot(time, motor_position * 100);
                 end
             end
         end

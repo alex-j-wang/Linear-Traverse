@@ -52,10 +52,10 @@ pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
 disp("Identifying position.")
-position = get_position(daq_obj, DTOV, CAL_SAMPLES);
+position = get_position();
 disp("Position identified as " + position * 100 + " cm.");
 disp("Moving to home.");
-gradual_move(position, 0, SHIFT_SPEED, DTOV, SRATE, daq_obj);
+gradual_move(position, 0);
 ground = -input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
@@ -64,7 +64,7 @@ est_time.Format = 'hh:mm:ss';
 est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
 
-% Create waitbar
+% Create progress bar
 h = uifigure('Name', 'Dynamic Testing');
 d = uiprogressdlg(h, 'Title', 'Dynamic Testing');
 
@@ -90,7 +90,7 @@ for CF = CFS
                 shift = ground + A + SD;
                 if position ~= shift
                     disp("Moving to " + shift * 100 + " cm.");
-                    gradual_move(position, shift, SHIFT_SPEED, DTOV, SRATE, daq_obj);
+                    gradual_move(position, shift);
                     position = shift;
                 end
                 pause(1);
@@ -127,7 +127,7 @@ d.Message = message;
 pause(3);
 close(h);
 
-function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
+function position = get_position()
     position = zeros(CAL_SAMPLES, 1);
     for i = 1 : CAL_SAMPLES
         position(i) = read(daq_obj).MotorPosition / DTOV;
@@ -135,7 +135,7 @@ function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
     position = mean(position);
 end
 
-function gradual_move(from, to, SHIFT_SPEED, DTOV, SRATE, daq_obj)
+function gradual_move(from, to)
     if from > to
         gradual_shift = from * DTOV : -SHIFT_SPEED * DTOV / SRATE : to * DTOV;
         readwrite(daq_obj, gradual_shift');

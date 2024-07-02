@@ -104,11 +104,3 @@ function fitresult = fit_sinusoid(x, y, A, F)
     % Fit the model to the data
     fitresult = fit(x, y, ft, 'StartPoint', [A, F, 0, 0]);
 end
-
-function formatplot(p_title, p_x, p_y)
-    title(p_title);
-    xlabel(p_x);
-    ylabel(p_y);
-    hold on
-    grid on
-end
