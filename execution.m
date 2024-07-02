@@ -52,10 +52,15 @@ pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
 disp("Identifying position.")
-position = get_position();
+position = get_position(daq_obj, DTOV, CAL_SAMPLES);
 disp("Position identified as " + position * 100 + " cm.");
 disp("Moving to home.");
-gradual_move(position, 0);
+if position > 0
+    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : 0;
+else
+    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : 0;
+end
+readwrite(daq_obj, gradual_shift');
 ground = -input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
@@ -64,7 +69,7 @@ est_time.Format = 'hh:mm:ss';
 est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
 
-% Create progress bar
+% Create waitbar
 h = uifigure('Name', 'Dynamic Testing');
 d = uiprogressdlg(h, 'Title', 'Dynamic Testing');
 
@@ -88,11 +93,16 @@ for CF = CFS
 
                 % Move to starting position
                 shift = ground + A + SD;
-                if position ~= shift
+                if position > shift
+                    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
                     disp("Moving to " + shift * 100 + " cm.");
-                    gradual_move(position, shift);
-                    position = shift;
+                    readwrite(daq_obj, gradual_shift');
+                elseif position < shift
+                    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;                
+                    disp("Moving to " + shift * 100 + " cm.");
+                    readwrite(daq_obj, gradual_shift');
                 end
+                position = shift;
                 pause(1);
 
                 % Gather data
@@ -127,20 +137,10 @@ d.Message = message;
 pause(3);
 close(h);
 
-function position = get_position()
+function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
     position = zeros(CAL_SAMPLES, 1);
     for i = 1 : CAL_SAMPLES
         position(i) = read(daq_obj).MotorPosition / DTOV;
     end
     position = mean(position);
-end
-
-function gradual_move(from, to)
-    if from > to
-        gradual_shift = from * DTOV : -SHIFT_SPEED * DTOV / SRATE : to * DTOV;
-        readwrite(daq_obj, gradual_shift');
-    elseif from < to
-        gradual_shift = from * DTOV : +SHIFT_SPEED * DTOV / SRATE : to * DTOV;
-        readwrite(daq_obj, gradual_shift');
-    end
 end
