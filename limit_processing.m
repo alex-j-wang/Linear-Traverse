@@ -43,14 +43,6 @@ for i = 1 : length(filenames)
 
     target = fit_sinusoid(time, position, A, F);
     measured = fit_sinusoid(time, motor_position, A, F);
-
-    if i == 1
-        figure();
-        plot(time, position, time, motor_position);
-        hold on
-        plot(target);
-        plot(measured);
-    end
     
     data.IntendedAmplitude(i) = A;
     data.TargetAmplitude(i) = target.A;

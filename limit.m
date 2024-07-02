@@ -5,10 +5,8 @@ DATA_CYCLES = 20; % Cycles of data for phase averaging
 RAMP_CYCLES = 4; % Cycles for ramping up and down
 
 % Test parameters
-% AS = 0.025:0.025:0.1; % Traverse amplitude, m
-% FS = 0.5:0.1:4; % Traverse frequency, Hz
-AS = 0.05;
-FS = 0.5;
+AS = 0.025:0.025:0.075; % Traverse amplitude, m
+FS = 0.5:0.1:4; % Traverse frequency, Hz
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
