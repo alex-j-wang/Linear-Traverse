@@ -44,14 +44,6 @@ for i = 1 : length(filenames)
     target = fit_sinusoid(time, position, A, F);
     measured = fit_sinusoid(time, motor_position, A, F);
 
-    if i == 1
-        figure();
-        plot(time, position, time, motor_position);
-        hold on
-        plot(target);
-        plot(measured);
-    end
-    
     data.IntendedAmplitude(i) = A;
     data.TargetAmplitude(i) = target.A;
     data.MeasuredAmplitude(i) = measured.A;
@@ -65,15 +57,29 @@ for i = 1 : length(filenames)
     data.MeasuredPhase(i) = measured.C;
 end
 
-d.Value = 1;
-d.Message = 'All files processed';
 disp('All files processed');
-data = sortrows(data, ["IntendedFrequency", "IntendedAmplitude"]);
+close(fig);
+
+data = sortrows(data, ["IntendedAmplitude", "IntendedFrequency"]);
 writetable(data, fullfile(folder, 'results.csv'));
 
-pause(1);
+AS = unique(data.IntendedAmplitude);
+t = tiledlayout(length(AS), 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+title(t, 'Linear Traverse Error Versus Frequency');
 
-close(fig);
+for A = AS'
+    selection = data(data.IntendedAmplitude == A, :);
+
+    nexttile
+    p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
+    formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    plot(selection.IntendedFrequency, abs(selection.IntendedPhase - selection.MeasuredPhase), ".-");
+
+    nexttile
+    p_title = sprintf("Amplitude Difference Versus Input Frequency (A = %g cm)", A * 100);
+    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Difference (cm)");
+    plot(selection.IntendedFrequency, 100 * abs(selection.IntendedAmplitude - selection.MeasuredAmplitude), ".-");
+end
 
 function fitresult = fit_sinusoid(x, y, A0, B0)
     % Ensure that x and y are column vectors
@@ -89,4 +95,12 @@ function fitresult = fit_sinusoid(x, y, A0, B0)
     
     % Fit the model to the data
     fitresult = fit(x, y, ft, 'StartPoint', [A0, B0, C0, D0]);
+end
+
+function formatplot(p_title, p_x, p_y)
+    title(p_title);
+    xlabel(p_x);
+    ylabel(p_y);
+    hold on
+    grid on
 end
