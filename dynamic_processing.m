@@ -31,10 +31,8 @@ pattern = "CF%d_SD%f_F%f_A%f.mat";
 
 % Create progress bar
 fig = uifigure('Name', 'Dynamic Processing');
-d = uiprogressdlg(fig, 'Title', 'Processing', 'Message', 'Initializing...', 'Indeterminate', 'on');
-pause(1);
+d = uiprogressdlg(fig, 'Title', 'Processing');
 
-d.Indeterminate = 'off';
 for i = 1 : length(filenames)
     filename = filenames{i};
     d.Value = (i - 1) / length(filenames);

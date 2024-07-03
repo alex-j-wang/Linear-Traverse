@@ -12,9 +12,7 @@ pattern = "F%f_A%f.mat";
 
 % Create progess bar
 fig = uifigure('Name', 'Dynamic Processing');
-d = uiprogressdlg(fig, 'Title', 'Processing', 'Message', 'Initializing...', 'Indeterminate', 'on');
-pause(1);
-d.Indeterminate = 'off';
+d = uiprogressdlg(fig, 'Title', 'Processing');
 
 % Data table
 columns = {'IntendedAmplitude', 'TargetAmplitude', 'MeasuredAmplitude', ...

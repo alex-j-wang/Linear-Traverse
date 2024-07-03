@@ -29,15 +29,35 @@ classdef interface
             NAMES = strcat(["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"], " & Position Versus Time");
             W = 0.032 * 9.8;
             L = 35;
+        
+            options = squeeze(split(strrep(filenames, ".mat", ""), "_"));
+        
+            % Create a GUI figure with a grid layout
+            screen_size = get(0, 'ScreenSize');
+            fig = uifigure('Position', [0 0 screen_size(3) screen_size(4)]);
+        
+            % Create a grid layout
+            plot_grid = uigridlayout(fig, [1, 2]);
+            plot_grid.RowHeight = {'1x'};
+            plot_grid.ColumnWidth = {150, '1x'};
+        
+            % Panel for dropdowns
+            dropdown_panel = uipanel(plot_grid);
+            dropdown_panel.Layout.Row = 1;
+            dropdown_panel.Layout.Column = 1;
+        
+            % Panel for plots
+            plot_panel = uipanel(plot_grid);
+            plot_panel.Layout.Row = 1;
+            plot_panel.Layout.Column = 2;
 
-            options = squeeze(split(strrep(filenames, ".mat", ""), "_"));            
-            
-            % Create a GUI figure
-            fig = uifigure('Position', [100 100 150 180]);
+             % Initialize tiled layout for plots
+            t = tiledlayout(plot_panel, 2, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
         
             selection = options(1, :);
-            for i = 1 : size(options, 2)
-                uidropdown(fig, 'Position', [10 350 - 50 * i, 150, 30], ...
+            for i = 1:size(options, 2)
+                drop_y = screen_size(4) - 200 - 40 * i;
+                uidropdown(dropdown_panel, 'Position', [10 drop_y 200 30], ...
                     'Items', unique(options(:, i)), ...
                     'ValueChangedFcn', @(src, ~) select(i, src));
             end
@@ -47,15 +67,16 @@ classdef interface
                 selection(i) = src.Value;
                 update_plot();
             end
-
+        
             function update_plot()
                 load(fullfile(folder_path, strcat(strjoin(selection, "_"), ".mat")), ...
                     "time", "forces", "motor_position");
-
-                t = tiledlayout(2, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
-
+        
+                % Clear existing tiles
+                delete(t.Children);
+        
                 for idx = 1:6
-                    nexttile(t, idx);
+                    ax = nexttile(t, idx);
                     if idx <= 3
                         factor = W;
                         yl = "Normalized Force (N)";
@@ -63,13 +84,18 @@ classdef interface
                         factor = W * L;
                         yl = "Normalized Torque (N)";
                     end
-                    
-                    yyaxis left;
-                    formatplot(NAMES(idx), "Time (s)", yl);
-                    plot(time, forces(:, idx) / factor);
-                    yyaxis right;
-                    ylabel("Position (cm)");
-                    plot(time, motor_position * 100);
+        
+                    yyaxis(ax, 'left');
+                    plot(ax, time, forces(:, idx) / factor);
+                    ylabel(ax, yl);
+            
+                    yyaxis(ax, 'right');
+                    plot(ax, time, motor_position * 100);
+                    ylabel(ax, "Position (cm)");
+            
+                    title(ax, NAMES(idx));
+                    xlabel(ax, "Time (s)");
+                    grid(ax, 'on');
                 end
             end
         end
