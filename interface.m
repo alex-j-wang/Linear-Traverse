@@ -34,7 +34,8 @@ classdef interface
         
             % Create a GUI figure with a grid layout
             screen_size = get(0, 'ScreenSize');
-            fig = uifigure('Position', [0 0 screen_size(3) screen_size(4)]);
+            fig = uifigure('Name', 'Dynamic Lift Force Plotting', ...
+                'Position', [0 0 screen_size(3) screen_size(4)]);
         
             % Create a grid layout
             plot_grid = uigridlayout(fig, [1, 2]);

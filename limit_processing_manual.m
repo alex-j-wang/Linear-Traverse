@@ -40,6 +40,7 @@ for i = 1 : length(filenames)
 
     data.MeasuredAmplitude(i) = range(motor_position) / 2;
 
+    motor_position = motor_position - mean(motor_position);
     integral_product = trapz(time, position .* motor_position);
     magnitude_target = trapz(time, position .^ 2);
     magnitude_measured = trapz(time, motor_position .^ 2);
