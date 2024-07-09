@@ -1,7 +1,7 @@
 clear; clc; close all hidden;
 
-ch6 = "Current Demand";
-ch7 = "Current Measured";
+ch6 = "CurrentDemand";
+ch7 = "CurrentMeasured";
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz

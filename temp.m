@@ -6,11 +6,12 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 
 % Test parameters
 AS = 0.025:0.025:0.075; % Traverse amplitude, m
-FS = 0.1:0.3:3; % Traverse frequency, Hz
+FS = 0.1:0.3:3; % Traverse frequency, Hzn
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
 DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
+ITOV = 10 / 1; % Conversion factor from current to voltage, V/A
 
 disp("Setting up DAQ.");
 daq_obj = daq("ni");
@@ -25,8 +26,8 @@ input_channels = addinput(daq_obj, "Dev2", 0:7, "Voltage");
 for i = 1:6
     input_channels(i).Name = "ForceSensor" + i;
 end
-input_channels(7).Name = "TargetPosition";
-input_channels(8).Name = "MeasuredPosition";
+input_channels(7).Name = "CurrentDemand";
+input_channels(8).Name = "CurrentMeasured";
 
 % Load the calibration matrix for the force transducer
 load("cal_FT21128.mat");
@@ -43,8 +44,8 @@ est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
 
 % Create waitbar
-h = uifigure('Name', 'Limit Testing');
-d = uiprogressdlg(h, 'Title', 'Limit Testing');
+h = uifigure('Name', 'Current Comparison');
+d = uiprogressdlg(h, 'Title', 'Current Comparison');
 
 tic
 
@@ -62,12 +63,12 @@ for A = AS
         d.Message = message;
 
         % Gather data
-        [time, ~, motor_position, position] = ...
+        [time, ~, measured, demand] = ...
             dynamic_operation(0, 0, F, A, DATA_CYCLES, RAMP_CYCLES, 0.5, DTOV, daq_obj, cal_mat);
 
         % Save data
-        filename = fullfile("Limit Analysis", case_name + '.mat');
-        save(filename, "time", "position", "motor_position");
+        filename = fullfile("Current Comparison", case_name + '.mat');
+        save(filename, "time", "demand", "measured");
         disp("Data saved to " + filename + ".");
 
         est_elapsed = est_elapsed + seconds((DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F));
@@ -81,3 +82,5 @@ d.Value = 1;
 d.Message = message;
 pause(3);
 close(h);
+
+doesn't work yet!!! need to transfer both conversion factors

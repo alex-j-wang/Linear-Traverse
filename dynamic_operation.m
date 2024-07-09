@@ -18,8 +18,8 @@ function [time, forces, measured, target] = dynamic_operation(CF, shift, F, A, d
         pause(1);
     end
 
-    target = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
-    data_output = DTOV * target;
+    profile = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
+    data_output = DTOV * profile;
 
     disp("Collecting data.");
     [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
@@ -36,9 +36,9 @@ function [time, forces, measured, target] = dynamic_operation(CF, shift, F, A, d
     rows = floor(data_cyc/F*SRATE);
     data_voltages = data_inputs(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
-    target = target(row_start : row_start + rows - 1);
 
-    measured = data_voltages(:, 7) / DTOV;
+    target = data_voltages(:, 7) / DTOV;
+    measured = data_voltages(:, 8) / DTOV;
     sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
 end
