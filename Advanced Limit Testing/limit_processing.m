@@ -84,16 +84,16 @@ for i = 1 : length(AS)
     nexttile(t, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    xlim([0.5 4]);
-    ylim([0 0.25]);
-    plot(selection.IntendedFrequency, abs(selection.IntendedPhase - selection.MeasuredPhase), ".-");
+    % xlim([0.5 4]);
+    % ylim([0 0.25]);
+    plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 
     nexttile(t, length(AS) + i);
-    p_title = sprintf("Amplitude Difference Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Difference (cm)");
-    xlim([0.5 4]);
-    ylim([0.45 1.5]);
-    plot(selection.IntendedFrequency, 100 * abs(selection.IntendedAmplitude - selection.MeasuredAmplitude), ".-");
+    p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
+    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured / Intended)");
+    % xlim([0.5 4]);
+    % ylim([0.45 1.5]);
+    plot(selection.IntendedFrequency, selection.MeasuredAmplitude / selection.TargetAmplitude, ".-");
 end
 
 function fitresult = fit_sinusoid(x, y, A, F)
