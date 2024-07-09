@@ -27,7 +27,7 @@ load("cal_FT21128.mat");
 % Wait for DAQ setup to stabilize
 pause(1);
 
-est_time = seconds(length(AS) * (config.TOTAL_CYCLES * sum(1 ./ FS)));
+est_time = seconds(length(AS) * Config.TOTAL_CYCLES * sum(1 ./ FS));
 est_time.Format = 'hh:mm:ss';
 est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
@@ -53,7 +53,7 @@ for A = AS
 
         % Gather data
         [time, ~, pos_target, pos_measured] = ...
-            dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, Config.Position);
+            dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.Position);
 
         % Save data
         filename = fullfile("Limit Analysis", case_name + '.mat');

@@ -31,8 +31,8 @@ function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, d
 
     % DATA EXTRACTION
     disp("Extracting data.");
-    row_start = floor(ramp_cyc / F * Config.SRATE) + 1;
-    rows = floor(ramp_cyc / F * Config.SRATE);
+    row_start = floor(Config.RAMP_CYCLES / F * Config.SRATE) + 1;
+    rows = floor(Config.RAMP_CYCLES / F * Config.SRATE);
     data = data(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
 
@@ -54,7 +54,7 @@ function position = generate_profile(traverse_freq, amplitude)
     position = amplitude * sin(2 * pi * traverse_freq * time); % Base waveform
 
     % Modulate ends using sinusoidal multiplier
-    pts_ramp = floor(pts_per_cycle * Config.ramp_cycles); % Number of points to be modulated on either end
+    pts_ramp = floor(pts_per_cycle * Config.RAMP_CYCLES); % Number of points to be modulated on either end
     multiplier = 0.5 * (1 - cos(pi * (0 : 1 / pts_ramp : 1)));
     position(1 : pts_ramp + 1) = position(1 : pts_ramp + 1) .* multiplier;
     position(end - pts_ramp : end) = position(end - pts_ramp : end) .* fliplr(multiplier);
