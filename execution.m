@@ -6,10 +6,10 @@ RAMP_CYCLES = 4; % Cycles for ramping up and down
 OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
 
 % Test parameters
-CFS = [0 25]; % Crazyflie throttle, %
-SDS = 0.05; % Stopping distance, m
-FS = 0.5:0.1:0.9; % Traverse frequency, Hz
-AS = 0.05; % Traverse amplitude, m
+CFS = [0 50]; % Crazyflie throttle, %
+SDS = [.005 .01]; % Stopping distance, m
+FS = [0.5 1]; % Traverse frequency, Hz
+AS = [0.025 0.05 0.1]; % Traverse amplitude, m
 
 % DAQ setup
 SRATE = 20000; % Data sampling rate, Hz
@@ -93,11 +93,11 @@ for CF = CFS
 
                 % Move to starting position
                 shift = ground + A + SD;
-                if position > shift
+                if position > shift + SHIFT_SPEED / SRATE
                     gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
                     disp("Moving to " + shift * 100 + " cm.");
                     readwrite(daq_obj, gradual_shift');
-                elseif position < shift
+                elseif position < shift - SHIFT_SPEED / SRATE
                     gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;                
                     disp("Moving to " + shift * 100 + " cm.");
                     readwrite(daq_obj, gradual_shift');
