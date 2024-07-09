@@ -4,7 +4,7 @@ classdef Config
         RAMP_CYCLES = 4; % Cycles for ramping up and down
         TOTAL_CYCLES = Config.DATA_CYCLES + 2 * Config.RAMP_CYCLES; % Total cycles
         
-        OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
+        OFFSET_DURATION = 1; % Duration for zeroing force transducer, s
         SHIFT_SPEED = 0.05; % m/s
         CAL_SAMPLES = 3000; % Samples for position calibration
 

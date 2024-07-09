@@ -4,7 +4,7 @@
 
 clear; clc; close all hidden;
 
-folder = "Limit Analysis";
+folder = "Position Data";
 items = dir(fullfile(folder, "*.mat"));
 filenames = sort({items.name});
 
