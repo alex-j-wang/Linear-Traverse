@@ -31,7 +31,7 @@ for i = 1 : length(filenames)
     A = A / 100;
 
     load(fullfile(folder, filename));
-
+    
     % Fit sinusoids and record results
     target = fit_sinusoid(time, position, A, F);
     measured = fit_sinusoid(time, motor_position, A, F);
@@ -74,20 +74,25 @@ writetable(data, fullfile(folder, 'results.csv'));
 
 % Create Bode plots
 AS = unique(data.IntendedAmplitude);
-t = tiledlayout(length(AS), 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+t = tiledlayout(2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
 title(t, 'Linear Traverse Error Versus Frequency');
 
-for A = AS'
+for i = 1 : length(AS)
+    A = AS(i);
     selection = data(data.IntendedAmplitude == A, :);
 
-    nexttile
+    nexttile(t, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    xlim([0.5 4]);
+    ylim([0 0.25]);
     plot(selection.IntendedFrequency, abs(selection.IntendedPhase - selection.MeasuredPhase), ".-");
 
-    nexttile
+    nexttile(t, length(AS) + i);
     p_title = sprintf("Amplitude Difference Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Amplitude Difference (cm)");
+    xlim([0.5 4]);
+    ylim([0.45 1.5]);
     plot(selection.IntendedFrequency, 100 * abs(selection.IntendedAmplitude - selection.MeasuredAmplitude), ".-");
 end
 

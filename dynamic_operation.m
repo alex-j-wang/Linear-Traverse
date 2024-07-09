@@ -1,4 +1,4 @@
-function [time, forces, motor_position, position] = dynamic_operation(CF, shift, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
+function [time, forces, measured, target] = dynamic_operation(CF, shift, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
     % -----------------------------------------------------------------------
     % Data Gathering Code for Dynamic Quadrotor Experiments
     % -----------------------------------------------------------------------
@@ -18,8 +18,8 @@ function [time, forces, motor_position, position] = dynamic_operation(CF, shift,
         pause(1);
     end
 
-    position = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
-    data_output = DTOV * position;
+    target = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
+    data_output = DTOV * target;
 
     disp("Collecting data.");
     [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
@@ -36,9 +36,9 @@ function [time, forces, motor_position, position] = dynamic_operation(CF, shift,
     rows = floor(data_cyc/F*SRATE);
     data_voltages = data_inputs(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
-    position = position(row_start : row_start + rows - 1);
+    target = target(row_start : row_start + rows - 1);
 
-    motor_position = data_voltages(:, 7) / DTOV;
+    measured = data_voltages(:, 7) / DTOV;
     sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
 end

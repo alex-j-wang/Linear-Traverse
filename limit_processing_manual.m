@@ -56,20 +56,25 @@ writetable(data, fullfile(folder, 'results_manual.csv'));
 
 % Create Bode plots
 AS = unique(data.TargetAmplitude);
-t = tiledlayout(length(AS), 2, 'TileSpacing', 'compact', 'Padding', 'compact');
+t = tiledlayout(2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
 title(t, 'Linear Traverse Error Versus Frequency');
 
-for A = AS'
+for i = 1 : length(AS)
+    A = AS(i);
     selection = data(data.TargetAmplitude == A, :);
 
-    nexttile
+    nexttile(t, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    xlim([0.5 4]);
+    ylim([0 0.25]);
     plot(selection.TargetFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 
-    nexttile
+    nexttile(t, length(AS) + i);
     p_title = sprintf("Amplitude Difference Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Amplitude Difference (cm)");
+    xlim([0.5 4]);
+    ylim([0 1.25]);
     plot(selection.TargetFrequency, 100 * abs(selection.TargetAmplitude - selection.MeasuredAmplitude), ".-");
 end
 

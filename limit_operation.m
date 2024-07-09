@@ -45,7 +45,6 @@ est_elapsed.Format = 'hh:mm:ss';
 h = uifigure('Name', 'Limit Testing');
 d = uiprogressdlg(h, 'Title', 'Limit Testing');
 
-position = 0;
 tic
 
 % ACQUIRE DATA
