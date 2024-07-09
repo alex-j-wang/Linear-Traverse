@@ -1,7 +1,15 @@
-function data = readwritepos(daq_obj, target)
-    readwrite(daq_obj, target', "OutputFormat", "Matrix");
+% Simple readwrite wrapper that automatically performs unit conversions
+function data = readwritepos(daq_obj, position)
+    data = readwrite(daq_obj, DTOV(position), "OutputFormat", "Matrix");
+    data(:, 7) = 100 * VTOD(data(:, 7));
 end
 
-COVN = 1 / 0.02; % V/m
-DTOV = @(d) d * CONV;
-VTOD = @(v) v / CONV;
+function v = DTOV(d)
+    CONV = 1 / 0.02; % V/m
+    v = d * CONV;
+end
+
+function d = VTOD(v)
+    CONV = 1 / 0.02; % V/m
+    d = v / CONV;
+end
