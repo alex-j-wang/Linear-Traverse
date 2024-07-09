@@ -1,10 +1,5 @@
 clear; clc; close all hidden;
 
-% Constant parameters
-DATA_CYCLES = 40; % Cycles of data for phase averaging
-RAMP_CYCLES = 4; % Cycles for ramping up and down
-OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
-
 % Test parameters
 CFS = [0 50]; % Crazyflie throttle, %
 SDS = [.005 .01]; % Stopping distance, m
@@ -12,14 +7,9 @@ FS = [0.5 1]; % Traverse frequency, Hz
 AS = [0.025 0.05 0.1]; % Traverse amplitude, m
 
 % DAQ setup
-SRATE = 20000; % Data sampling rate, Hz
-DTOV = 1 / .02; % Conversion factor from distance to voltage, V/m
-SHIFT_SPEED = 0.05; % m/s
-CAL_SAMPLES = 3000; % Samples for position calibration
-
 disp("Setting up DAQ.");
 daq_obj = daq("ni");
-daq_obj.Rate = SRATE;
+daq_obj.Rate = Config.SRATE;
 
 % Output channel (motor voltage)
 output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
@@ -30,7 +20,8 @@ input_channels = addinput(daq_obj, "Dev2", 0:6, "Voltage");
 for i = 1:6
     input_channels(i).Name = "ForceSensor" + i;
 end
-input_channels(7).Name = "MotorPosition";
+input_channels(7).Name = "TargetPosition";
+input_channels(8).Name = "MeasuredPosition";
 
 % Load the calibration matrix for the force transducer
 load("cal_FT21128.mat");
@@ -52,19 +43,19 @@ pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
 disp("Identifying position.")
-position = get_position(daq_obj, DTOV, CAL_SAMPLES);
+position = get_position(daq_obj);
 disp("Position identified as " + position * 100 + " cm.");
 disp("Moving to home.");
 if position > 0
-    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : 0;
+    gradual_shift = Config.DTOV * (position : -Config.TICKSHIFT : 0);
 else
-    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : 0;
+    gradual_shift = Config.DTOV * (position : +Config.TICKSHIFT : 0);
 end
 readwrite(daq_obj, gradual_shift');
 ground = -input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
-    ((DATA_CYCLES + 2 * RAMP_CYCLES) * sum(1 ./ FS) + OFFSET_DURATION * length(FS)));
+    (Config.TOTAL_CYCLES * sum(1 ./ FS) + Config.OFFSET_DURATION * length(FS)));
 est_time.Format = 'hh:mm:ss';
 est_elapsed = seconds(0);
 est_elapsed.Format = 'hh:mm:ss';
@@ -93,12 +84,12 @@ for CF = CFS
 
                 % Move to starting position
                 shift = ground + A + SD;
-                if position > shift + SHIFT_SPEED / SRATE
-                    gradual_shift = position * DTOV : -SHIFT_SPEED * DTOV / SRATE : shift * DTOV;
+                if position > shift + Config.TICKSHIFT
+                    gradual_shift = Config.DTOV * (position : -Config.TICKSHIFT : shift);
                     disp("Moving to " + shift * 100 + " cm.");
                     readwrite(daq_obj, gradual_shift');
-                elseif position < shift - SHIFT_SPEED / SRATE
-                    gradual_shift = position * DTOV : +SHIFT_SPEED * DTOV / SRATE : shift * DTOV;                
+                elseif position < shift - Config.TICKSHIFT
+                    gradual_shift = Config.DTOV * (position : +Config.TICKSHIFT : shift);
                     disp("Moving to " + shift * 100 + " cm.");
                     readwrite(daq_obj, gradual_shift');
                 end
@@ -106,12 +97,12 @@ for CF = CFS
                 pause(1);
 
                 % Gather data
-                [time, forces, motor_position] = ...
-                    dynamic_operation(CF, shift, F, A, DATA_CYCLES, RAMP_CYCLES, OFFSET_DURATION, DTOV, daq_obj, cal_mat);
+                [time, forces, ~, pos_measured] = ...
+                    dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, Config.Position);
 
                 % Save data
                 filename = fullfile(date_string, case_name + '.mat');
-                save(filename, "time", "forces", "motor_position");
+                save(filename, "time", "forces", "pos_measured");
                 disp("Data saved to " + filename + ".");
 
                 % Preliminary analysis
@@ -123,7 +114,7 @@ for CF = CFS
                     fprintf("%s: %.3g (%.3g)\n", names(i), mean_forces(i), std_forces(i));
                 end
 
-                est_elapsed = est_elapsed + seconds((DATA_CYCLES + 2 * RAMP_CYCLES) * (1 / F) + OFFSET_DURATION);
+                est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F) + Config.OFFSET_DURATION);
             end
         end
     end
@@ -137,10 +128,10 @@ d.Message = message;
 pause(3);
 close(h);
 
-function position = get_position(daq_obj, DTOV, CAL_SAMPLES)
-    position = zeros(CAL_SAMPLES, 1);
-    for i = 1 : CAL_SAMPLES
-        position(i) = read(daq_obj).MotorPosition / DTOV;
+function position = get_position(daq_obj)
+    position = zeros(Config.CAL_SAMPLES, 1);
+    for i = 1 : Config.CAL_SAMPLES
+        position(i) = read(daq_obj).MotorPosition * Config.VTOD;
     end
     position = mean(position);
 end

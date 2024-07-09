@@ -4,9 +4,7 @@
 
 clear; clc; close all hidden;
 
-SRATE = 20000; % Sampling frequency
 FC = 20; % Cut-off frequency
-
 inert = containers.Map();
 
 items = dir();
@@ -46,14 +44,14 @@ for i = 1 : length(filenames)
     A = A / 100;
     T = 1 / F;
 
-    [b, a] = butter(6, FC / (SRATE / 2));
+    [b, a] = butter(6, FC / (Config.SRATE / 2));
     filtered = zeros(size(forces));
     for col = 1:6
         filtered(:, col) = filtfilt(b, a, forces(:, col));
     end
 
     % Phase averaged forces
-    phase_width = T * SRATE;
+    phase_width = T * Config.SRATE;
     frac = mod(phase_width, 1);
 
     % Check for fractional phase width, eliminate entries to support integral phase width
@@ -64,7 +62,7 @@ for i = 1 : length(filenames)
         keep = true(1, length(filtered));
         keep(range(select)) = false;
         filtered = filtered(keep, :);
-        motor_position = motor_position(keep);
+        pos_measured = pos_measured(keep);
         phase_width = floor(phase_width);
     end
 
@@ -72,8 +70,8 @@ for i = 1 : length(filenames)
     phase_averaged_forces = mean(stacked, 3);
     
     % Phase averaged position
-    stacked = reshape(motor_position, phase_width, []);
-    motor_position = mean(stacked, 2);
+    stacked = reshape(pos_measured, phase_width, []);
+    pos_measured = mean(stacked, 2);
 
     start = strtok(filename, "_");
     key = extractAfter(filename, start);
@@ -82,7 +80,7 @@ for i = 1 : length(filenames)
     end
     forces = phase_averaged_forces - inert(key);
     time = time(1 : length(forces));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'motor_position');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'pos_measured');
 end
 
 d.Value = 1;

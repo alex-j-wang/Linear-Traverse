@@ -1,16 +1,12 @@
-function [time, forces, measured, target] = dynamic_operation(CF, shift, F, A, data_cyc, ramp_cyc, offset_dur, DTOV, daq_obj, cal_mat)
+function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, mode)
     % -----------------------------------------------------------------------
     % Data Gathering Code for Dynamic Quadrotor Experiments
     % -----------------------------------------------------------------------
     
     % EXPERIMENT EXECUTION
-    SRATE = daq_obj.Rate;
     disp("Zeroing output.");
-    tare_output = DTOV * (shift + zeros(offset_dur * SRATE, 1));
-    tare_inputs = readwrite(daq_obj, tare_output, "OutputFormat", "Matrix");
-
-    % Calculate channel biases
-    tare_voltages = mean(tare_inputs);
+    tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
+    tare_inputs = mean(readposwritepos(daq_obj, tare_output));
 
     if CF ~= 0
         disp("Starting Crazyflie.");
@@ -18,11 +14,14 @@ function [time, forces, measured, target] = dynamic_operation(CF, shift, F, A, d
         pause(1);
     end
 
-    profile = shift + generate_profile(data_cyc, F, SRATE, ramp_cyc, A);
-    data_output = DTOV * profile;
+    profile = shift + generate_profile(F, A);
 
     disp("Collecting data.");
-    [data_inputs, time, ~] = readwrite(daq_obj, data_output', "OutputFormat", "Matrix");
+    if mode == Config.Position
+        [data, time] = readposwritepos(daq_obj, profile);
+    else
+        [data, time] = readcurrwritepos(daq_obj, profile);
+    end
     disp("Data collected.");
     
     if CF ~= 0
@@ -32,34 +31,34 @@ function [time, forces, measured, target] = dynamic_operation(CF, shift, F, A, d
 
     % DATA EXTRACTION
     disp("Extracting data.");
-    row_start = floor(ramp_cyc/F*SRATE) + 1;
-    rows = floor(data_cyc/F*SRATE);
-    data_voltages = data_inputs(row_start : row_start + rows - 1, :);
+    row_start = floor(ramp_cyc / F * Config.SRATE) + 1;
+    rows = floor(ramp_cyc / F * Config.SRATE);
+    data = data(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
 
-    target = data_voltages(:, 7) / DTOV;
-    measured = data_voltages(:, 8) / DTOV;
-    sensor_voltages = data_voltages(:, 1:6) - tare_voltages(:, 1:6);
+    target = data(:, 7);
+    measured = data(:, 8);
+    sensor_voltages = data(:, 1:6) - tare_inputs(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
 end
 
-function position = generate_profile(data_cycles, traverse_freq, sampling_freq, ramp_cycles, amplitude)
+function position = generate_profile(traverse_freq, amplitude)
     % -----------------------------------------------------------------------
     % % Generates a Ramping Waveform Using the Given Parameters
     % -----------------------------------------------------------------------
 
-    total_cycles = data_cycles + ramp_cycles * 2; % Total cycles
-    duration = total_cycles / traverse_freq; % Waveform duration, s
-    pts_per_cycle = 1 / traverse_freq * sampling_freq; % Points per cycle
+    duration = Config.TOTAL_CYCLES / traverse_freq; % Waveform duration, s
+    pts_per_cycle = 1 / traverse_freq * Config.SRATE; % Points per cycle
 
-    time = 0 : 1/sampling_freq : duration - 1/sampling_freq; % Time vector
+    time = 0 : 1 / Config.SRATE : duration - 1 / Config.SRATE; % Time vector
     position = amplitude * sin(2 * pi * traverse_freq * time); % Base waveform
 
     % Modulate ends using sinusoidal multiplier
-    pts_ramp = floor(pts_per_cycle * ramp_cycles); % Number of points to be modulated on either end
-    multiplier = 0.5 * (1 - cos(pi * (0 : 1/pts_ramp : 1)));
-    position(1 : pts_ramp+1) = position(1 : pts_ramp+1) .* multiplier;
-    position(end-pts_ramp : end) = position(end-pts_ramp : end) .* fliplr(multiplier);
+    pts_ramp = floor(pts_per_cycle * Config.ramp_cycles); % Number of points to be modulated on either end
+    multiplier = 0.5 * (1 - cos(pi * (0 : 1 / pts_ramp : 1)));
+    position(1 : pts_ramp + 1) = position(1 : pts_ramp + 1) .* multiplier;
+    position(end - pts_ramp : end) = position(end - pts_ramp : end) .* fliplr(multiplier);
+    position = position';
 end
 
 function run_drone(throttle)

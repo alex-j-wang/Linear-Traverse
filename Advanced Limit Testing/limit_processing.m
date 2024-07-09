@@ -33,8 +33,8 @@ for i = 1 : length(filenames)
     load(fullfile(folder, filename));
     
     % Fit sinusoids and record results
-    target = fit_sinusoid(time, position, A, F);
-    measured = fit_sinusoid(time, motor_position, A, F);
+    target = fit_sinusoid(time, pos_target, A, F);
+    measured = fit_sinusoid(time, pos_measured, A, F);
     
     data.IntendedAmplitude(i) = A;
     data.TargetAmplitude(i) = target.A;
@@ -53,7 +53,7 @@ for i = 1 : length(filenames)
         figure
         p_title = sprintf('Example Sinusoid Fit (A = %g cm, F = %g Hz)', A * 100, F);
         formatplot(p_title, 'Time (s)', 'Position (cm)');
-        plot(time, 100 * motor_position);
+        plot(time, 100 * pos_measured);
         plot(time, 100 * measured(time));
         legend('Measured', 'Fit');
 

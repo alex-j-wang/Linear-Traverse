@@ -4,8 +4,6 @@
 
 clear; clc; close all hidden;
 
-SRATE = 20000;
-
 folder = "Limit Analysis";
 items = dir(fullfile(folder, "*.mat"));
 filenames = sort({items.name});
@@ -38,12 +36,12 @@ for i = 1 : length(filenames)
     data.TargetFrequency(i) = F;
     data.TargetPhase(i) = 0;
 
-    data.MeasuredAmplitude(i) = range(motor_position) / 2;
+    data.MeasuredAmplitude(i) = range(pos_measured) / 2;
 
-    motor_position = motor_position - mean(motor_position);
-    integral_product = trapz(time, position .* motor_position);
-    magnitude_target = trapz(time, position .^ 2);
-    magnitude_measured = trapz(time, motor_position .^ 2);
+    pos_measured = pos_measured - mean(pos_measured);
+    integral_product = trapz(time, pos_target .* pos_measured);
+    magnitude_target = trapz(time, pos_target .^ 2);
+    magnitude_measured = trapz(time, pos_measured .^ 2);
     cos_phi = integral_product / sqrt(magnitude_target * magnitude_measured);
     data.MeasuredPhase(i) = acos(cos_phi);
 end
@@ -76,12 +74,4 @@ for i = 1 : length(AS)
     xlim([0.5 4]);
     ylim([0 1.25]);
     plot(selection.TargetFrequency, 100 * abs(selection.TargetAmplitude - selection.MeasuredAmplitude), ".-");
-end
-
-function formatplot(p_title, p_x, p_y)
-    title(p_title);
-    xlabel(p_x);
-    ylabel(p_y);
-    hold on
-    grid on
 end
