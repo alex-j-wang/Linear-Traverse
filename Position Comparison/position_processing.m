@@ -49,20 +49,29 @@ for i = 1 : length(filenames)
     data.MeasuredPhase(i) = measured.C;
 
     % Plot an example as confirmation
-    if i == 1
-        figure
-        p_title = sprintf('Example Sinusoid Fit (A = %g cm, F = %g Hz)', A * 100, F);
-        formatplot(p_title, 'Time (s)', 'Position (cm)');
+    if (A == 0.025 && F == 0.1) || (A == 0.075 && F == 2.8)
+        figure;
+        t = tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+        title(t, sprintf('Example Plots (A = %g cm, F = %g Hz)', A * 100, F));
+
+        nexttile;
+        formatplot('Example Target Signal Fit', 'Time (s)', 'Position (cm)');
+        plot(time, 100 * pos_target);
+        plot(time, 100 * target(time));
+        legend('Target', 'Fit');
+
+        nexttile;
+        formatplot('Example Measured Signal Fit', 'Time (s)', 'Position (cm)');
         plot(time, 100 * pos_measured);
         plot(time, 100 * measured(time));
         legend('Measured', 'Fit');
 
-        figure
-        p_title = sprintf('Example Wave Comparison (A = %g cm, F = %g Hz)', A * 100, F);
-        formatplot(p_title, 'Time (s)', 'Position (cm)');
+        nexttile;
+        formatplot('Example Wave Comparison', 'Time (s)', 'Position (cm)');
+        plot(time, 100 * A * sin(2 * pi * F * time));
         plot(time, 100 * target(time));
         plot(time, 100 * measured(time));
-        legend('Target', 'Measured');
+        legend('Intended', 'Target', 'Measured');
     end
 end
 
@@ -74,6 +83,7 @@ writetable(data, fullfile(folder, 'results.csv'));
 
 % Create Bode plots
 AS = unique(data.IntendedAmplitude);
+figure;
 t = tiledlayout(2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
 title(t, 'Linear Traverse Error Versus Frequency');
 
@@ -84,16 +94,14 @@ for i = 1 : length(AS)
     nexttile(t, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    % xlim([0.5 4]);
     % ylim([0 0.25]);
     plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 
     nexttile(t, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured / Intended)");
-    % xlim([0.5 4]);
-    % ylim([0.45 1.5]);
-    plot(selection.IntendedFrequency, selection.MeasuredAmplitude / selection.TargetAmplitude, ".-");
+    ylim([0.8 1.1]);
+    plot(selection.IntendedFrequency, selection.MeasuredAmplitude ./ selection.TargetAmplitude, ".-");
 end
 
 function fitresult = fit_sinusoid(x, y, A, F)

@@ -32,7 +32,7 @@ function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, d
     % DATA EXTRACTION
     disp("Extracting data.");
     row_start = floor(Config.RAMP_CYCLES / F * Config.SRATE) + 1;
-    rows = floor(Config.RAMP_CYCLES / F * Config.SRATE);
+    rows = floor(Config.DATA_CYCLES / F * Config.SRATE);
     data = data(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
 
