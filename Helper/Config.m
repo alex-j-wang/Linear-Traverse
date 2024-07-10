@@ -19,6 +19,7 @@ classdef Config
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
+        SSH = "anoop@172.18.139.146"
     end
 
     enumeration

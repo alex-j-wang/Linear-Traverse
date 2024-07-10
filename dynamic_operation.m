@@ -59,7 +59,7 @@ end
 
 function run_drone(throttle)
     runtime = java.lang.Runtime.getRuntime();
-    process = runtime.exec("ssh anoop@172.18.139.96 ./throttle.sh " + throttle);
+    process = runtime.exec(sprintf("ssh %s ./throttle.sh %d", Config.SSH, throttle));
     process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
     if process.isAlive()
         process.destroyForcibly();

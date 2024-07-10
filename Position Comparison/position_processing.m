@@ -4,6 +4,9 @@
 
 clear; clc; close all hidden;
 
+screen_size = get(0, 'ScreenSize');
+fig_position = [0, screen_size(4) - 500, screen_size(3), 500];
+
 folder = "Position Data";
 items = dir(fullfile(folder, "*.mat"));
 filenames = sort({items.name});
@@ -50,7 +53,7 @@ for i = 1 : length(filenames)
 
     % Plot an example as confirmation
     if (A == 0.025 && F == 0.1) || (A == 0.075 && F == 2.8)
-        figure;
+        figure('Position', fig_position);
         t = tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
         title(t, sprintf('Example Plots (A = %g cm, F = %g Hz)', A * 100, F));
 
@@ -89,7 +92,7 @@ writetable(data, fullfile(folder, 'results.csv'));
 
 % Create Bode plots
 AS = unique(data.IntendedAmplitude);
-figure;
+figure('Position', screen_size);
 t = tiledlayout(2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
 title(t, 'Linear Traverse Error Versus Frequency');
 

@@ -63,6 +63,6 @@ for i = 1 : length(AS)
     nexttile;
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    ylim([0 0.7]);
+    ylim([0 0.25]);
     plot(selection.TargetFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 end
