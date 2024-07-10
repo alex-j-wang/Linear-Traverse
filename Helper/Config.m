@@ -15,7 +15,29 @@ classdef Config
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
     end
+
     enumeration
         Position, Current
+    end
+
+    methods
+        function daq_obj = initialize(ch6, ch7)
+            % DAQ setup
+            disp("Setting up DAQ.");
+            daq_obj = daq("ni");
+            daq_obj.Rate = Config.SRATE;
+            
+            % Output channel (motor voltage)
+            output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
+            output.Name = "voutput";
+            
+            % Input channels (force sensor and motor position)
+            input_channels = addinput(daq_obj, "Dev2", 0:7, "Voltage");
+            for i = 1:6
+                input_channels(i).Name = "ForceSensor" + i;
+            end
+            input_channels(7).Name = ch6;
+            input_channels(8).Name = ch7;
+        end
     end
 end

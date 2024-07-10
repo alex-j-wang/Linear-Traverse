@@ -11,8 +11,8 @@ filenames = sort({items.name});
 pattern = "F%f_A%f.mat";
 
 % Create progess bar
-fig = uifigure('Name', 'Dynamic Processing');
-d = uiprogressdlg(fig, 'Title', 'Processing');
+fig = uifigure('Name', 'Position Comparison');
+d = uiprogressdlg(fig, 'Title', 'Position Comparison');
 
 % Data table
 columns = {'TargetAmplitude', 'MeasuredAmplitude', ...

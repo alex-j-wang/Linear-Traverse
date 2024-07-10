@@ -7,21 +7,7 @@ FS = [0.5 1]; % Traverse frequency, Hz
 AS = [0.025 0.05 0.1]; % Traverse amplitude, m
 
 % DAQ setup
-disp("Setting up DAQ.");
-daq_obj = daq("ni");
-daq_obj.Rate = Config.SRATE;
-
-% Output channel (motor voltage)
-output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
-output.Name = "voutput";
-
-% Input channels (force sensor and motor position)
-input_channels = addinput(daq_obj, "Dev2", 0:6, "Voltage");
-for i = 1:6
-    input_channels(i).Name = "ForceSensor" + i;
-end
-input_channels(7).Name = "TargetPosition";
-input_channels(8).Name = "MeasuredPosition";
+daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
 
 % Load the calibration matrix for the force transducer
 load("cal_FT21128.mat");

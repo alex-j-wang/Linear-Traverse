@@ -5,21 +5,7 @@ AS = 0.025:0.025:0.075; % Traverse amplitude, m
 FS = 0.1:0.3:3; % Traverse frequency, Hz
 
 % DAQ setup
-disp("Setting up DAQ.");
-daq_obj = daq("ni");
-daq_obj.Rate = Config.SRATE;
-
-% Output channel (motor voltage)
-output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
-output.Name = "voutput";
-
-% Input channels (force sensor and motor position)
-input_channels = addinput(daq_obj, "Dev2", 0:7, "Voltage");
-for i = 1:6
-    input_channels(i).Name = "ForceSensor" + i;
-end
-input_channels(7).Name = "TargetPosition";
-input_channels(8).Name = "MeasuredPosition";
+daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
 
 % Load the calibration matrix for the force transducer
 load("cal_FT21128.mat");
@@ -36,6 +22,7 @@ est_elapsed.Format = 'hh:mm:ss';
 h = uifigure('Name', 'Position Testing');
 d = uiprogressdlg(h, 'Title', 'Position Testing');
 
+input("Ensure Driveware inputs are configured for position. Press Enter to continue.")
 tic
 
 % ACQUIRE DATA
