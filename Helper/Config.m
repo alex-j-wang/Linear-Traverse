@@ -20,7 +20,7 @@ classdef Config
         Position, Current
     end
 
-    methods
+    methods(Static)
         function daq_obj = initialize(ch6, ch7)
             % DAQ setup
             disp("Setting up DAQ.");
