@@ -58,12 +58,16 @@ for i = 1 : length(filenames)
         formatplot('Example Target Signal Fit', 'Time (s)', 'Position (cm)');
         plot(time, 100 * pos_target);
         plot(time, 100 * target(time));
+        % xlim([0, 5 / F]);
+        ylim([-100 * A - 1, 100 * A + 1]);
         legend('Target', 'Fit');
 
         nexttile;
         formatplot('Example Measured Signal Fit', 'Time (s)', 'Position (cm)');
         plot(time, 100 * pos_measured);
         plot(time, 100 * measured(time));
+        % xlim([0, 5 / F]);
+        ylim([-100 * A - 1, 100 * A + 1]);
         legend('Measured', 'Fit');
 
         nexttile;
@@ -71,6 +75,8 @@ for i = 1 : length(filenames)
         plot(time, 100 * A * sin(2 * pi * F * time));
         plot(time, 100 * target(time));
         plot(time, 100 * measured(time));
+        % xlim([0, 5 / F]);
+        ylim([-100 * A - 1, 100 * A + 1]);
         legend('Intended', 'Target', 'Measured');
     end
 end
@@ -94,13 +100,11 @@ for i = 1 : length(AS)
     nexttile(t, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    % ylim([0 0.25]);
     plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 
     nexttile(t, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured / Intended)");
-    ylim([0.8 1.1]);
+    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
     plot(selection.IntendedFrequency, selection.MeasuredAmplitude ./ selection.TargetAmplitude, ".-");
 end
 

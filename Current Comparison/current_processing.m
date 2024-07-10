@@ -44,6 +44,7 @@ for i = 1 : length(filenames)
         nexttile;
         p_title = sprintf("Current Plots (A = %g cm, F = %g Hz)", A * 100, F);
         formatplot(p_title, "Time (s)", "Current (A)");
+        % xlim([0, 5 / F]);
         selection = round(linspace(1, length(curr_target), 1000));
         
         l1 = patch([time(selection); nan], [curr_target(selection); nan], 'r');

@@ -38,7 +38,6 @@ for i = 1 : length(filenames)
 
     data.MeasuredAmplitude(i) = range(pos_measured) / 2;
 
-    pos_measured = pos_measured - mean(pos_measured);
     integral_product = trapz(time, pos_target .* pos_measured);
     magnitude_target = trapz(time, pos_target .^ 2);
     magnitude_measured = trapz(time, pos_measured .^ 2);
@@ -64,7 +63,6 @@ for i = 1 : length(AS)
     nexttile;
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    % xlim([0.5 4]);
-    % ylim([0 0.25]);
+    ylim([0 0.7]);
     plot(selection.TargetFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 end
