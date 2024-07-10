@@ -1,3 +1,7 @@
+% --------------------------------------------------------------------
+% Script to obtain target and measured position data for comparison
+% --------------------------------------------------------------------
+
 clear; clc; close all hidden;
 
 % Test parameters

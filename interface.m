@@ -1,3 +1,7 @@
+% --------------------------------------------------------------------
+% Class providing methods for creating GUI menus and dropdowns
+% --------------------------------------------------------------------
+
 classdef interface
     methods(Static)
         function selection = dropdown(options, title)
@@ -26,7 +30,7 @@ classdef interface
         end
 
         function dynamic_plotting(folder_path, filenames)
-            NAMES = strcat(["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"], " & Position Versus Time");
+            NAMES = strcat(Config.NAMES, " & Position Versus Time");
             W = 0.032 * 9.8;
             L = 35;
         

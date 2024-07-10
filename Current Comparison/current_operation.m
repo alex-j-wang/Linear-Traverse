@@ -1,3 +1,7 @@
+% --------------------------------------------------------------------
+% Script to obtain demanded and measured current data for comparison
+% --------------------------------------------------------------------
+
 clear; clc; close all hidden;
 
 % Test parameters

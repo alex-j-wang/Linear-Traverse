@@ -1,9 +1,9 @@
+% ------------------------------------------------
+% Function for gathering dynamic test data
+% ------------------------------------------------
+
 function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, mode)
-    % -----------------------------------------------------------------------
-    % Data Gathering Code for Dynamic Quadrotor Experiments
-    % -----------------------------------------------------------------------
-    
-    % EXPERIMENT EXECUTION
+    % Operates traverse and drone based on inputs
     disp("Zeroing output.");
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     tare_inputs = mean(readposwritepos(daq_obj, tare_output));
@@ -29,7 +29,6 @@ function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, d
         run_drone(0);
     end
 
-    % DATA EXTRACTION
     disp("Extracting data.");
     row_start = floor(Config.RAMP_CYCLES / F * Config.SRATE) + 1;
     rows = floor(Config.DATA_CYCLES / F * Config.SRATE);
@@ -43,18 +42,15 @@ function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, d
 end
 
 function position = generate_profile(traverse_freq, amplitude)
-    % -----------------------------------------------------------------------
-    % % Generates a Ramping Waveform Using the Given Parameters
-    % -----------------------------------------------------------------------
+    % Generates a ramping sinusoid based on inputs
+    duration = Config.TOTAL_CYCLES / traverse_freq;
+    pts_per_cycle = 1 / traverse_freq * Config.SRATE;
 
-    duration = Config.TOTAL_CYCLES / traverse_freq; % Waveform duration, s
-    pts_per_cycle = 1 / traverse_freq * Config.SRATE; % Points per cycle
-
-    time = 0 : 1 / Config.SRATE : duration - 1 / Config.SRATE; % Time vector
+    time = 0 : 1 / Config.SRATE : duration - 1 / Config.SRATE;
     position = amplitude * sin(2 * pi * traverse_freq * time); % Base waveform
 
     % Modulate ends using sinusoidal multiplier
-    pts_ramp = floor(pts_per_cycle * Config.RAMP_CYCLES); % Number of points to be modulated on either end
+    pts_ramp = floor(pts_per_cycle * Config.RAMP_CYCLES);
     multiplier = 0.5 * (1 - cos(pi * (0 : 1 / pts_ramp : 1)));
     position(1 : pts_ramp + 1) = position(1 : pts_ramp + 1) .* multiplier;
     position(end - pts_ramp : end) = position(end - pts_ramp : end) .* fliplr(multiplier);

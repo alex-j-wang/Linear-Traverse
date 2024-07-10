@@ -1,6 +1,7 @@
-clear; clc; close all;
+% ------------------------------------------------
+% Script to convert calibration file to .mat
+% ------------------------------------------------
 
-% Set sensor model
 SENSOR = 'FT21128';
 
 regex = '(?<=UserAxis Name="[FT][xyz]" values=")[^"]*';

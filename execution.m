@@ -1,3 +1,7 @@
+% -------------------------------------------------------------------------
+% Script to run experiments and save dynamic test data
+% -------------------------------------------------------------------------
+
 clear; clc; close all hidden;
 
 % Test parameters
@@ -20,9 +24,6 @@ if exist(date_string, "dir")
 else
     mkdir(date_string);
 end
-
-% Column names
-names = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];
 
 % Wait for DAQ setup to stabilize
 pause(1);
@@ -97,7 +98,7 @@ for CF = CFS
 
                 disp("Measurements: mean (stdev)");
                 for i = 1:6
-                    fprintf("%s: %.3g (%.3g)\n", names(i), mean_forces(i), std_forces(i));
+                    fprintf("%s: %.3g (%.3g)\n", Config.NAMES(i), mean_forces(i), std_forces(i));
                 end
 
                 est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F) + Config.OFFSET_DURATION);

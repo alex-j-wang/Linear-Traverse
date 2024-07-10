@@ -1,3 +1,7 @@
+% --------------------------------------------------------------------
+% Class storing constant values, enumerations, and setup methods
+% --------------------------------------------------------------------
+
 classdef Config
     properties (Constant = true)
         DATA_CYCLES = 20; % Cycles of data for phase averaging
@@ -14,6 +18,7 @@ classdef Config
         VTOI = 0.1; % Conversion factor from voltage to current, A/V
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
+        NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
     end
 
     enumeration
