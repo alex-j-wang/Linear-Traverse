@@ -5,7 +5,7 @@
 clear; clc; close all hidden;
 
 screen_size = get(0, 'ScreenSize');
-fig_position = [0, screen_size(4) - 500, screen_size(3), 500];
+fig_position = [0, screen_size(4) - 400, screen_size(3), 400];
 
 folder = "Position Data";
 items = dir(fullfile(folder, "*.mat"));
@@ -134,7 +134,7 @@ for i = 1 : length(AS)
 
     nexttile(t2, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
+    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
     plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, ".-");
 end
 
