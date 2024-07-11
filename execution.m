@@ -33,12 +33,7 @@ disp("Identifying position.")
 position = get_position(daq_obj);
 disp("Position identified as " + position * 100 + " cm.");
 disp("Moving to home.");
-if position > 0
-    gradual_shift = Config.DTOV * (position : -Config.TICKSHIFT : 0);
-else
-    gradual_shift = Config.DTOV * (position : +Config.TICKSHIFT : 0);
-end
-readwrite(daq_obj, gradual_shift');
+Process.gradual_move(daq_obj, position, 0);
 ground = -input("Enter distance from ground plane (cm): ") / 100;
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
@@ -71,16 +66,7 @@ for CF = CFS
 
                 % Move to starting position
                 shift = ground + A + SD;
-                if position > shift + Config.TICKSHIFT
-                    gradual_shift = Config.DTOV * (position : -Config.TICKSHIFT : shift);
-                    disp("Moving to " + shift * 100 + " cm.");
-                    readwrite(daq_obj, gradual_shift');
-                elseif position < shift - Config.TICKSHIFT
-                    gradual_shift = Config.DTOV * (position : +Config.TICKSHIFT : shift);
-                    disp("Moving to " + shift * 100 + " cm.");
-                    readwrite(daq_obj, gradual_shift');
-                end
-                position = shift;
+                position = Process.gradual_move(daq_obj, position, shift);
                 pause(1);
 
                 % Gather data

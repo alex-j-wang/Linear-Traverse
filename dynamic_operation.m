@@ -6,7 +6,7 @@ function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift
     % Operates traverse and drone based on inputs
     disp("Zeroing output.");
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
-    tare_inputs = mean(readposwritepos(daq_obj, tare_output));
+    tare_inputs = mean(readsigwritepos(daq_obj, tare_output, Config.Position));
 
     if CF ~= 0
         disp("Starting Crazyflie.");
@@ -17,11 +17,7 @@ function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift
     profile = shift + generate_profile(F, A);
 
     disp("Collecting data.");
-    if mode == Config.Position
-        [data, time] = readposwritepos(daq_obj, profile);
-    else
-        [data, time] = readcurrwritepos(daq_obj, profile);
-    end
+    [data, time] = readsigwritepos(daq_obj, profile, mode);
     disp("Data collected.");
     
     if CF ~= 0

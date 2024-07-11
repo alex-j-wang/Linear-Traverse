@@ -56,10 +56,5 @@ classdef Config
             encoder.ZResetValue = 0;
             encoder.Name = 'Encoder';
         end
-        
-        function encoder_pos = encoder_convert(encoder_data)
-            encoder_data = typecast(uint32(encoder_data), 'int32');
-            encoder_pos = -double(encoder_data) / Config.LPI * 2.54 / 100;
-        end
     end
 end
