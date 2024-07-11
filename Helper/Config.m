@@ -16,10 +16,13 @@ classdef Config
         DTOV = 1 / 0.02; % Conversion factor from distance to voltage, V/m
         VTOD = 0.02; % Conversion factor from voltage to distance, m/V
         VTOI = 0.1; % Conversion factor from voltage to current, A/V
+        
+        LPI = 3933.571; % Encoder lines per inch
+        NBITS = 32; % Encoder channel resolution
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
-        SSH = "anoop@172.18.139.146"
+        SSH = "anoop@172.18.139.146";
     end
 
     enumeration
@@ -37,13 +40,21 @@ classdef Config
             output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
             output.Name = "voutput";
             
-            % Input channels (force sensor and motor position)
+            % Input channels (force sensor and position)
             input_channels = addinput(daq_obj, "Dev2", 0:7, "Voltage");
             for i = 1:6
                 input_channels(i).Name = "ForceSensor" + i;
             end
             input_channels(7).Name = ch6;
             input_channels(8).Name = ch7;
+
+            % Input channel (position encoder)
+            encoder = addinput(daq_obj, "Dev2", "ctr0", "Position");
+            encoder.EncoderType = "X4";
+            encoder.ZResetEnable = 0;
+            encoder.ZResetCondition = "BothLow";
+            encoder.ZResetValue = 0;
+            encoder.Name = 'Encoder';
         end
     end
 end

@@ -6,9 +6,9 @@ clear; clc; close all hidden;
 
 % Test parameters
 CFS = [0 50]; % Crazyflie throttle, %
-SDS = [.005 .01]; % Stopping distance, m
-FS = [0.5 1]; % Traverse frequency, Hz
-AS = [0.025 0.05 0.1]; % Traverse amplitude, m
+SDS = 0.03; % Stopping distance, m
+FS = 1.5; % Traverse frequency, Hz
+AS = 0.05; % Traverse amplitude, m
 
 % DAQ setup
 daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
@@ -118,7 +118,7 @@ close(h);
 function position = get_position(daq_obj)
     position = zeros(Config.CAL_SAMPLES, 1);
     for i = 1 : Config.CAL_SAMPLES
-        position(i) = read(daq_obj).MotorPosition * Config.VTOD;
+        position(i) = read(daq_obj).TargetPosition * Config.VTOD;
     end
     position = mean(position);
 end

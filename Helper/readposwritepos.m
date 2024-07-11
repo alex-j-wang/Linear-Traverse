@@ -4,5 +4,5 @@
 
 function [data, time] = readposwritepos(daq_obj, position)
     [data, time, ~] = readwrite(daq_obj, position * Config.DTOV, "OutputFormat", "Matrix");
-    data(:, 7:end) = data(:, 7:end) * Config.VTOD;
+    data(:, 7:8) = data(:, 7:8) * Config.VTOD;
 end

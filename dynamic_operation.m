@@ -2,7 +2,7 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, mode)
+function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, mode)
     % Operates traverse and drone based on inputs
     disp("Zeroing output.");
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
@@ -35,10 +35,11 @@ function [time, forces, target, measured] = dynamic_operation(CF, shift, F, A, d
     data = data(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
 
-    target = data(:, 7);
-    measured = data(:, 8);
     sensor_voltages = data(:, 1:6) - tare_inputs(:, 1:6);
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
+    target = data(:, 7);
+    measured = data(:, 8);
+    encoder = encoder_convert(data(:, 9));
 end
 
 function position = generate_profile(traverse_freq, amplitude)
@@ -55,6 +56,11 @@ function position = generate_profile(traverse_freq, amplitude)
     position(1 : pts_ramp + 1) = position(1 : pts_ramp + 1) .* multiplier;
     position(end - pts_ramp : end) = position(end - pts_ramp : end) .* fliplr(multiplier);
     position = position';
+end
+
+function position = encoder_convert(encoder_data)
+    encoder_data = typecast(uint32(encoder_data), 'int32');
+    position = double(encoder_data) / Config.LPI * 2.54 / 100;
 end
 
 function run_drone(throttle)
