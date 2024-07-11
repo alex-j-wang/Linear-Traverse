@@ -82,7 +82,7 @@ classdef interface
                 if ~exist(filename, 'file')
                     return;
                 end
-                load(filename, "time", "forces", "motor_position");
+                load(filename, "time", "forces", "pos_encoder");
         
                 for idx = 1:6
                     ax = nexttile(t, idx);
@@ -99,7 +99,7 @@ classdef interface
                     ylabel(ax, yl);
             
                     yyaxis(ax, 'right');
-                    plot(ax, time, motor_position * 100);
+                    plot(ax, time, pos_encoder * 100);
                     ylabel(ax, "Position (cm)");
             
                     title(ax, NAMES(idx));

@@ -62,7 +62,7 @@ for i = 1 : length(filenames)
         keep = true(1, length(filtered));
         keep(range(select)) = false;
         filtered = filtered(keep, :);
-        pos_measured = pos_measured(keep);
+        pos_encoder = pos_encoder(keep);
         phase_width = floor(phase_width);
     end
 
@@ -70,8 +70,8 @@ for i = 1 : length(filenames)
     phase_averaged_forces = mean(stacked, 3);
     
     % Phase averaged position
-    stacked = reshape(pos_measured, phase_width, []);
-    pos_measured = mean(stacked, 2);
+    stacked = reshape(pos_encoder, phase_width, []);
+    pos_encoder = mean(stacked, 2);
 
     start = strtok(filename, "_");
     key = extractAfter(filename, start);
@@ -80,7 +80,7 @@ for i = 1 : length(filenames)
     end
     forces = phase_averaged_forces - inert(key);
     time = time(1 : length(forces));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'pos_measured');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'pos_encoder');
 end
 
 d.Value = 1;

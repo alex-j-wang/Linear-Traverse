@@ -84,12 +84,12 @@ for CF = CFS
                 pause(1);
 
                 % Gather data
-                [time, forces, ~, pos_measured] = ...
+                [time, forces, ~, ~, pos_encoder] = ...
                     dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, Config.Position);
 
                 % Save data
                 filename = fullfile(date_string, case_name + '.mat');
-                save(filename, "time", "forces", "pos_measured");
+                save(filename, "time", "forces", "pos_encoder");
                 disp("Data saved to " + filename + ".");
 
                 % Preliminary analysis
