@@ -39,7 +39,7 @@ function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift
     forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
     target = data(:, 7);
     measured = data(:, 8);
-    encoder = encoder_convert(data(:, 9));
+    encoder = data(:, 9);
 end
 
 function position = generate_profile(traverse_freq, amplitude)
@@ -56,11 +56,6 @@ function position = generate_profile(traverse_freq, amplitude)
     position(1 : pts_ramp + 1) = position(1 : pts_ramp + 1) .* multiplier;
     position(end - pts_ramp : end) = position(end - pts_ramp : end) .* fliplr(multiplier);
     position = position';
-end
-
-function position = encoder_convert(encoder_data)
-    encoder_data = typecast(uint32(encoder_data), 'int32');
-    position = double(encoder_data) / Config.LPI * 2.54 / 100;
 end
 
 function run_drone(throttle)

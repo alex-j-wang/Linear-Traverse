@@ -18,9 +18,9 @@ fig = uifigure('Name', 'Position Comparison');
 d = uiprogressdlg(fig, 'Title', 'Position Comparison');
 
 % Data table
-columns = {'IntendedAmplitude', 'TargetAmplitude', 'MeasuredAmplitude', ...
-    'IntendedFrequency', 'TargetFrequency', 'MeasuredFrequency', ...
-    'IntendedPhase', 'TargetPhase', 'MeasuredPhase'
+columns = {'IntendedAmplitude', 'EncoderAmplitude', 'TargetAmplitude', 'MeasuredAmplitude', ...
+    'IntendedFrequency', 'EncoderFrequency', 'TargetFrequency', 'MeasuredFrequency', ...
+    'IntendedPhase', 'EncoderPhase', 'TargetPhase', 'MeasuredPhase'
 };
 data = array2table(NaN(length(filenames), length(columns)), 'VariableNames', columns);
 
@@ -38,24 +38,36 @@ for i = 1 : length(filenames)
     % Fit sinusoids and record results
     target = fit_sinusoid(time, pos_target, A, F);
     measured = fit_sinusoid(time, pos_measured, A, F);
+    encoder = fit_sinusoid(time, pos_encoder, A, F);
     
     data.IntendedAmplitude(i) = A;
+    data.EncoderAmplitude(i) = encoder.A;
     data.TargetAmplitude(i) = target.A;
     data.MeasuredAmplitude(i) = measured.A;
 
     data.IntendedFrequency(i) = F;
+    data.EncoderFrequency(i) = encoder.B;
     data.TargetFrequency(i) = target.B;
     data.MeasuredFrequency(i) = measured.B;
 
     data.IntendedPhase(i) = 0;
+    data.EncoderPhase(i) = encoder.C;
     data.TargetPhase(i) = target.C;
     data.MeasuredPhase(i) = measured.C;
 
     % Plot an example as confirmation
     if (A == 0.025 && F == 0.1) || (A == 0.075 && F == 2.8)
         figure('Position', fig_position);
-        t = tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+        t = tiledlayout(1, 4, 'TileSpacing', 'compact', 'Padding', 'compact');
         title(t, sprintf('Example Plots (A = %g cm, F = %g Hz)', A * 100, F));
+
+        nexttile;
+        formatplot('Example Encoder Signal Fit', 'Time (s)', 'Position (cm)');
+        plot(time, 100 * pos_encoder);
+        plot(time, 100 * encoder(time));
+        % xlim([0, 5 / F]);
+        ylim([-100 * A - 1, 100 * A + 1]);
+        legend('Encoder', 'Fit');
 
         nexttile;
         formatplot('Example Target Signal Fit', 'Time (s)', 'Position (cm)');
@@ -76,11 +88,12 @@ for i = 1 : length(filenames)
         nexttile;
         formatplot('Example Wave Comparison', 'Time (s)', 'Position (cm)');
         plot(time, 100 * A * sin(2 * pi * F * time));
+        plot(time, 100 * encoder(time));
         plot(time, 100 * target(time));
         plot(time, 100 * measured(time));
         % xlim([0, 5 / F]);
         ylim([-100 * A - 1, 100 * A + 1]);
-        legend('Intended', 'Target', 'Measured');
+        legend('Intended', 'Encoder', 'Target', 'Measured');
     end
 end
 
@@ -92,23 +105,37 @@ writetable(data, fullfile(folder, 'results.csv'));
 
 % Create Bode plots
 AS = unique(data.IntendedAmplitude);
-figure('Position', screen_size);
-t = tiledlayout(2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
-title(t, 'Linear Traverse Error Versus Frequency');
+f1 = figure('Position', screen_size);
+t1 = tiledlayout(f1, 2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
+title(t1, 'Linear Traverse Error Versus Frequency (Target & Measured)');
+f2 = figure('Position', screen_size);
+t2 = tiledlayout(f2, 2, length(AS), 'TileSpacing', 'compact', 'Padding', 'compact');
+title(t2, 'Linear Traverse Error Versus Frequency (Intended & Encoder)');
+
 
 for i = 1 : length(AS)
     A = AS(i);
     selection = data(data.IntendedAmplitude == A, :);
 
-    nexttile(t, i);
+    nexttile(t1, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
     plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 
-    nexttile(t, length(AS) + i);
+    nexttile(t1, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
     formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
     plot(selection.IntendedFrequency, selection.MeasuredAmplitude ./ selection.TargetAmplitude, ".-");
+
+    nexttile(t2, i);
+    p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
+    formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    plot(selection.IntendedFrequency, abs(selection.EncoderPhase - selection.IntendedPhase), ".-");
+
+    nexttile(t2, length(AS) + i);
+    p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
+    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
+    plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, ".-");
 end
 
 function fitresult = fit_sinusoid(x, y, A, F)

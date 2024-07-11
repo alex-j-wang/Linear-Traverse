@@ -43,12 +43,12 @@ for A = AS
         d.Message = message;
 
         % Gather data
-        [time, ~, pos_target, pos_measured] = ...
+        [time, ~, pos_target, pos_measured, pos_encoder] = ...
             dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.Position);
 
         % Save data
         filename = fullfile("Position Data", case_name + '.mat');
-        save(filename, "time", "pos_target", "pos_measured");
+        save(filename, "time", "pos_target", "pos_measured", "pos_encoder");
         disp("Data saved to " + filename + ".");
 
         est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F));

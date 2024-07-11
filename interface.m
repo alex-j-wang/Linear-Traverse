@@ -74,11 +74,15 @@ classdef interface
             end
         
             function update_plot()
-                load(fullfile(folder_path, strcat(strjoin(selection, "_"), ".mat")), ...
-                    "time", "forces", "motor_position");
-        
                 % Clear existing tiles
                 delete(t.Children);
+
+                % Load data or return if file does not exist
+                filename = fullfile(folder_path, strjoin(selection, "_") + ".mat");
+                if ~exist(filename, 'file')
+                    return;
+                end
+                load(filename, "time", "forces", "motor_position");
         
                 for idx = 1:6
                     ax = nexttile(t, idx);
