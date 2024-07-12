@@ -18,7 +18,7 @@ classdef Config
         SRATE = 20000; % Data sampling rate, Hz
         DTOV = 1 / 0.02; % Conversion factor from distance to voltage, V/m
         VTOD = 0.02; % Conversion factor from voltage to distance, m/V
-        VTOI = 0.1; % Conversion factor from voltage to current, A/V
+        VTOI = 0.25; % Conversion factor from voltage to current, A/V
         
         LPI = 3933.571; % Encoder lines per inch
         NBITS = 32; % Encoder channel resolution

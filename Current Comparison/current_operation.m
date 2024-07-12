@@ -24,9 +24,9 @@ est_elapsed.Format = 'hh:mm:ss';
 
 % Create waitbar
 h = uifigure('Name', 'Current Testing');
-d = uiprogressdlg(h, 'Title', 'Current Testing');
-
+d = uiprogressdlg(h, 'Title', 'Current Testing', 'Indeterminate', 'on');
 input("Ensure Driveware inputs are configured for current. Press Enter to continue.")
+d.Indeterminate = 'off';
 tic
 
 % ACQUIRE DATA
