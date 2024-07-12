@@ -5,10 +5,10 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = [0 25 50]; % Crazyflie throttle, %
+CFS = [0 25 50];         % Crazyflie throttle, %
 SDS = [0.005 0.01 0.02]; % Stopping distance, m
-FS = [0.2 0.5 1 1.5]; % Traverse frequency, Hz
-AS = [0.05 0.08]; % Traverse amplitude, m
+FS = [0.2 0.5 1 1.5];    % Traverse frequency, Hz
+AS = [0.05 0.08];        % Traverse amplitude, m
 
 % DAQ setup
 daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
@@ -30,7 +30,7 @@ pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
 disp("Identifying position.")
-position = get_position(daq_obj);
+position = Process.get_position(daq_obj);
 disp("Position identified as " + position * 100 + " cm.");
 Process.gradual_move(daq_obj, position, 0);
 ground = -input("Enter distance from ground plane (cm): ") / 100;
@@ -99,11 +99,3 @@ d.Value = 1;
 d.Message = message;
 pause(3);
 close(h);
-
-function position = get_position(daq_obj)
-    position = zeros(Config.CAL_SAMPLES, 1);
-    for i = 1 : Config.CAL_SAMPLES
-        position(i) = read(daq_obj).TargetPosition * Config.VTOD;
-    end
-    position = mean(position);
-end

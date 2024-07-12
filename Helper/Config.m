@@ -5,28 +5,28 @@
 classdef Config
     properties (Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
-        L = 35; % Motor-center distance, mm
+        L = 35;          % Motor-center distance, mm
         
         DATA_CYCLES = 20; % Cycles of data for phase averaging
-        RAMP_CYCLES = 4; % Cycles for ramping up and down
+        RAMP_CYCLES = 4;  % Cycles for ramping up and down
         TOTAL_CYCLES = Config.DATA_CYCLES + 2 * Config.RAMP_CYCLES; % Total cycles
         
         OFFSET_DURATION = 1; % Duration for zeroing force transducer, s
-        SHIFT_SPEED = 0.05; % m/s
-        CAL_SAMPLES = 3000; % Samples for position calibration
+        SHIFT_SPEED = 0.05;  % m/s
+        CAL_SAMPLES = 3000;  % Samples for position calibration
 
-        SRATE = 20000; % Data sampling rate, Hz
+        SRATE = 20000;   % Data sampling rate, Hz
         DTOV = 1 / 0.02; % Conversion factor from distance to voltage, V/m
-        VTOD = 0.02; % Conversion factor from voltage to distance, m/V
-        VTOI = 0.25; % Conversion factor from voltage to current, A/V
+        VTOD = 0.02;     % Conversion factor from voltage to distance, m/V
+        VTOI = 0.25;     % Conversion factor from voltage to current, A/V
         
         LPI = 3933.571; % Encoder lines per inch
-        NBITS = 32; % Encoder channel resolution
+        NBITS = 32;     % Encoder channel resolution
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
-        FORCES = ["Total" "Intertial" "Lift"];
-        SSH = "anoop@172.18.139.146";
+        FORCES = ["Total" "Intertial" "Lift"];         % Available force plots
+        SSH = "anoop@172.18.139.146";                  % Linux computer SSH address
     end
 
     enumeration
@@ -35,7 +35,7 @@ classdef Config
 
     methods(Static)
         function daq_obj = initialize(ch6, ch7)
-            % DAQ setup
+            % INITIALIZE  Initialize a DAQ object with input and output channels
             disp("Setting up DAQ.");
             daq_obj = daq("ni");
             daq_obj.Rate = Config.SRATE;

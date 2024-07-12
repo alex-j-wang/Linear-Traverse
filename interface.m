@@ -5,7 +5,7 @@
 classdef interface
     methods(Static)
         function selection = dropdown(options, title)
-            % Create a GUI figure
+            % DROPDOWN  Create a dropdown menu to select an item from options
             screen_size = get(0, 'ScreenSize');
             fig_width = 300;
             fig_height = 150;
@@ -21,8 +21,8 @@ classdef interface
             selection = '';
             uiwait(fig);
         
-            % Callback function for select button
             function select(~, ~)
+                % SELECT  Store the selected item and close the figure
                 selection = dropdown.Value;
                 uiresume(fig);
                 delete(fig);
@@ -30,6 +30,7 @@ classdef interface
         end
 
         function dynamic_plotting(folder_path, filenames)
+            % DYNAMIC_PLOTTING  Create a GUI for plotting dynamic data
             names = Config.NAMES + " & Position Versus Time";
             options = squeeze(split(strrep(filenames, ".mat", ""), "_"));
         
@@ -73,6 +74,7 @@ classdef interface
             update_plot();
         
             function select(i, src)
+                % SELECT  Update the selection and plot
                 if isa(src, 'matlab.ui.control.DropDown')
                     selection(i) = src.Value;
                 else
@@ -82,7 +84,7 @@ classdef interface
             end
         
             function update_plot()
-                % Clear existing tiles
+                % UPDATE_PLOT  Update the plot based on selected settings
                 delete(t.Children);
 
                 % Load data or return if file does not exist

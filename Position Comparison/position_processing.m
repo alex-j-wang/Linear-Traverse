@@ -62,7 +62,7 @@ for i = 1 : length(filenames)
         title(t, sprintf('Example Plots (A = %g cm, F = %g Hz)', A * 100, F));
 
         nexttile;
-        formatplot('Example Encoder Signal Fit', 'Time (s)', 'Position (cm)');
+        format_plot('Example Encoder Signal Fit', 'Time (s)', 'Position (cm)');
         plot(time, 100 * pos_encoder);
         plot(time, 100 * encoder(time));
         % xlim([0, 5 / F]);
@@ -70,7 +70,7 @@ for i = 1 : length(filenames)
         legend('Encoder', 'Fit');
 
         nexttile;
-        formatplot('Example Target Signal Fit', 'Time (s)', 'Position (cm)');
+        format_plot('Example Target Signal Fit', 'Time (s)', 'Position (cm)');
         plot(time, 100 * pos_target);
         plot(time, 100 * target(time));
         % xlim([0, 5 / F]);
@@ -78,7 +78,7 @@ for i = 1 : length(filenames)
         legend('Target', 'Fit');
 
         nexttile;
-        formatplot('Example Measured Signal Fit', 'Time (s)', 'Position (cm)');
+        format_plot('Example Measured Signal Fit', 'Time (s)', 'Position (cm)');
         plot(time, 100 * pos_measured);
         plot(time, 100 * measured(time));
         % xlim([0, 5 / F]);
@@ -86,7 +86,7 @@ for i = 1 : length(filenames)
         legend('Measured', 'Fit');
 
         nexttile;
-        formatplot('Example Wave Comparison', 'Time (s)', 'Position (cm)');
+        format_plot('Example Wave Comparison', 'Time (s)', 'Position (cm)');
         plot(time, 100 * A * sin(2 * pi * F * time));
         plot(time, 100 * encoder(time));
         plot(time, 100 * target(time));
@@ -119,33 +119,29 @@ for i = 1 : length(AS)
 
     nexttile(t1, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    format_plot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
     plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
 
     nexttile(t1, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
+    format_plot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
     plot(selection.IntendedFrequency, selection.MeasuredAmplitude ./ selection.TargetAmplitude, ".-");
 
     nexttile(t2, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    format_plot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
     plot(selection.IntendedFrequency, abs(selection.EncoderPhase - selection.IntendedPhase), ".-");
 
     nexttile(t2, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
+    format_plot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
     plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, ".-");
 end
 
 function fitresult = fit_sinusoid(x, y, A, F)
-    % Convert to column vectors
+    % FIT_SINUSOID  Fit a sinusoidal model to the data using A and F as starting conditions
     x = x(:);
     y = y(:);
-    
-    % Define the sinusoidal fit type
     ft = fittype('A*sin(2*pi*B*x + C) + D', 'independent', 'x', 'coefficients', {'A', 'B', 'C', 'D'});
-
-    % Fit the model to the data
     fitresult = fit(x, y, ft, 'StartPoint', [A, F, 0, 0]);
 end
