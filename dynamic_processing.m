@@ -67,7 +67,7 @@ for i = 1 : length(filenames)
     end
 
     stacked = pagetranspose(reshape(filtered', 6, phase_width, []));
-    phase_averaged_forces = mean(stacked, 3);
+    total_force = mean(stacked, 3);
     
     % Phase averaged position
     stacked = reshape(pos_encoder, phase_width, []);
@@ -76,10 +76,12 @@ for i = 1 : length(filenames)
     start = strtok(filename, "_");
     key = extractAfter(filename, start);
     if CF == 0   
-        inert(key) = phase_averaged_forces;
+        inert(key) = total_force;
     end
-    forces = phase_averaged_forces - inert(key);
-    time = time(1 : length(forces));
+    intertial_force = inert(key);
+    lift_force = total_force - intertial_force;
+    forces = table(total_force, intertial_force, lift_force, 'VariableNames', Config.FORCES);
+    time = time(1 : length(total_force));
     save(fullfile(processed_folder, filename), 'time', 'forces', 'pos_encoder');
 end
 

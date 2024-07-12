@@ -30,10 +30,7 @@ classdef interface
         end
 
         function dynamic_plotting(folder_path, filenames)
-            NAMES = strcat(Config.NAMES, " & Position Versus Time");
-            W = 0.032 * 9.8;
-            L = 35;
-        
+            names = Config.NAMES + " & Position Versus Time";
             options = squeeze(split(strrep(filenames, ".mat", ""), "_"));
         
             % Create a GUI figure with a grid layout
@@ -47,9 +44,9 @@ classdef interface
             plot_grid.ColumnWidth = {150, '1x'};
         
             % Panel for dropdowns
-            dropdown_panel = uipanel(plot_grid);
-            dropdown_panel.Layout.Row = 1;
-            dropdown_panel.Layout.Column = 1;
+            option_panel = uipanel(plot_grid);
+            option_panel.Layout.Row = 1;
+            option_panel.Layout.Column = 1;
         
             % Panel for plots
             plot_panel = uipanel(plot_grid);
@@ -59,17 +56,28 @@ classdef interface
              % Initialize tiled layout for plots
             t = tiledlayout(plot_panel, 2, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
         
-            selection = options(1, :);
+            selection = [options(1, :)];
             for i = 1:size(options, 2)
                 drop_y = screen_size(4) - 200 - 40 * i;
-                uidropdown(dropdown_panel, 'Position', [10 drop_y 200 30], ...
+                uidropdown(option_panel, 'Position', [10 drop_y 200 30], ...
                     'Items', unique(options(:, i)), ...
+                    'ValueChangedFcn', @(src, ~) select(i, src));
+            end
+            fplots =  true(1, 3);
+            for i = 1:3
+                check_y = drop_y - 35 - 25 * (i - 1);
+                uicheckbox(option_panel, 'Text', Config.FORCES(i) + " Force", ...
+                    'Position', [20 check_y 100 30], 'Value', true, ...
                     'ValueChangedFcn', @(src, ~) select(i, src));
             end
             update_plot();
         
             function select(i, src)
-                selection(i) = src.Value;
+                if isa(src, 'matlab.ui.control.DropDown')
+                    selection(i) = src.Value;
+                else
+                    fplots(i) = src.Value;
+                end
                 update_plot();
             end
         
@@ -82,29 +90,36 @@ classdef interface
                 if ~exist(filename, 'file')
                     return;
                 end
-                load(filename, "time", "forces", "pos_encoder");
+                load(filename, 'time', 'forces', 'pos_encoder');
         
                 for idx = 1:6
                     ax = nexttile(t, idx);
                     if idx <= 3
-                        factor = W;
-                        yl = "Normalized Force (N)";
+                        factor = Config.W;
+                        yl = "Normalized Force";
                     else
-                        factor = W * L;
-                        yl = "Normalized Torque (N)";
+                        factor = Config.W * Config.L;
+                        yl = "Normalized Torque";
                     end
         
                     yyaxis(ax, 'left');
-                    plot(ax, time, forces(:, idx) / factor);
+                    hold(ax, 'on');
+                    for j = 1:3
+                        if fplots(j)
+                            fp = Config.FORCES(j);
+                            plot(ax, time, forces.(fp)(:, i) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                        end
+                    end
                     ylabel(ax, yl);
             
                     yyaxis(ax, 'right');
-                    plot(ax, time, pos_encoder * 100);
+                    plot(ax, time, pos_encoder * 100, 'DisplayName', 'Position', 'LineWidth', 1.5);
                     ylabel(ax, "Position (cm)");
             
-                    title(ax, NAMES(idx));
+                    title(ax, names(idx));
                     xlabel(ax, "Time (s)");
                     grid(ax, 'on');
+                    legend(ax);
                 end
             end
         end

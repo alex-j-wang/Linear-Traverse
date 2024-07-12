@@ -4,6 +4,9 @@
 
 classdef Config
     properties (Constant = true)
+        W = 0.032 * 9.8; % Weight of Crazyflie, N
+        L = 35; % Motor-center distance, mm
+        
         DATA_CYCLES = 20; % Cycles of data for phase averaging
         RAMP_CYCLES = 4; % Cycles for ramping up and down
         TOTAL_CYCLES = Config.DATA_CYCLES + 2 * Config.RAMP_CYCLES; % Total cycles
@@ -22,6 +25,7 @@ classdef Config
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
+        FORCES = ["Total" "Intertial" "Lift"];
         SSH = "anoop@172.18.139.146";
     end
 
