@@ -5,8 +5,8 @@
 clear; clc; close all hidden;
 
 % Test parameters
-AS = 0.025:0.025:0.075; % Traverse amplitude, m
-FS = 0.1:0.3:3;         % Traverse frequency, Hz
+AS = 0.08; % Traverse amplitude, m
+FS = 2;    % Traverse frequency, Hz
 
 % DAQ setup
 daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");

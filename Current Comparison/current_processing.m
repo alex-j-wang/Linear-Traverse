@@ -43,7 +43,7 @@ for i = 1 : length(filenames)
     if F == 0.1 || F == 2.8
         nexttile;
         p_title = sprintf("Current Plots (A = %g cm, F = %g Hz)", A * 100, F);
-        format_plot(p_title, "Time (s)", "Current (A)");
+        Process.format_plot(p_title, "Time (s)", "Current (A)");
         % xlim([0, 5 / F]);
         selection = round(linspace(1, length(curr_target), 1000));
         

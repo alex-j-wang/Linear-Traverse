@@ -5,13 +5,13 @@
 classdef Config
     properties (Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
-        L = 32.5; % Motor-center distance, mm
+        L = 33; % Motor-center distance, mm
         
-        DATA_CYCLES = 20; % Cycles of data for phase averaging
+        DATA_CYCLES = 40; % Cycles of data for phase averaging
         RAMP_CYCLES = 4;  % Cycles for ramping up and down
         TOTAL_CYCLES = Config.DATA_CYCLES + 2 * Config.RAMP_CYCLES; % Total cycles
         
-        OFFSET_DURATION = 1; % Duration for zeroing force transducer, s
+        OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
         SHIFT_SPEED = 0.05;  % m/s
         CAL_SAMPLES = 3000;  % Samples for position calibration
 
@@ -26,7 +26,7 @@ classdef Config
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
         FORCES = ["Total" "Intertial" "Lift"];         % Available force plots
-        SSH = "anoop@172.18.139.146";                  % Linux computer SSH address
+        SSH = "anoop@172.18.139.125";                  % Linux computer SSH address
     end
 
     enumeration
@@ -49,8 +49,13 @@ classdef Config
             for i = 1:6
                 input_channels(i).Name = "ForceSensor" + i;
             end
-            input_channels(7).Name = ch6;
-            input_channels(8).Name = ch7;
+            if nargin == 2
+                input_channels(7).Name = ch6;
+                input_channels(8).Name = ch7;
+            else
+                input_channels(7).Name = "TargetPosition";
+                input_channels(8).Name = "MeasuredPosition";
+            end
 
             % Input channel (position encoder)
             encoder = addinput(daq_obj, "Dev2", "ctr0", "Position");
