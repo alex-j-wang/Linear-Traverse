@@ -34,7 +34,7 @@ pause(1);
 
 % Temporary solution until possible to read multiple scans without writing
 disp("Identifying position.")
-position = get_position(daq_obj);
+position = Process.get_position(daq_obj);
 disp("Position identified as " + position * 100 + " cm.");
 Process.gradual_move(daq_obj, position, 0);
 ground = -input("Enter distance from ground plane (cm): ") / 100;
@@ -103,11 +103,3 @@ d.Value = 1;
 d.Message = message;
 pause(3);
 close(h);
-
-function position = get_position(daq_obj)
-    position = zeros(Config.CAL_SAMPLES, 1);
-    for i = 1 : Config.CAL_SAMPLES
-        position(i) = read(daq_obj).TargetPosition * Config.VTOD;
-    end
-    position = mean(position);
-end

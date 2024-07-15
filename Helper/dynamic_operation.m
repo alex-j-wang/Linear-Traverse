@@ -3,26 +3,26 @@
 % ------------------------------------------------
 
 function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, mode)
-    % Operates traverse and drone based on inputs
+    % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     disp("Zeroing output.");
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
-    tare_inputs = mean(Process.readsigwritepos(daq_obj, tare_output, Config.Position));
+    tare_inputs = mean(Process.conv_readwrite(daq_obj, tare_output, Config.Position));
 
     if CF ~= 0
         disp("Starting Crazyflie.");
-        run_drone(CF);
+        Process.run_drone(CF);
         pause(1);
     end
 
     profile = shift + generate_profile(F, A);
 
     disp("Collecting data.");
-    [data, time] = Process.readsigwritepos(daq_obj, profile, mode);
+    [data, time] = Process.conv_readwrite(daq_obj, profile, mode);
     disp("Data collected.");
     
     if CF ~= 0
         disp("Stopping Crazyflie.")
-        run_drone(0);
+        Process.run_drone(0);
     end
 
     disp("Extracting data.");
@@ -39,7 +39,7 @@ function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift
 end
 
 function position = generate_profile(traverse_freq, amplitude)
-    % Generates a ramping sinusoid based on inputs
+    % GENERATE_PROFILE  Generate a sinusoidal position profile with ramped ends
     duration = Config.TOTAL_CYCLES / traverse_freq;
     pts_per_cycle = 1 / traverse_freq * Config.SRATE;
 
@@ -52,16 +52,4 @@ function position = generate_profile(traverse_freq, amplitude)
     position(1 : pts_ramp + 1) = position(1 : pts_ramp + 1) .* multiplier;
     position(end - pts_ramp : end) = position(end - pts_ramp : end) .* fliplr(multiplier);
     position = position';
-end
-
-function run_drone(throttle)
-    runtime = java.lang.Runtime.getRuntime();
-    process = runtime.exec(sprintf("ssh %s ./throttle.sh %d", Config.SSH, throttle));
-    process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
-    if process.isAlive()
-        process.destroyForcibly();
-        disp("Unable to contact drone. Manually set " + throttle + " throttle.");
-        disp("Press ENTER when ready...");
-        pause();
-    end
 end

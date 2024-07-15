@@ -63,11 +63,11 @@ for i = 1 : length(AS)
 
     nexttile(t, i);
     p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
+    format_plot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
     plot(selection.IntendedFrequency, abs(selection.IntendedPhase - selection.EncoderPhase), ".-");
 
     nexttile(t, length(AS) + i);
     p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    formatplot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
+    format_plot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
     plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, ".-");
 end

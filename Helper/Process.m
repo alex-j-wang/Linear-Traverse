@@ -4,15 +4,8 @@
 
 classdef Process
     methods(Static)
-        function formatplot(p_title, p_x, p_y)
-            title(p_title);
-            xlabel(p_x);
-            ylabel(p_y);
-            hold on
-            grid on
-        end
-        
-        function [data, time] = readsigwritepos(daq_obj, position, mode)
+        function [data, time] = conv_readwrite(daq_obj, position, mode)
+            % CONV_READWRITE  Read signal data and write position data with necessary conversions
             [data, time, ~] = readwrite(daq_obj, position * Config.DTOV, "OutputFormat", "Matrix");
             if mode == Config.Position
                 scale = Config.VTOD;
@@ -24,6 +17,7 @@ classdef Process
         end
 
         function to = gradual_move(daq_obj, from, to)
+            % GRADUAL_MOVE  Gradually move the traverse to a target position
             if from > to + Config.TICKSHIFT
                 gradual_shift = Config.DTOV * (from : -Config.TICKSHIFT : to);
                 disp("Moving to " + to * 100 + " cm.");
@@ -36,8 +30,40 @@ classdef Process
         end
 
         function encoder_pos = encoder_convert(encoder_data)
+            % ENCODER_CONVERT  Convert encoder line counts to position data
             encoder_data = typecast(uint32(encoder_data), 'int32');
             encoder_pos = -double(encoder_data) / Config.LPI * 2.54 / 100;
+        end
+
+        function position = get_position(daq_obj)
+            % GET_POSITION  Estimates the current position of the traverse
+            position = zeros(Config.CAL_SAMPLES, 1);
+            for i = 1 : Config.CAL_SAMPLES
+                position(i) = read(daq_obj).TargetPosition * Config.VTOD;
+            end
+            position = mean(position);
+        end
+
+        function format_plot(p_title, p_x, p_y)
+            % FORMAT_PLOT  Format the plot with title, x-axis, y-axis, and grid
+            title(p_title);
+            xlabel(p_x);
+            ylabel(p_y);
+            hold on
+            grid on
+        end
+        
+        function run_drone(throttle)
+            % RUN_DRONE  Run the drone with a specified throttle and timeout protection
+            runtime = java.lang.Runtime.getRuntime();
+            process = runtime.exec(sprintf("ssh %s ./throttle.sh %d", Config.SSH, throttle));
+            process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
+            if process.isAlive()
+                process.destroyForcibly();
+                disp("Unable to contact drone. Manually set " + throttle + " throttle.");
+                disp("Press ENTER when ready...");
+                pause();
+            end
         end
     end
 end
