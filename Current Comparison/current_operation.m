@@ -12,7 +12,7 @@ FS = 0.1:0.3:3;         % Traverse frequency, Hz
 daq_obj = Config.initialize("CurrentDemand", "CurrentMeasured");
 
 % Load the calibration matrix for the force transducer
-load("cal_FT21128.mat");
+load(['cal_' Config.SENSOR '.mat']);
 
 % Wait for DAQ setup to stabilize
 pause(1);
