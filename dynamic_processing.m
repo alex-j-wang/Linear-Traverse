@@ -47,7 +47,7 @@ for i = 1 : length(filenames)
     [b, a] = butter(6, FC / (Config.SRATE / 2));
     filtered = zeros(size(forces));
     for col = 1:6
-        filtered(:, col) = filtfilt(b, a, forces(:, col));
+        filtered(:, col) = -filtfilt(b, a, forces(:, col));
     end
 
     % Phase averaged forces

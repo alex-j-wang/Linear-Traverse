@@ -109,7 +109,7 @@ classdef interface
                     for j = 1:3
                         if fplots(j)
                             fp = Config.FORCES(j);
-                            plot(ax, time, forces.(fp)(:, i) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                            plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
                         end
                     end
                     ylabel(ax, yl);
