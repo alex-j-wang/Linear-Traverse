@@ -31,6 +31,10 @@ classdef interface
 
         function dynamic_plotting(folder_path, filenames)
             % DYNAMIC_PLOTTING  Create a GUI for plotting dynamic data
+            if nargin == 1
+                items = dir(fullfile(folder_path, "*.mat"));
+                filenames = sort({items.name});
+            end
             names = Config.NAMES + " & Position Versus Time";
             options = squeeze(split(strrep(filenames, ".mat", ""), "_"));
         
