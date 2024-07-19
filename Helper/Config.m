@@ -5,15 +5,15 @@
 classdef Config
     properties (Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
-        L = 33; % Motor-center distance, mm
+        L = 33;          % Motor-center distance, mm
         
         DATA_CYCLES = 40; % Cycles of data for phase averaging
         RAMP_CYCLES = 4;  % Cycles for ramping up and down
         TOTAL_CYCLES = Config.DATA_CYCLES + 2 * Config.RAMP_CYCLES; % Total cycles
         
-        OFFSET_DURATION = 10; % Duration for zeroing force transducer, s
-        SHIFT_SPEED = 0.05;  % m/s
-        CAL_SAMPLES = 3000;  % Samples for position calibration
+        OFFSET_DURATION = 10; % Duration for zeroing force transducer at each end, s
+        SHIFT_SPEED = 0.05;   % Speed while shifting, m/s
+        CAL_SAMPLES = 3000;   % Samples for position calibration
 
         SRATE = 20000;   % Data sampling rate, Hz
         DTOV = 1 / 0.02; % Conversion factor from distance to voltage, V/m
@@ -25,7 +25,7 @@ classdef Config
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
-        FORCES = ["Total" "Intertial" "Lift"];         % Available force plots
+        FORCES = ["Total" "Inertial" "Lift" "Tare"];         % Available force plots
         SSH = "anoop@172.18.137.18";                   % Linux computer SSH address
         SENSOR = 'FT9042';                             % Nano17 serial number
     end

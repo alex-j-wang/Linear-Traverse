@@ -2,11 +2,12 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, cal_mat, mode)
+function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, mode)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
-    disp("Zeroing output.");
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
-    tare_inputs = mean(Process.conv_readwrite(daq_obj, tare_output, Config.Position));
+    disp("Taring output.");
+    tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, Config.Position));
+    tare_start = tare_start(1:6);
 
     if CF ~= 0
         disp("Starting Crazyflie.");
@@ -19,6 +20,10 @@ function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift
     disp("Collecting data.");
     [data, time] = Process.conv_readwrite(daq_obj, profile, mode);
     disp("Data collected.");
+
+    disp("Taring output.");
+    tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, Config.Position));
+    tare_end = tare_end(1:6);
     
     if CF ~= 0
         disp("Stopping Crazyflie.")
@@ -31,8 +36,8 @@ function [time, forces, target, measured, encoder] = dynamic_operation(CF, shift
     data = data(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
 
-    sensor_voltages = data(:, 1:6) - tare_inputs(:, 1:6);
-    forces = (cal_mat * sensor_voltages')'; % Conversion to forces and moments
+    tare_voltages = (tare_start + tare_end) / 2;
+    voltages = data(:, 1:6) - tare_voltages;
     target = data(:, 7);
     measured = data(:, 8);
     encoder = data(:, 9);
