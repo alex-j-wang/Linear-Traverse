@@ -4,7 +4,9 @@
 
 clear; clc; close all hidden;
 
-FC = 20; % Cut-off frequency
+% Load the calibration matrix for the force transducer
+load(['cal_' Config.SENSOR '.mat']);
+
 inert = containers.Map();
 
 items = dir();
@@ -41,12 +43,15 @@ for i = 1 : length(filenames)
     end
     
     load(fullfile(folder, filename));
+    forces = (cal_mat * voltages')'; % Conversion to forces and moments
+    tare_forces = (cal_mat * tare_voltages')'; % Conversion to forces and moments
 
     parameters = num2cell(sscanf(filename, pattern));
     [CF, SD, F, A] = deal(parameters{:});
     SD = SD / 100;
     A = A / 100;
     T = 1 / F;
+    FC = max(10, F * 10);
 
     [b, a] = butter(6, FC / (Config.SRATE / 2));
     filtered = zeros(size(forces));
@@ -86,7 +91,7 @@ for i = 1 : length(filenames)
     lift_force = total_force - intertial_force;
     forces = table(total_force, intertial_force, lift_force, 'VariableNames', Config.FORCES);
     time = time(1 : length(total_force));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'pos_encoder');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'tare_forces', 'pos_encoder');
 end
 
 d.Value = 1;

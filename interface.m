@@ -68,8 +68,8 @@ classdef interface
                     'Items', unique(options(:, i)), ...
                     'ValueChangedFcn', @(src, ~) select(i, src));
             end
-            fplots =  true(1, 3);
-            for i = 1:3
+            fplots = true(1, 4);
+            for i = 1:4
                 check_y = drop_y - 35 - 25 * (i - 1);
                 uicheckbox(option_panel, 'Text', Config.FORCES(i) + " Force", ...
                     'Position', [20 check_y 100 30], 'Value', true, ...
@@ -96,7 +96,7 @@ classdef interface
                 if ~exist(filename, 'file')
                     return;
                 end
-                load(filename, 'time', 'forces', 'pos_encoder');
+                load(filename, 'time', 'forces', 'tare_forces', 'pos_encoder');
         
                 for idx = 1:6
                     ax = nexttile(t, idx);
@@ -110,10 +110,14 @@ classdef interface
         
                     yyaxis(ax, 'left');
                     hold(ax, 'on');
-                    for j = 1:3
+                    for j = 1:4
                         if fplots(j)
                             fp = Config.FORCES(j);
-                            plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                            if j == 4
+                                yline(ax, tare_forces(idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                            else
+                                plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                            end
                         end
                     end
                     ylabel(ax, yl);
