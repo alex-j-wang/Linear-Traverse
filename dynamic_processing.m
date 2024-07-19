@@ -19,10 +19,10 @@ filenames = sort({items.name});
 
 processed_folder = fullfile(folder, 'processed_data');
 if exist(processed_folder, 'dir')
-    disp("Processing may overwrite data. Press ENTER to continue...");
-    pause;
+    reprocess = input("Skip files that have already been converted [y/n]? ", "s") ~= "y";
 else
     mkdir(processed_folder);
+    reprocess = true;
 end
 
 pattern = "CF%d_SD%f_F%f_A%f.mat";
@@ -35,6 +35,10 @@ for i = 1 : length(filenames)
     filename = filenames{i};
     d.Value = (i - 1) / length(filenames);
     d.Message = strrep(filename, '_', ' ');
+    
+    if ~reprocess && isfile(fullfile(processed_folder, filename))
+        continue;
+    end
     
     load(fullfile(folder, filename));
 
