@@ -90,8 +90,9 @@ end
 
 actual_elapsed = seconds(toc);
 actual_elapsed.Format = 'hh:mm:ss';
-message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
+message = sprintf("Estimated time: %s / %s\nElapsed time: %s", est_elapsed, est_time, actual_elapsed);
 d.Value = 1;
 d.Message = message;
+
 pause(3);
 close(h);
