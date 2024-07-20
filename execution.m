@@ -5,7 +5,7 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = [25 50];                           % Crazyflie throttle, %
+CFS = 0; % Crazyflie throttle, %
 SDS = [0.005 0.01 0.02 0.025 0.03 0.05]; % Stopping distance, m
 FS = [0.2 0.5 1 1.5 2];                  % Traverse frequency, Hz
 AS = [0.025 0.05 0.08];                  % Traverse amplitude, m
@@ -35,6 +35,8 @@ if input("Is traverse at home position [y/n]? ", "s") ~= "y"
     position = Process.get_position(daq_obj);
     disp("Position identified as " + position * 100 + " cm.");
     Process.gradual_move(daq_obj, position, 0);
+else
+    write(daq_obj, 0);
 end
 ground = -input("Enter distance from ground plane (cm): ") / 100;
 
