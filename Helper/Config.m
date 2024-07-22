@@ -25,7 +25,7 @@ classdef Config
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
-        FORCES = ["Total" "Inertial" "Lift" "Tare"];         % Available force plots
+        FORCES = ["Total" "Inertial" "Lift" "Tare"];   % Available force plots
         SSH = "anoop@172.18.137.18";                   % Linux computer SSH address
         SENSOR = 'FT9042';                             % Nano17 serial number
     end

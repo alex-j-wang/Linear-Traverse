@@ -5,7 +5,7 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = 0; % Crazyflie throttle, %
+CFS = 0;                                 % Crazyflie throttle, %
 SDS = [0.005 0.01 0.02 0.025 0.03 0.05]; % Stopping distance, m
 FS = [0.2 0.5 1 1.5 2];                  % Traverse frequency, Hz
 AS = [0.025 0.05 0.08];                  % Traverse amplitude, m
@@ -43,7 +43,7 @@ ground = position - input("Enter distance from ground plane (cm): ") / 100;
 disp("Calibrating encoder.");
 [position, encoder] = Process.gradual_move(daq_obj, position, 0.1);
 lpi = abs(range(encoder)) / (0.2 * 100 / 2.54);
-disp("Encoder calibrated at " + lpi + " lines per inch.");
+disp("Encoder calibrated at " + round(lpi) + " lines per inch.");
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
     (Config.TOTAL_CYCLES * sum(1 ./ FS) + 2 * Config.OFFSET_DURATION * length(FS)));
