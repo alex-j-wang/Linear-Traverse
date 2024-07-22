@@ -51,7 +51,7 @@ for i = 1 : length(filenames)
     SD = SD / 100;
     A = A / 100;
     T = 1 / F;
-    FC = max(10, F * 10);
+    FC = Config.FCM * F;
 
     [b, a] = butter(6, FC / (Config.SRATE / 2));
     filtered = zeros(size(forces));
@@ -89,7 +89,7 @@ for i = 1 : length(filenames)
     end
     intertial_force = inert(key);
     lift_force = total_force - intertial_force;
-    forces = table(total_force, intertial_force, lift_force, 'VariableNames', Config.FORCES);
+    forces = table(total_force, intertial_force, lift_force, 'VariableNames', Config.FORCES(1:3));
     time = time(1 : length(total_force));
     save(fullfile(processed_folder, filename), 'time', 'forces', 'tare_forces', 'pos_encoder');
 end

@@ -65,7 +65,7 @@ for CF = CFS
                 actual_elapsed.Format = 'hh:mm:ss';
                 est_remaining = est_time - est_elapsed;
                 est_remaining.Format = 'hh:mm:ss';
-                message = sprintf("Estimated time: %s / %s (%s left)\nElapsed time: %s\nCase: %s", ...
+                message = sprintf("Estimated time: %s / %s (%sR)\nElapsed time: %s\nCase: %s", ...
                     est_elapsed, est_time, est_remaining, actual_elapsed, strrep(case_name, '_', ' '));
                 d.Value = est_elapsed / est_time;
                 d.Message = message;
