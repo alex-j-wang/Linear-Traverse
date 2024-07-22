@@ -44,7 +44,7 @@ for A = AS
 
         % Gather data
         [time, ~, pos_target, pos_measured, pos_encoder] = ...
-            dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.Position);
+            dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.LPI, Config.Position);
 
         % Save data
         filename = fullfile("Position Data", case_name + '.mat');

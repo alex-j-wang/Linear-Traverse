@@ -44,7 +44,7 @@ for A = AS
 
         % Gather data
         [time, ~, curr_target, curr_measured] = ...
-            dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.Current);
+            dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.LPI, Config.Current);
 
         % Save data
         filename = fullfile("Current Data", case_name + '.mat');

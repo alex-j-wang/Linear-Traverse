@@ -4,7 +4,7 @@
 
 classdef Process
     methods(Static)
-        function [data, time] = conv_readwrite(daq_obj, position, mode)
+        function [data, time] = conv_readwrite(daq_obj, position, lpi, mode)
             % CONV_READWRITE  Read signal data and write position data with necessary conversions
             [data, time, ~] = readwrite(daq_obj, position * Config.DTOV, "OutputFormat", "Matrix");
             if mode == Config.Position
@@ -13,26 +13,28 @@ classdef Process
                 scale = Config.VTOI;
             end
             data(:, 7:8) = data(:, 7:8) * scale;
-            data(:, 9) = Process.encoder_convert(data(:, 9));
+            data(:, 9) = Process.encoder_convert(data(:, 9), lpi);
         end
 
-        function to = gradual_move(daq_obj, from, to)
+        function [to, encoder] = gradual_move(daq_obj, from, to)
             % GRADUAL_MOVE  Gradually move the traverse to a target position
             if from > to + Config.TICKSHIFT
-                gradual_shift = Config.DTOV * (from : -Config.TICKSHIFT : to);
+                gradual_shift = from : -Config.TICKSHIFT : to;
                 disp("Moving to " + to * 100 + " cm.");
-                readwrite(daq_obj, gradual_shift');
+                data = readwrite(daq_obj, gradual_shift' * Config.DTOV, "OutputFormat", "Matrix");
+                encoder = typecast(uint32(data(:, 9)), 'int32');
             elseif from < to - Config.TICKSHIFT
                 gradual_shift = Config.DTOV * (from : +Config.TICKSHIFT : to);
                 disp("Moving to " + to * 100 + " cm.");
-                readwrite(daq_obj, gradual_shift');
+                data = readwrite(daq_obj, gradual_shift' * Config.DTOV, "OutputFormat", "Matrix");
+                encoder = typecast(uint32(data(:, 9)), 'int32');
             end
         end
 
-        function encoder_pos = encoder_convert(encoder_data)
+        function encoder_pos = encoder_convert(encoder_data, lpi)
             % ENCODER_CONVERT  Convert encoder line counts to position data
             encoder_data = typecast(uint32(encoder_data), 'int32');
-            encoder_pos = -double(encoder_data) / Config.LPI * 2.54 / 100;
+            encoder_pos = -double(encoder_data) / lpi * 2.54 / 100;
         end
 
         function position = get_position(daq_obj)

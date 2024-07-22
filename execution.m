@@ -34,11 +34,16 @@ if input("Is traverse at home position [y/n]? ", "s") ~= "y"
     disp("Identifying position.")
     position = Process.get_position(daq_obj);
     disp("Position identified as " + position * 100 + " cm.");
-    Process.gradual_move(daq_obj, position, 0);
-else
-    write(daq_obj, 0);
+    position = Process.gradual_move(daq_obj, position, 0);
 end
-ground = -input("Enter distance from ground plane (cm): ") / 100;
+position = Process.gradual_move(daq_obj, position, -0.1);
+ground = position - input("Enter distance from ground plane (cm): ") / 100;
+
+% Encoder calibration
+disp("Calibrating encoder.");
+[position, encoder] = Process.gradual_move(daq_obj, position, 0.1);
+lpi = abs(range(encoder)) / (0.2 * 100 / 2.54);
+disp("Encoder calibrated at " + lpi + " lines per inch.");
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
     (Config.TOTAL_CYCLES * sum(1 ./ FS) + 2 * Config.OFFSET_DURATION * length(FS)));
@@ -50,7 +55,6 @@ est_elapsed.Format = 'hh:mm:ss';
 h = uifigure('Name', 'Dynamic Testing');
 d = uiprogressdlg(h, 'Title', 'Dynamic Testing');
 
-position = 0;
 tic
 
 % ACQUIRE DATA
@@ -77,7 +81,7 @@ for CF = CFS
 
                 % Gather data
                 [time, voltages, tare_voltages, ~, ~, pos_encoder] = ...
-                    dynamic_operation(CF, shift, F, A, daq_obj, Config.Position);
+                    dynamic_operation(CF, shift, F, A, daq_obj, lpi, Config.Position);
 
                 % Save data
                 filename = fullfile(date_string, case_name + '.mat');
