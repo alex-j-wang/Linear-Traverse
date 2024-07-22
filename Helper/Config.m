@@ -21,12 +21,12 @@ classdef Config
         VTOD = 0.02;     % Conversion factor from voltage to distance, m/V
         VTOI = 0.25;     % Conversion factor from voltage to current, A/V
         
-        LPI = 3933.571; % Encoder lines per inch
+        LPI = 3933.571; % Approximate encoder lines per inch
         NBITS = 32;     % Encoder channel resolution
 
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
-        FORCES = ["Total" "Inertial" "Lift" "Tare"];         % Available force plots
+        FORCES = ["Total" "Inertial" "Lift" "Tare"];   % Available force plots
         SSH = "anoop@172.18.137.18";                   % Linux computer SSH address
         SENSOR = 'FT9042';                             % Nano17 serial number
     end

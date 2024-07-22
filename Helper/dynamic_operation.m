@@ -2,11 +2,11 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, mode)
+function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, mode)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp("Taring output.");
-    tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, Config.Position));
+    tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
     tare_start = tare_start(1:6);
 
     if CF ~= 0
@@ -18,11 +18,11 @@ function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_op
     profile = shift + generate_profile(F, A);
 
     disp("Collecting data.");
-    [data, time] = Process.conv_readwrite(daq_obj, profile, mode);
+    [data, time] = Process.conv_readwrite(daq_obj, profile, lpi, mode);
     disp("Data collected.");
 
     disp("Taring output.");
-    tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, Config.Position));
+    tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
     tare_end = tare_end(1:6);
     
     if CF ~= 0
