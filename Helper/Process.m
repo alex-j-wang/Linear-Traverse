@@ -6,7 +6,7 @@ classdef Process
     methods(Static)
         function [data, time] = conv_readwrite(daq_obj, position, lpi, mode)
             % CONV_READWRITE  Read signal data and write position data with necessary conversions
-            [data, time, ~] = readwrite(daq_obj, position * Config.DTOV, "OutputFormat", "Matrix");
+            [data, time] = readwrite(daq_obj, position * Config.DTOV, "OutputFormat", "Matrix");
             if mode == Config.Position
                 scale = Config.VTOD;
             else
