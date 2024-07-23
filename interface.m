@@ -14,7 +14,7 @@ classdef interface
             fig = uifigure('Name', title, 'Position', [fig_x, fig_y, fig_width, fig_height], ...
                            'CloseRequestFcn', @select);
         
-            % Create dropdown menu and button
+            % Dropdown menu and button
             dropdown = uidropdown(fig, 'Items', options, 'Position', [50, 80, 200, 30]);
             uibutton(fig, 'Text', 'Select', 'Position', [100, 30, 100, 30], 'ButtonPushedFcn', @select);
         
@@ -38,12 +38,12 @@ classdef interface
             names = Config.NAMES + " & Position Versus Time";
             options = squeeze(split(strrep(filenames, ".mat", ""), "_"));
         
-            % Create a GUI figure with a grid layout
+            % GUI figure
             screen_size = get(0, 'ScreenSize');
             fig = uifigure('Name', 'Dynamic Lift Force Plotting', ...
                 'Position', [0 0 screen_size(3) screen_size(4)]);
         
-            % Create a grid layout
+            % Grid layout
             plot_grid = uigridlayout(fig, [1, 2]);
             plot_grid.RowHeight = {'1x'};
             plot_grid.ColumnWidth = {150, '1x'};
@@ -58,7 +58,7 @@ classdef interface
             plot_panel.Layout.Row = 1;
             plot_panel.Layout.Column = 2;
 
-             % Initialize tiled layout for plots
+             % Tiled layout for plots
             t = tiledlayout(plot_panel, 2, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
         
             % Parameter dropdown menus
@@ -74,7 +74,7 @@ classdef interface
                     'ValueChangedFcn', @(src, ~) select(i, src));
             end
             
-            %  Plot configuration checkboxes
+            % Plot configuration checkboxes
             plot_config = [true(1, 4) false(1, 2)];
             y = y - 10;
             for i = 1:6

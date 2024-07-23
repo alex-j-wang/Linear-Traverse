@@ -64,7 +64,7 @@ classdef Process
                 process.destroyForcibly();
                 disp("Unable to contact drone. Manually set " + throttle + " throttle.");
                 disp("Press ENTER when ready...");
-                pause();
+                pause;
             end
         end
     end
