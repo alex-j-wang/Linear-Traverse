@@ -24,7 +24,7 @@ classdef Process
                 data = readwrite(daq_obj, gradual_shift' * Config.DTOV, "OutputFormat", "Matrix");
                 encoder = typecast(uint32(data(:, 9)), 'int32');
             elseif from < to - Config.TICKSHIFT
-                gradual_shift = Config.DTOV * (from : +Config.TICKSHIFT : to);
+                gradual_shift = from : +Config.TICKSHIFT : to;
                 disp("Moving to " + to * 100 + " cm.");
                 data = readwrite(daq_obj, gradual_shift' * Config.DTOV, "OutputFormat", "Matrix");
                 encoder = typecast(uint32(data(:, 9)), 'int32');

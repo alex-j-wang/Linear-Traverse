@@ -21,15 +21,16 @@ function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_op
     [data, time] = Process.conv_readwrite(daq_obj, profile, lpi, mode);
     disp("Data collected.");
 
+    if CF ~= 0
+        disp("Stopping Crazyflie.")
+        Process.run_drone(0);
+        pause(3)
+    end
+
     disp("Taring output.");
     tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
     tare_end = tare_end(1:6);
     
-    if CF ~= 0
-        disp("Stopping Crazyflie.")
-        Process.run_drone(0);
-    end
-
     disp("Extracting data.");
     row_start = floor(Config.RAMP_CYCLES / F * Config.SRATE) + 1;
     rows = floor(Config.DATA_CYCLES / F * Config.SRATE);

@@ -35,6 +35,8 @@ if input("Is traverse at home position [y/n]? ", "s") ~= "y"
     position = Process.get_position(daq_obj);
     disp("Position identified as " + position * 100 + " cm.");
     position = Process.gradual_move(daq_obj, position, 0);
+else
+    position = 0;
 end
 position = Process.gradual_move(daq_obj, position, -0.1);
 ground = position - input("Enter distance from ground plane (cm): ") / 100;
@@ -42,7 +44,7 @@ ground = position - input("Enter distance from ground plane (cm): ") / 100;
 % Encoder calibration
 disp("Calibrating encoder.");
 [position, encoder] = Process.gradual_move(daq_obj, position, 0.1);
-lpi = abs(range(encoder)) / (0.2 * 100 / 2.54);
+lpi = double(encoder(1) - encoder(end)) / (0.2 * 100 / 2.54);
 disp("Encoder calibrated at " + round(lpi) + " lines per inch.");
 
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
