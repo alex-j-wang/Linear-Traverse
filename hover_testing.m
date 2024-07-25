@@ -3,7 +3,7 @@ clear; clc; close all hidden;
 % Load the calibration matrix for the force transducer
 load(['cal_' Config.SENSOR '.mat']);
 
-disp("Ensure traverse is at home position. Press ENTER to continue...");
+disp("Ensure traverse is disabled. Press ENTER to continue...");
 pause;
 
 % DAQ setup
@@ -11,11 +11,11 @@ daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
 
 tare_output = zeros(Config.OFFSET_DURATION * Config.SRATE, 1);
 disp("Taring output.");
-tare_voltages = mean(readwrite(daq_obj, profile, "OutputFormat", "Matrix"));
+tare_voltages = mean(readwrite(daq_obj, tare_output, "OutputFormat", "Matrix"));
 tare_voltages = tare_voltages(1:6);
 
-throttles = 0:5:75;
-forces_z = zeros(1, length(throttles));
+throttles = 0:5:100;
+all_forces = zeros(length(throttles), 6);
 idx = 1;
 
 for CF = throttles
@@ -33,12 +33,14 @@ for CF = throttles
 
     voltages = data(:, 1:6) - tare_voltages;
     forces = (cal_mat * voltages')'; % Conversion to forces and moments
-    forces_z(idx) = mean(forces(:, 3));
+    all_forces(idx, :) = mean(forces(:, 3));
     idx = idx + 1;
 end
 
 disp("Stopping Crazyflie.");
 Process.run_drone(0);
 
-Process.format_plot("Normalized Force vs. Throttle", "Throttle (%)", "Normalized Force");
-plot(throttles, forces_z / Config.W);
+Process.format_plot("Normalized Force & Torque vs. Throttle", "Throttle (%)", "Normalized Force & Torque");
+plot(throttles, all_forces(:, 1:3) / Config.W);
+plot(throttles, all_forces(:, 4:6) / Config.W / Config.L);
+legend(Config.NAMES);

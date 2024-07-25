@@ -58,7 +58,7 @@ classdef Process
         function run_drone(throttle)
             % RUN_DRONE  Run the drone with a specified throttle and timeout protection
             runtime = java.lang.Runtime.getRuntime();
-            process = runtime.exec(sprintf("ssh %s ./throttle.sh %d", Config.SSH, throttle));
+            process = runtime.exec(sprintf("ssh %s ./throttle.sh %g", Config.SSH, throttle));
             process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
             if process.isAlive()
                 process.destroyForcibly();

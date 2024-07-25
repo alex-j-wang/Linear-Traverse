@@ -5,14 +5,14 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = 0;                                 % Crazyflie throttle, %
-SDS = [0.005 0.01 0.02 0.025 0.03 0.05]; % Stopping distance, m
-FS = [0.2 0.5 1 1.5 2];                  % Traverse frequency, Hz
-AS = [0.025 0.05 0.08];                  % Traverse amplitude, m
-% CFS = [0 75]; % Crazyflie throttle, %
-% SDS = 0.01; % Stopping distance, m
-% FS = 1; % Traverse frequency, Hz
-% AS = 0.05; % Traverse amplitude, m
+CFS = [0 25 55.5588 75]; % Crazyflie throttle, %
+SDS = [0.005 0.07];      % Stopping distance, m
+FS = [0.2 0.5 1 1.5 2];  % Traverse frequency, Hz
+AS = [0.025 0.05 0.07];  % Traverse amplitude, m
+% CFS = [0 75];        % Crazyflie throttle, %
+% SDS = [0.005 0.07];  % Stopping distance, m
+% FS = 2;              % Traverse frequency, Hz
+% AS = 0.07;           % Traverse amplitude, m
 
 % DAQ setup
 daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
