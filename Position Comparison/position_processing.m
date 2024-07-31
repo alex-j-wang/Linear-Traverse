@@ -7,11 +7,9 @@ clear; clc; close all hidden;
 screen_size = get(0, 'ScreenSize');
 fig_position = [0, screen_size(4) - 400, screen_size(3), 400];
 
-folder = "Position Data";
-items = dir(fullfile(folder, "*.mat"));
+folder = 'Position Data';
+items = dir(fullfile(folder, '*.mat'));
 filenames = sort({items.name});
-
-pattern = "F%f_A%f.mat";
 
 % Create progess bar
 fig = uifigure('Name', 'Position Comparison');
@@ -29,7 +27,7 @@ for i = 1 : length(filenames)
     d.Value = (i - 1) / length(filenames);
     d.Message = strrep(filename, '_', ' ');
 
-    parameters = num2cell(sscanf(filename, pattern));
+    parameters = num2cell(sscanf(filename, 'F%f_A%f.mat'));
     [F, A] = deal(parameters{:});
     A = A / 100;
 
@@ -100,7 +98,7 @@ end
 disp('All files processed');
 close(fig);
 
-data = sortrows(data, ["IntendedAmplitude", "IntendedFrequency"]);
+data = sortrows(data, ["IntendedAmplitude" "IntendedFrequency"]);
 writetable(data, fullfile(folder, 'results.csv'));
 
 % Create Bode plots
@@ -118,24 +116,24 @@ for i = 1 : length(AS)
     selection = data(data.IntendedAmplitude == A, :);
 
     nexttile(t1, i);
-    p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
-    Process.format_plot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), ".-");
+    p_title = sprintf('Phase Lag Versus Input Frequency (A = %g cm)', A * 100);
+    Process.format_plot(p_title, 'Input Frequency (Hz)', 'Phase Lag (rad)');
+    plot(selection.IntendedFrequency, abs(selection.TargetPhase - selection.MeasuredPhase), '.-');
 
     nexttile(t1, length(AS) + i);
-    p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    Process.format_plot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Measured : Target)");
-    plot(selection.IntendedFrequency, selection.MeasuredAmplitude ./ selection.TargetAmplitude, ".-");
+    p_title = sprintf('Amplitude Ratio Versus Input Frequency (A = %g cm)', A * 100);
+    Process.format_plot(p_title, 'Input Frequency (Hz)', 'Amplitude Ratio (Measured : Target)');
+    plot(selection.IntendedFrequency, selection.MeasuredAmplitude ./ selection.TargetAmplitude, '.-');
 
     nexttile(t2, i);
-    p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
-    Process.format_plot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    plot(selection.IntendedFrequency, abs(selection.EncoderPhase - selection.IntendedPhase), ".-");
+    p_title = sprintf('Phase Lag Versus Input Frequency (A = %g cm)', A * 100);
+    Process.format_plot(p_title, 'Input Frequency (Hz)', 'Phase Lag (rad)');
+    plot(selection.IntendedFrequency, abs(selection.EncoderPhase - selection.IntendedPhase), '.-');
 
     nexttile(t2, length(AS) + i);
-    p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    Process.format_plot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
-    plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, ".-");
+    p_title = sprintf('Amplitude Ratio Versus Input Frequency (A = %g cm)', A * 100);
+    Process.format_plot(p_title, 'Input Frequency (Hz)', 'Amplitude Ratio (Encoder : Intended)');
+    plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, '.-');
 end
 
 function fitresult = fit_sinusoid(x, y, A, F)

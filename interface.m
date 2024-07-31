@@ -32,11 +32,11 @@ classdef interface
         function dynamic_plotting(folder_path, filenames)
             % DYNAMIC_PLOTTING  Create a GUI for plotting dynamic data
             if nargin == 1
-                items = dir(fullfile(folder_path, "*.mat"));
+                items = dir(fullfile(folder_path, '*.mat'));
                 filenames = sort({items.name});
             end
-            names = Config.NAMES + " & Position Versus Time";
-            options = squeeze(split(strrep(filenames, ".mat", ""), "_"));
+            names = Config.NAMES + ' & Position Versus Time';
+            options = squeeze(split(strrep(filenames, '.mat', ''), '_'));
         
             % GUI figure
             screen_size = get(0, 'ScreenSize');
@@ -117,7 +117,7 @@ classdef interface
                 delete(t.Children);
 
                 % Load data or return if file does not exist
-                filename = fullfile(folder_path, strjoin(selection, "_") + ".mat");
+                filename = fullfile(folder_path, strjoin(selection, '_') + ".mat");
                 if ~exist(filename, 'file')
                     return;
                 end
@@ -127,15 +127,15 @@ classdef interface
                     ax = nexttile(t, idx);
                     if idx <= 3
                         factor = Config.W;
-                        yl = "Normalized Force";
+                        yl = 'Normalized Force';
                     else
                         factor = Config.W * Config.L;
-                        yl = "Normalized Torque";
+                        yl = 'Normalized Torque';
                     end
         
                     yyaxis(ax, 'right');
                     plot(ax, time, pos_encoder * 100, 'DisplayName', 'Position', 'LineWidth', 1.5);
-                    ylabel(ax, "Position (cm)");
+                    ylabel(ax, 'Position (cm)');
             
                     yyaxis(ax, 'left');
                     hold(ax, 'on');
@@ -156,7 +156,7 @@ classdef interface
                     end
             
                     title(ax, names(idx));
-                    xlabel(ax, "Time (s)");
+                    xlabel(ax, 'Time (s)');
                     grid(ax, 'on');
                     legend(ax);
                 end

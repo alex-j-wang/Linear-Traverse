@@ -4,11 +4,9 @@
 
 clear; clc; close all hidden;
 
-folder = "Current Data";
-items = dir(fullfile(folder, "*.mat"));
+folder = 'Current Data';
+items = dir(fullfile(folder, '*.mat'));
 filenames = sort({items.name});
-
-pattern = "F%f_A%f.mat";
 
 % Create progess bar
 fig = uifigure('Name', 'Current Comparison');
@@ -27,7 +25,7 @@ for i = 1 : length(filenames)
     d.Value = (i - 1) / length(filenames);
     d.Message = strrep(filename, '_', ' ');
 
-    parameters = num2cell(sscanf(filename, pattern));
+    parameters = num2cell(sscanf(filename, 'F%f_A%f.mat'));
     [F, A] = deal(parameters{:});
     A = A / 100;
 
@@ -42,8 +40,8 @@ for i = 1 : length(filenames)
     % Plot examples
     if F == 0.1 || F == 2.8
         nexttile;
-        p_title = sprintf("Current Plots (A = %g cm, F = %g Hz)", A * 100, F);
-        Process.format_plot(p_title, "Time (s)", "Current (A)");
+        p_title = sprintf('Current Plots (A = %g cm, F = %g Hz)', A * 100, F);
+        Process.format_plot(p_title, 'Time (s)', 'Current (A)');
         % xlim([0, 5 / F]);
         selection = round(linspace(1, length(curr_target), 1000));
         
@@ -51,12 +49,12 @@ for i = 1 : length(filenames)
         l2 = patch([time(selection); nan], [curr_measured(selection); nan], 'b');
         set(l1, 'EdgeColor', 'r', 'EdgeAlpha', 0.2);
         set(l2, 'EdgeColor', 'b', 'EdgeAlpha', 0.2);
-        legend("Demanded", "Measured");
+        legend('Demanded', 'Measured');
     end
 end
 
 disp('All files processed');
 close(fig);
 
-data = sortrows(data, ["IntendedAmplitude", "IntendedFrequency"]);
+data = sortrows(data, ["IntendedAmplitude" "IntendedFrequency"]);
 writetable(data, fullfile(folder, 'results.csv'));

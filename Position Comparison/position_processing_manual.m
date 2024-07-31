@@ -4,11 +4,9 @@
 
 clear; clc; close all hidden;
 
-folder = "Position Data";
-items = dir(fullfile(folder, "*.mat"));
+folder = 'Position Data';
+items = dir(fullfile(folder, '*.mat'));
 filenames = sort({items.name});
-
-pattern = "F%f_A%f.mat";
 
 % Create progess bar
 fig = uifigure('Name', 'Position Comparison');
@@ -26,7 +24,7 @@ for i = 1 : length(filenames)
     d.Value = (i - 1) / length(filenames);
     d.Message = strrep(filename, '_', ' ');
 
-    parameters = num2cell(sscanf(filename, pattern));
+    parameters = num2cell(sscanf(filename, 'F%f_A%f.mat'));
     [F, A] = deal(parameters{:});
     A = A / 100;
 
@@ -49,7 +47,7 @@ end
 disp('All files processed');
 close(fig);
 
-data = sortrows(data, ["IntendedAmplitude", "IntendedFrequency"]);
+data = sortrows(data, ["IntendedAmplitude" "IntendedFrequency"]);
 writetable(data, fullfile(folder, 'results_manual.csv'));
 
 % Create plots
@@ -62,12 +60,12 @@ for i = 1 : length(AS)
     selection = data(data.IntendedAmplitude == A, :);
 
     nexttile(t, i);
-    p_title = sprintf("Phase Lag Versus Input Frequency (A = %g cm)", A * 100);
-    Process.format_plot(p_title, "Input Frequency (Hz)", "Phase Lag (rad)");
-    plot(selection.IntendedFrequency, abs(selection.IntendedPhase - selection.EncoderPhase), ".-");
+    p_title = sprintf('Phase Lag Versus Input Frequency (A = %g cm)', A * 100);
+    Process.format_plot(p_title, 'Input Frequency (Hz)', 'Phase Lag (rad)');
+    plot(selection.IntendedFrequency, abs(selection.IntendedPhase - selection.EncoderPhase), '.-');
 
     nexttile(t, length(AS) + i);
-    p_title = sprintf("Amplitude Ratio Versus Input Frequency (A = %g cm)", A * 100);
-    Process.format_plot(p_title, "Input Frequency (Hz)", "Amplitude Ratio (Encoder : Intended)");
-    plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, ".-");
+    p_title = sprintf('Amplitude Ratio Versus Input Frequency (A = %g cm)', A * 100);
+    Process.format_plot(p_title, 'Input Frequency (Hz)', 'Amplitude Ratio (Encoder : Intended)');
+    plot(selection.IntendedFrequency, selection.EncoderAmplitude ./ selection.IntendedAmplitude, '.-');
 end

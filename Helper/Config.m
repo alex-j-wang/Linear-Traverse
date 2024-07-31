@@ -27,27 +27,27 @@ classdef Config
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE;                % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];                % Labels for plots and outputs
         BOXES = ["Total" "Inertial" "Lift" "Tare" "Lock" "Equalize"]; % Available force plots
-        SSH = "anoop@172.18.136.241";                                 % Linux computer SSH address
+        SSH = 'anoop@172.18.136.241';                                 % Linux computer SSH address
         SENSOR = 'FT9042';                                            % Nano17 serial number
     end
 
     enumeration
-        Position, Current
+        Position, Current % Modes for voltage conversion
     end
 
     methods(Static)
         function daq_obj = initialize(ch6, ch7)
             % INITIALIZE  Initialize a DAQ object with input and output channels
-            disp("Setting up DAQ.");
-            daq_obj = daq("ni");
+            disp('Setting up DAQ.');
+            daq_obj = daq('ni');
             daq_obj.Rate = Config.SRATE;
             
             % Output channel (motor voltage)
-            output = addoutput(daq_obj, "Dev2", "ao0", "Voltage");
-            output.Name = "voutput";
+            output = addoutput(daq_obj, 'Dev2', 'ao0', 'Voltage');
+            output.Name = 'voutput';
             
             % Input channels (force sensor and position)
-            input_channels = addinput(daq_obj, "Dev2", 0:7, "Voltage");
+            input_channels = addinput(daq_obj, 'Dev2', 0:7, 'Voltage');
             for i = 1:6
                 input_channels(i).Name = "ForceSensor" + i;
             end
@@ -55,15 +55,15 @@ classdef Config
                 input_channels(7).Name = ch6;
                 input_channels(8).Name = ch7;
             else
-                input_channels(7).Name = "TargetPosition";
-                input_channels(8).Name = "MeasuredPosition";
+                input_channels(7).Name = 'TargetPosition';
+                input_channels(8).Name = 'MeasuredPosition';
             end
 
             % Input channel (position encoder)
-            encoder = addinput(daq_obj, "Dev2", "ctr0", "Position");
-            encoder.EncoderType = "X4";
+            encoder = addinput(daq_obj, 'Dev2', 'ctr0', 'Position');
+            encoder.EncoderType = 'X4';
             encoder.ZResetEnable = 0;
-            encoder.ZResetCondition = "BothLow";
+            encoder.ZResetCondition = 'BothLow';
             encoder.ZResetValue = 0;
             encoder.Name = 'Encoder';
         end

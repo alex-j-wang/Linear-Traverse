@@ -9,7 +9,7 @@ AS = 0.08; % Traverse amplitude, m
 FS = 2;    % Traverse frequency, Hz
 
 % DAQ setup
-daq_obj = Config.initialize("TargetPosition", "MeasuredPosition");
+daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
 
 % Load the calibration matrix for the force transducer
 load(['cal_' Config.SENSOR '.mat']);
@@ -25,19 +25,19 @@ est_elapsed.Format = 'hh:mm:ss';
 % Create waitbar
 h = uifigure('Name', 'Position Testing');
 d = uiprogressdlg(h, 'Title', 'Position Testing', 'Indeterminate', 'on');
-input("Ensure Driveware inputs are configured for position. Press Enter to continue.")
+input('Ensure Driveware inputs are configured for position. Press Enter to continue.')
 d.Indeterminate = 'off';
 tic
 
-% ACQUIRE DATA
+% Acquire data
 for A = AS        
     for F = FS
-        case_name = sprintf("F%g_A%g", F, A * 100);
-        disp("Running <strong>" + strrep(case_name, '_', ' ') + "</strong>.");
+        case_name = sprintf('F%g_A%g', F, A * 100);
+        disp(['Running <strong>' strrep(case_name, '_', ' ') '</strong>.']);
 
         actual_elapsed = seconds(toc);
         actual_elapsed.Format = 'hh:mm:ss';
-        message = sprintf("Estimated execution time: %s\nElapsed time: %s\nCase: %s", ...
+        message = sprintf('Estimated execution time: %s\nElapsed time: %s\nCase: %s', ...
             est_time, actual_elapsed, strrep(case_name, '_', ' '));
         d.Value = est_elapsed / est_time;
         d.Message = message;
@@ -47,9 +47,9 @@ for A = AS
             dynamic_operation(0, 0, F, A, daq_obj, cal_mat, Config.LPI, Config.Position);
 
         % Save data
-        filename = fullfile("Position Data", case_name + '.mat');
-        save(filename, "time", "pos_target", "pos_measured", "pos_encoder");
-        disp("Data saved to " + filename + ".");
+        filename = fullfile('Position Data', [case_name '.mat']);
+        save(filename, 'time', 'pos_target', 'pos_measured', 'pos_encoder');
+        disp(['Data saved to ' filename '.']);
 
         est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F));
     end
@@ -57,7 +57,7 @@ end
 
 actual_elapsed = seconds(toc);
 actual_elapsed.Format = 'hh:mm:ss';
-message = sprintf("Estimated execution time: %s\nElapsed time: %s", est_time, actual_elapsed);
+message = sprintf('Estimated execution time: %s\nElapsed time: %s', est_time, actual_elapsed);
 d.Value = 1;
 d.Message = message;
 pause(3);

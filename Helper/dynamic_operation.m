@@ -5,33 +5,33 @@
 function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, mode)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
-    disp("Taring output.");
+    disp('Taring output.');
     tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
     tare_start = tare_start(1:6);
 
     if CF ~= 0
-        disp("Starting Crazyflie.");
+        disp('Starting Crazyflie.');
         Process.run_drone(CF);
         pause(1);
     end
 
     profile = shift + generate_profile(F, A);
 
-    disp("Collecting data.");
+    disp('Collecting data.');
     [data, time] = Process.conv_readwrite(daq_obj, profile, lpi, mode);
-    disp("Data collected.");
+    disp('Data collected.');
 
     if CF ~= 0
-        disp("Stopping Crazyflie.")
+        disp('Stopping Crazyflie.')
         Process.run_drone(0);
         pause(3)
     end
 
-    disp("Taring output.");
+    disp('Taring output.');
     tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
     tare_end = tare_end(1:6);
     
-    disp("Extracting data.");
+    disp('Extracting data.');
     row_start = floor(Config.RAMP_CYCLES / F * Config.SRATE) + 1;
     rows = floor(Config.DATA_CYCLES / F * Config.SRATE);
     data = data(row_start : row_start + rows - 1, :);

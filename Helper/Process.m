@@ -6,7 +6,7 @@ classdef Process
     methods(Static)
         function [data, time] = conv_readwrite(daq_obj, position, lpi, mode)
             % CONV_READWRITE  Read signal data and write position data with necessary conversions
-            [data, time] = readwrite(daq_obj, position * Config.DTOV, "OutputFormat", "Matrix");
+            [data, time] = readwrite(daq_obj, position * Config.DTOV, 'OutputFormat', 'Matrix');
             if mode == Config.Position
                 scale = Config.VTOD;
             else
@@ -20,13 +20,13 @@ classdef Process
             % GRADUAL_MOVE  Gradually move the traverse to a target position
             if from > to + Config.TICKSHIFT
                 gradual_shift = from : -Config.TICKSHIFT : to;
-                disp("Moving to " + to * 100 + " cm.");
-                data = readwrite(daq_obj, gradual_shift' * Config.DTOV, "OutputFormat", "Matrix");
+                fprintf('Moving to %g cm.\n', to * 100);
+                data = readwrite(daq_obj, gradual_shift' * Config.DTOV, 'OutputFormat', 'Matrix');
                 encoder = typecast(uint32(data(:, 9)), 'int32');
             elseif from < to - Config.TICKSHIFT
                 gradual_shift = from : +Config.TICKSHIFT : to;
-                disp("Moving to " + to * 100 + " cm.");
-                data = readwrite(daq_obj, gradual_shift' * Config.DTOV, "OutputFormat", "Matrix");
+                fprintf('Moving to %g cm.\n', to * 100);
+                data = readwrite(daq_obj, gradual_shift' * Config.DTOV, 'OutputFormat', 'Matrix');
                 encoder = typecast(uint32(data(:, 9)), 'int32');
             end
         end
@@ -58,12 +58,12 @@ classdef Process
         function run_drone(throttle)
             % RUN_DRONE  Run the drone with a specified throttle and timeout protection
             runtime = java.lang.Runtime.getRuntime();
-            process = runtime.exec(sprintf("ssh %s ./throttle.sh %g", Config.SSH, throttle));
+            process = runtime.exec(sprintf('ssh %s ./throttle.sh %g', Config.SSH, throttle));
             process.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
             if process.isAlive()
                 process.destroyForcibly();
-                disp("Unable to contact drone. Manually set " + throttle + " throttle.");
-                disp("Press ENTER when ready...");
+                fprintf('Unable to contact drone. Manually set %g throttle.\n', throttle);
+                disp('Press ENTER when ready...');
                 pause;
             end
         end
