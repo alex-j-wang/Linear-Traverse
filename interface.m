@@ -102,7 +102,7 @@ classdef interface
             function select(i, src)
                 % SELECT  Update the selection and plot
                 if isa(src, 'matlab.ui.control.DropDown')
-                    selection(i) = src.Value;
+                    selection(i) = cellstr(src.Value);
                 else
                     plot_config(i) = src.Value;
                     if i == 5
