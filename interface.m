@@ -71,49 +71,93 @@ classdef interface
                 y = y - 40;
                 uidropdown(option_panel, 'Position', [10 y sz], ...
                     'Items', unique(options(:, i)), ...
-                    'ValueChangedFcn', @(src, ~) select(i, src));
+                    'ValueChangedFcn', @(src, ~) refresh(i, src.Value));
             end
             
             % Plot configuration checkboxes
-            plot_config = [true(1, 4) false(1, 2)];
-            y = y - 10;
-            for i = 1:6
+            visibility = repmat(matlab.lang.OnOffSwitchState.on, 1, 4);
+            locked = false;
+            equalized = false;
+            y = y - 35;
+            label('Force Plots');
+            for i = 1:4
+                uicheckbox(option_panel, 'Text', Config.FORCES(i), ...
+                    'Position', [20 y sz], 'Value', visibility(i), ...
+                    'ValueChangedFcn', @(src, ~) toggle_force(i, src.Value));
                 y = y - 25;
-                if i == 1
-                    label('Force Plots');
-                elseif i == 5
-                    label('Axis Options');
-                end
-                uicheckbox(option_panel, 'Text', Config.BOXES(i), ...
-                    'Position', [20 y sz], 'Value', plot_config(i), ...
-                    'ValueChangedFcn', @(src, ~) select(i, src));
             end
-
+            label('Axis Options');
+            uicheckbox(option_panel, 'Text', "Lock", ...
+                'Position', [20 y sz], 'Value', locked, ...
+                'ValueChangedFcn', @(src, ~) lock(src.Value));
+            y = y - 25;
+            uicheckbox(option_panel, 'Text', "Equalize", ...
+                'Position', [20 y sz], 'Value', equalized, ...
+                'ValueChangedFcn', @(src, ~) set_axes(src.Value));
+            
             lb = zeros(1, 6);
             ub = zeros(1, 6);
 
-            update_plot();
+            refresh();
 
             function label(text)
                 uilabel(option_panel, 'Position', [20 y sz], 'Text', text, 'FontWeight', 'bold');
                 y = y - 25;
             end
-        
-            function select(i, src)
-                % SELECT  Update the selection and plot
-                if isa(src, 'matlab.ui.control.DropDown')
-                    selection(i) = src.Value;
-                else
-                    plot_config(i) = src.Value;
-                    if i == 5
-                        option_panel.Children(1).Enable = ~src.Value;
-                    end
+
+            function toggle_force(i, val)
+                % TOGGLE_FORCE  Toggle the visibility of a force plot
+                visibility(i) = val;
+                for idx = 1:6
+                    ax = nexttile(t, idx);
+                    ax.Children(5 - i).Visible = visibility(i);
                 end
-                update_plot();
+                if ~locked
+                    set_axes(equalized);
+                end
+            end
+
+            function set_axes(val)
+                % SET_AXES  Set the axes of all plots
+                equalized = val;
+                for idx = 1:6
+                    ax = nexttile(t, idx);
+                    set(ax, 'YLimMode', 'auto');
+                    lb(idx) = ax.YLim(1);
+                    ub(idx) = ax.YLim(2);
+                end
+                if ~equalized
+                    return
+                end
+                lb(1:3) = min(lb(1:3));
+                lb(4:6) = min(lb(4:6));
+                ub(1:3) = max(ub(1:3));
+                ub(4:6) = max(ub(4:6));
+                for idx = 1:6
+                    ax = nexttile(t, idx);
+                    ylim(ax, [lb(idx) ub(idx)]);
+                end
+            end
+
+            function lock(val)
+                % LOCK  Lock the axes of all plots
+                locked = val;
+                option_panel.Children(1).Enable = ~locked;
+                if locked
+                    for idx = 1:6
+                        ax = nexttile(t, idx);
+                        set(ax, 'YLimMode', 'manual');
+                    end
+                else
+                    set_axes(equalized);
+                end
             end
         
-            function update_plot()
-                % UPDATE_PLOT  Update the plot based on selected settings
+            function refresh(i, val)
+                % REFRESH  Update the plot based on selected settings
+                if nargin
+                    selection(i) = cellstr(val);
+                end
                 delete(t.Children);
 
                 % Load data or return if file does not exist
@@ -122,7 +166,7 @@ classdef interface
                     return;
                 end
                 load(filename, 'time', 'forces', 'tare_forces', 'pos_encoder');
-        
+
                 for idx = 1:6
                     ax = nexttile(t, idx);
                     if idx <= 3
@@ -132,7 +176,7 @@ classdef interface
                         factor = Config.W * Config.L;
                         yl = 'Normalized Torque';
                     end
-        
+
                     yyaxis(ax, 'right');
                     plot(ax, time, pos_encoder * 100, 'DisplayName', 'Position', 'LineWidth', 1.5);
                     ylabel(ax, 'Position (cm)');
@@ -140,36 +184,28 @@ classdef interface
                     yyaxis(ax, 'left');
                     hold(ax, 'on');
                     for j = 1:4
-                        if plot_config(j)
-                            fp = Config.BOXES(j);
-                            if j == 4
-                                yline(ax, tare_forces(idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
-                            else
-                                plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
-                            end
+                        fp = Config.FORCES(j);
+                        if j == 4
+                            yline(ax, tare_forces(idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                        else
+                            plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
                         end
+                        ax.Children(1).Visible = visibility(j);
                     end
                     ylabel(ax, yl);
-                    if ~plot_config(5)
-                        lb(idx) = ax.YLim(1);
-                        ub(idx) = ax.YLim(2);
-                    end
             
                     title(ax, names(idx));
                     xlabel(ax, 'Time (s)');
                     grid(ax, 'on');
                     legend(ax);
                 end
-
-                if ~plot_config(5) && plot_config(6)
-                    lb(1:3) = min(lb(1:3));
-                    lb(4:6) = min(lb(4:6));
-                    ub(1:3) = max(ub(1:3));
-                    ub(4:6) = max(ub(4:6));
-                end
-                
-                for idx = 1:6
-                    ylim(nexttile(t, idx), [lb(idx), ub(idx)]);
+                if locked
+                    for idx = 1:6
+                        ax = nexttile(t, idx);
+                        ylim(ax, [lb(idx) ub(idx)]);
+                    end
+                else
+                    set_axes(equalized);
                 end
             end
         end

@@ -93,7 +93,7 @@ for i = 1 : length(filenames)
     end
     inertial_force = inert(key);
     lift_force = total_force - inertial_force;
-    forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.BOXES(1:3));
+    forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.FORCES(1:3));
     time = time(1 : length(total_force));
     save(fullfile(processed_folder, filename), 'time', 'forces', 'tare_forces', 'pos_encoder');
 end

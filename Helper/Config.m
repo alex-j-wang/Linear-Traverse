@@ -24,11 +24,11 @@ classdef Config
         LPI = 3933.571; % Approximate encoder lines per inch
         NBITS = 32;     % Encoder channel resolution
 
-        TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE;                % Meters to shift per tick
-        NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];                % Labels for plots and outputs
-        BOXES = ["Total" "Inertial" "Lift" "Tare" "Lock" "Equalize"]; % Available force plots
-        SSH = 'anoop@172.18.136.241';                                 % Linux computer SSH address
-        SENSOR = 'FT9042';                                            % Nano17 serial number
+        TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE; % Meters to shift per tick
+        NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"]; % Labels for plots and outputs
+        FORCES = ["Total" "Inertial" "Lift" "Tare"];   % Available force plots
+        SSH = 'anoop@172.18.136.241';                  % Linux computer SSH address
+        SENSOR = 'FT9042';                             % Nano17 serial number
     end
 
     enumeration
