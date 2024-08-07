@@ -16,13 +16,17 @@ daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
 CF = 0;
 SD = 0.005;
 F = 1;
-A = 0;
+A = 0.025;
 T = 1 / F;
-FC = Config.FCM * F;
+FC = 20;
 
 [time, voltages, tare_voltages, ~, ~, pos_encoder] = ...
-    dynamic_operation(CF, shift, F, A, daq_obj, lpi, Config.Position);
+    dynamic_operation(CF, 0, F, A, daq_obj, Config.LPI, Config.Position);
 forces = (cal_mat * voltages')'; % Conversion to forces and moments
+
+figure
+Process.format_plot('Raw Normalized F_z Versus Time', 'Time (s)', 'Raw Normalized F_z');
+plot(time, forces(:, 3) / Config.W, '.');
 
 % Apply Butterworth filter
 [b, a] = butter(6, FC / (Config.SRATE / 2));
@@ -31,6 +35,7 @@ for col = 1:6
     filtered(:, col) = -filtfilt(b, a, forces(:, col));
 end
 
+figure
 Process.format_plot('Normalized F_z Versus Time', 'Time (s)', 'Normalized F_z');
 plot(time, filtered(:, 3) / Config.W, 'LineWidth', 1.5);
 
@@ -53,11 +58,12 @@ end
 stacked = pagetranspose(reshape(filtered', 6, phase_width, []));
 total_force = mean(stacked, 3);
 
+figure
 Process.format_plot('Windowed F_z Versus Time', 'Time (s)', 'Normalized F_z');
-ll = patch([time(1 : phase_width); nan], [squeeze(stacked(3, :, :)) / Config.W; nan], 'r');
-set(ll, 'EdgeColor', 'r', 'EdgeAlpha', 0.05);
-plot(time, total_force(3, :) / Config.W, 'LineWidth', 1.5);
+plot(time(1 : phase_width), squeeze(stacked(:, 3, :)) / Config.W, 'Color', [0 0.4470 0.7410 0.2])
+plot(time(1 : phase_width), total_force(:, 3 ) / Config.W, 'Color', [0.8500 0.3250 0.0980], 'LineWidth', 1.5);
 
-% % Phase average position
-% stacked = reshape(pos_encoder, phase_width, []);
-% pos_encoder = mean(stacked, 2);
+% Phase average position
+stacked = reshape(pos_encoder, phase_width, []);
+pos_encoder = mean(stacked, 2);
+plot(time(1 : phase_width), pos_encoder * 100, 'Color', '#EDB120', 'LineWidth', 1.5);
