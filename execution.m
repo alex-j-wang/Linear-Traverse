@@ -6,7 +6,7 @@ clear; clc; close all hidden;
 
 % Test parameters
 CFS = [0 25 54.275 75]; % Crazyflie throttle, %
-SDS = [0.03 0.05];      % Stopping distance, m
+SDS = 0.005;      % Stopping distance, m
 FS = [0.2 0.5 1 1.5 2];  % Traverse frequency, Hz
 AS = [0.025 0.05 0.07];  % Traverse amplitude, m
 % CFS = [0 75];        % Crazyflie throttle, %
@@ -18,12 +18,12 @@ AS = [0.025 0.05 0.07];  % Traverse amplitude, m
 daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
 
 % Create folder for record-keeping
-date_string = string(datetime('now', 'Format', 'yyyy_MM_dd'));
-if exist(date_string, 'dir')
+data_folder = fullfile('Data', string(datetime('now', 'Format', 'yyyy_MM_dd')));
+if exist(data_folder, 'dir')
     disp('Experiment may overwrite data. Press ENTER to continue...');
     pause;
 else
-    mkdir(date_string);
+    mkdir(data_folder);
 end
 
 % Wait for DAQ setup to stabilize
@@ -88,7 +88,7 @@ for CF = CFS
                     dynamic_operation(CF, shift, F, A, daq_obj, lpi, Config.Position);
 
                 % Save data
-                filename = fullfile('Data', date_string, [case_name '.mat']);
+                filename = fullfile(data_folder, [case_name '.mat']);
                 save(filename, 'time', 'voltages', 'tare_voltages', 'pos_encoder');
                 fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
