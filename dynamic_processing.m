@@ -11,18 +11,17 @@ load(['cal_' Config.SENSOR '.mat']);
 inert = containers.Map();
 
 % Choose data folder
-items = dir();
+items = dir('Data');
 is_dir = [items.isdir];
 dir_names = {items(is_dir).name};
-pattern = '^\d{4}_\d{2}_\d{2}$';
-matching_folders = dir_names(~cellfun('isempty', regexp(dir_names, pattern)));
+matching_folders = dir_names(~ismember(dir_names, {'.', '..'}));
 
 folder = interface.dropdown(matching_folders, 'Select a folder');
-items = dir(fullfile(folder, '*.mat'));
+items = dir(fullfile('Data', folder, '*.mat'));
 filenames = sort({items.name});
 
 % Set up processed data folder
-processed_folder = fullfile(folder, 'processed_data');
+processed_folder = fullfile('Data', folder, 'processed_data');
 if exist(processed_folder, 'dir')
     reprocess = input('Skip files that have already been converted [y/n]? ', 's') ~= 'y';
 else
@@ -43,7 +42,7 @@ for i = 1 : length(filenames)
         continue;
     end
     
-    load(fullfile(folder, filename));
+    load(fullfile('Data', folder, filename));
     forces = (cal_mat * voltages')'; % Conversion to forces and moments
     tare_forces = (cal_mat * tare_voltages')'; % Conversion to forces and moments
 
