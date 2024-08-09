@@ -36,7 +36,7 @@ classdef interface
                 filenames = sort({items.name});
             end
             names = Config.NAMES + ' & Position Versus Time';
-            options = squeeze(split(strrep(filenames, '.mat', ''), '_'));
+            options = squeeze(split(strrep(filenames, ".mat", ""), '_'));
         
             % GUI figure
             screen_size = get(0, 'ScreenSize');
@@ -102,7 +102,7 @@ classdef interface
             function select(i, src)
                 % SELECT  Update the selection and plot
                 if isa(src, 'matlab.ui.control.DropDown')
-                    selection(i) = cellstr(src.Value);
+                    selection(i) = src.Value;
                 else
                     plot_config(i) = src.Value;
                     if i == 5
