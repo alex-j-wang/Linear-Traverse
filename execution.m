@@ -30,7 +30,7 @@ end
 pause(1);
 
 % Determine position and move near ground plane for calibration
-if input('Is traverse at home position [y/n]? ', 's') ~= 'y'
+if abs(read(daq_obj).TargetPosition) > 1 || input('Is traverse at home position [y/n]? ', 's') ~= 'y'
     disp('Identifying position.')
     position = Process.get_position(daq_obj);
     fprintf('Position identified as %.1f cm.\n', position * 100);
@@ -88,7 +88,7 @@ for CF = CFS
                     dynamic_operation(CF, shift, F, A, daq_obj, lpi, Config.Position);
 
                 % Save data
-                filename = fullfile(date_string, [case_name '.mat']);
+                filename = fullfile('Data', date_string, [case_name '.mat']);
                 save(filename, 'time', 'voltages', 'tare_voltages', 'pos_encoder');
                 disp(['Data saved to ' filename '.']);
 
