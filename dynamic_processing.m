@@ -53,13 +53,14 @@ for i = 1 : length(filenames)
     SD = SD / 100;
     A = A / 100;
     T = 1 / F;
-    FC = Config.FCM * F;
+    % FC = Config.FCM * F;
+    FC = 20;
 
     % Apply Butterworth filter
     [b, a] = butter(6, FC / (Config.SRATE / 2));
     filtered = zeros(size(forces));
     for col = 1:6
-        filtered(:, col) = -filtfilt(b, a, forces(:, col));
+        filtered(:, col) = filtfilt(b, a, forces(:, col));
     end
 
     % Phase average forces

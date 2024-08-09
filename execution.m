@@ -5,8 +5,8 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = [0 25 55.5588 75]; % Crazyflie throttle, %
-SDS = [0.005 0.07];      % Stopping distance, m
+CFS = [0 25 54.275 75]; % Crazyflie throttle, %
+SDS = [0.03 0.05];      % Stopping distance, m
 FS = [0.2 0.5 1 1.5 2];  % Traverse frequency, Hz
 AS = [0.025 0.05 0.07];  % Traverse amplitude, m
 % CFS = [0 75];        % Crazyflie throttle, %
@@ -90,7 +90,7 @@ for CF = CFS
                 % Save data
                 filename = fullfile(date_string, [case_name '.mat']);
                 save(filename, 'time', 'voltages', 'tare_voltages', 'pos_encoder');
-                disp(['Data saved to ' filename '.']);
+                fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
                 est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F) + 2 * Config.OFFSET_DURATION);
             end
