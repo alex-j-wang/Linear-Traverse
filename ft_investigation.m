@@ -13,10 +13,10 @@ pause;
 % DAQ setup
 daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
 
-CF = 0;
+CF = 50;
 SD = 0.005;
 F = 1;
-A = 0.025;
+A = 0.05;
 T = 1 / F;
 FC = 20;
 
@@ -24,15 +24,11 @@ FC = 20;
     dynamic_operation(CF, 0, F, A, daq_obj, Config.LPI, Config.Position);
 forces = (cal_mat * voltages')'; % Conversion to forces and moments
 
-figure
-Process.format_plot('Raw Normalized F_z Versus Time', 'Time (s)', 'Raw Normalized F_z');
-plot(time, forces(:, 3) / Config.W, '.');
-
 % Apply Butterworth filter
 [b, a] = butter(6, FC / (Config.SRATE / 2));
 filtered = zeros(size(forces));
 for col = 1:6
-    filtered(:, col) = -filtfilt(b, a, forces(:, col));
+    filtered(:, col) = filtfilt(b, a, forces(:, col));
 end
 
 figure
@@ -66,4 +62,4 @@ plot(time(1 : phase_width), total_force(:, 3 ) / Config.W, 'Color', [0.8500 0.32
 % Phase average position
 stacked = reshape(pos_encoder, phase_width, []);
 pos_encoder = mean(stacked, 2);
-plot(time(1 : phase_width), pos_encoder * 100, 'Color', '#EDB120', 'LineWidth', 1.5);
+plot(time(1 : phase_width), pos_encoder * 10, 'Color', '#EDB120', 'LineWidth', 1.5);

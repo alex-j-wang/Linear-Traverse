@@ -6,7 +6,7 @@ classdef Config
     properties (Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
         L = 33;          % Motor-center distance, mm
-        FCM = 100;       % Cutoff frequency multiplier
+        FCM = 10;       % Cutoff frequency multiplier
         
         DATA_CYCLES = 40; % Cycles of data for phase averaging
         RAMP_CYCLES = 4;  % Cycles for ramping up and down
@@ -27,7 +27,7 @@ classdef Config
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE;                % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];                % Labels for plots and outputs
         BOXES = ["Total" "Inertial" "Lift" "Tare" "Lock" "Equalize"]; % Available force plots
-        SSH = 'anoop@172.18.136.241';                                 % Linux computer SSH address
+        SSH = 'anoop@172.18.135.174';                                 % Linux computer SSH address
         SENSOR = 'FT9042';                                            % Nano17 serial number
     end
 
