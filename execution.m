@@ -56,7 +56,7 @@ est_elapsed.Format = 'hh:mm:ss';
 
 % Create waitbar
 h = uifigure('Name', 'Dynamic Testing');
-d = uiprogressdlg(h, 'Title', 'Dynamic Testing');
+d = uiprogressdlg(h, 'Title', 'Dynamic Testing', 'Cancelable', 'on', 'CancelText', '️️️️⏸');
 
 tic
 
@@ -92,6 +92,12 @@ for CF = CFS
                 save(filename, 'time', 'voltages', 'tare_voltages', 'pos_encoder');
                 fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
+                if d.CancelRequested
+                    set(d, 'CancelRequested', false, 'CancelText', '▶');
+                    waitfor(d, 'CancelRequested', true);
+                    set(d, 'CancelRequested', false, 'CancelText', '⏸');
+                end
+
                 est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F) + 2 * Config.OFFSET_DURATION);
             end
         end
@@ -103,6 +109,7 @@ actual_elapsed.Format = 'hh:mm:ss';
 message = sprintf('Estimated time: %s / %s\nElapsed time: %s', est_elapsed, est_time, actual_elapsed);
 d.Value = 1;
 d.Message = message;
+position = Process.gradual_move(daq_obj, position, 0);
 
 pause(3);
 close(h);
