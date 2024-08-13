@@ -93,8 +93,10 @@ for CF = CFS
                 fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
                 if d.CancelRequested
+                    disp('Execution paused.');
                     set(d, 'CancelRequested', false, 'CancelText', '▶');
                     waitfor(d, 'CancelRequested', true);
+                    disp('Execution resuming.');
                     set(d, 'CancelRequested', false, 'CancelText', '⏸');
                 end
 
