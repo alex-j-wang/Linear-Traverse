@@ -80,6 +80,7 @@ for i = 1 : length(filenames)
 
     stacked = pagetranspose(reshape(filtered', 6, phase_width, []));
     total_force = mean(stacked, 3);
+    stdev = std(stacked, 0, 3);
     
     % Phase average position
     stacked = reshape(pos_encoder, phase_width, []);
@@ -95,7 +96,7 @@ for i = 1 : length(filenames)
     lift_force = total_force - inertial_force;
     forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.BOXES(1:3));
     time = time(1 : length(total_force));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'tare_forces', 'pos_encoder');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'tare_forces', 'pos_encoder', 'stdev');
 end
 
 d.Value = 1;

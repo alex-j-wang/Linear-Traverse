@@ -122,7 +122,7 @@ classdef interface
                 if ~exist(filename, 'file')
                     return;
                 end
-                load(filename, 'time', 'forces', 'tare_forces', 'pos_encoder');
+                load(filename, 'time', 'forces', 'tare_forces', 'pos_encoder', 'stdev');
         
                 for idx = 1:6
                     ax = nexttile(t, idx);
@@ -146,6 +146,8 @@ classdef interface
                             fp = Config.BOXES(j);
                             if j == 4
                                 yline(ax, tare_forces(idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                            elseif j == 1
+                                shadedErrorBar(ax, time, forces.(fp)(:, idx) / factor, stdev(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
                             else
                                 plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
                             end
