@@ -6,9 +6,9 @@ clear; clc; close all hidden;
 
 % Test parameters
 CFS = [0 25 54.275 75]; % Crazyflie throttle, %
-SDS = 0.005;      % Stopping distance, m
-FS = [0.2 0.5 1 1.5 2];  % Traverse frequency, Hz
-AS = [0.025 0.05 0.07];  % Traverse amplitude, m
+SDS = [0.005 0.01 0.02 0.03 0.05 0.07];      % Stopping distance, m
+FS = 1;  % Traverse frequency, Hz
+AS = 0;  % Traverse amplitude, m
 % CFS = [0 75];        % Crazyflie throttle, %
 % SDS = [0.005 0.07];  % Stopping distance, m
 % FS = 2;              % Traverse frequency, Hz

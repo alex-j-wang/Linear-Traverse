@@ -24,7 +24,7 @@ function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_op
     if CF ~= 0
         disp('Stopping Crazyflie.')
         Process.run_drone(0);
-        pause(3)
+        pause(CF / 20);
     end
 
     disp('Taring output.');
