@@ -33,14 +33,14 @@ classdef interface
             % DYNAMIC_PLOTTING  Create a GUI for plotting dynamic data
             if nargin == 1
                 items = dir(fullfile(folder_path, '*.mat'));
-                filenames = sort({items.name});
+                filenames = {items.name};
             end
             names = Config.NAMES + ' & Position Versus Time';
-            options = squeeze(split(strrep(filenames, ".mat", ""), '_'));
+            options = sortrows(squeeze(split(strrep(filenames, ".mat", ""), '_')));
         
             % GUI figure
             screen_size = get(0, 'ScreenSize');
-            fig = uifigure('Name', 'Dynamic Lift Force Plotting', ...
+            fig = uifigure('Name', sprintf('Dynamic Plotting | %s', folder_path), ...
                 'Position', [0 0 screen_size(3) screen_size(4)]);
         
             % Grid layout
@@ -70,6 +70,7 @@ classdef interface
             for i = 1:size(options, 2)
                 y = y - 40;
                 uidropdown(option_panel, 'Position', [10 y sz], ...
+                    'Value', selection(i), ...
                     'Items', unique(options(:, i)), ...
                     'ValueChangedFcn', @(src, ~) select(i, src));
             end
@@ -136,6 +137,7 @@ classdef interface
                     yyaxis(ax, 'right');
                     plot(ax, time, pos_encoder * 100, 'DisplayName', 'Position', 'LineWidth', 1.5);
                     ylabel(ax, 'Position (cm)');
+                    ax.YLim = [min(ax.YLim(1), -1) max(ax.YLim(2), 1)];
             
                     yyaxis(ax, 'left');
                     hold(ax, 'on');
