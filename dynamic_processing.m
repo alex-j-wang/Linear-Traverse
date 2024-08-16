@@ -31,7 +31,8 @@ end
 
 % Create progress bar
 fig = uifigure('Name', 'Dynamic Processing');
-d = uiprogressdlg(fig, 'Title', 'Processing');
+d = uiprogressdlg(fig, 'Title', sprintf('Processing (%s)', folder));
+disp(['Processing <strong>' folder '</strong>.']);
 
 for i = 1 : length(filenames)
     filename = filenames{i};

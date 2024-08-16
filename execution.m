@@ -30,7 +30,7 @@ end
 pause(1);
 
 % Determine position and move near ground plane for calibration
-if abs(read(daq_obj).TargetPosition) > 1 || input('Is traverse at home position [y/n]? ', 's') ~= 'y'
+if abs(read(daq_obj).TargetPosition) > 2 || input('Is traverse at home position [y/n]? ', 's') ~= 'y'
     disp('Identifying position.')
     position = Process.get_position(daq_obj);
     fprintf('Position identified as %.1f cm.\n', position * 100);

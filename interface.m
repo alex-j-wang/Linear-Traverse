@@ -76,7 +76,7 @@ classdef interface
             end
             
             % Plot configuration checkboxes
-            plot_config = [true(1, 4) false(1, 2)];
+            plot_config = [true(1, 3) false(1, 3)];
             y = y - 10;
             for i = 1:6
                 y = y - 25;
@@ -146,10 +146,16 @@ classdef interface
                             fp = Config.BOXES(j);
                             if j == 4
                                 yline(ax, tare_forces(idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
-                            elseif j == 1
-                                shadedErrorBar(ax, time, forces.(fp)(:, idx) / factor, stdev(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
                             else
                                 plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
+                            end
+                            if j == 1
+                                select = round(linspace(1, length(time), 50));
+                                tt = [time(select); flip(time(select))];
+                                yy = [(forces.(fp)(select, idx) + stdev(select, idx)); 
+                                    flip((forces.(fp)(select, idx) - stdev(select, idx)))];
+                                fill(ax, tt, yy / factor, ax.Children(1).Color, 'DisplayName', 'μ ± σ', ...
+                                    'EdgeColor', 'none', 'FaceAlpha', 0.1);
                             end
                         end
                     end
