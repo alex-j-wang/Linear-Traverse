@@ -5,14 +5,14 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = [0 25 54.275 75]; % Crazyflie throttle, %
-SDS = [0.005 0.01 0.02 0.03 0.05 0.07];      % Stopping distance, m
-FS = 1;  % Traverse frequency, Hz
-AS = 0;  % Traverse amplitude, m
-% CFS = [0 75];        % Crazyflie throttle, %
-% SDS = [0.005 0.07];  % Stopping distance, m
-% FS = 2;              % Traverse frequency, Hz
-% AS = 0.07;           % Traverse amplitude, m
+% CFS = 54.275; % Crazyflie throttle, %
+% SDS = [0.005 0.01 0.02 0.03 0.05 0.07];      % Stopping distance, m
+% FS = [0.2 0.5 1 1.5 2];  % Traverse frequency, Hz
+% AS = [.025 0.05 0.07];  % Traverse amplitude, m
+CFS = 0; % Crazyflie throttle, %
+SDS = [0.005 0.01 0.02 0.03 0.05 0.07 0.10];  % Stopping distance, m
+FS = 1; % Traverse frequency, Hz
+AS = 0; % Traverse amplitude, m
 
 % DAQ setup
 daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
@@ -38,13 +38,13 @@ if abs(read(daq_obj).TargetPosition) > 2 || input('Is traverse at home position 
 else
     position = 0;
 end
-position = Process.gradual_move(daq_obj, position, -0.1);
+position = Process.gradual_move(daq_obj, position, -0.12);
 ground = position - input('Enter distance from ground plane (cm): ') / 100;
 
 % Encoder calibration
 disp('Calibrating encoder.');
-[position, encoder] = Process.gradual_move(daq_obj, position, 0.1);
-lpi = double(encoder(1) - encoder(end)) / (0.2 * 100 / 2.54);
+[position, encoder] = Process.gradual_move(daq_obj, position, 0.13);
+lpi = double(encoder(end) - encoder(1)) / (0.25 * 100 / 2.54);
 fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 
 % Estimate execution time
