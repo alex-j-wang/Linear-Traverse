@@ -20,7 +20,7 @@ A = 0.05;
 T = 1 / F;
 FC = 20;
 
-[time, voltages, tare_voltages, ~, ~, pos_encoder] = ...
+[time, voltages, ~, ~, ~, ~, pos_encoder] = ...
     dynamic_operation(CF, 0, F, A, daq_obj, Config.LPI, Config.Position);
 forces = (cal_mat * voltages')'; % Conversion to forces and moments
 
