@@ -94,7 +94,8 @@ for i = 1 : length(filenames)
     if CF == 0   
         inert(key) = total_force;
     end
-    inertial_force = inert(key);
+    % inertial_force = inert(key);
+    inertial_force = zeros(size(total_force));
     lift_force = total_force - inertial_force;
     forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.BOXES(1:3));
     time = time(1 : length(total_force));
