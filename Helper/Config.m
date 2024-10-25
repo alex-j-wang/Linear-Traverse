@@ -27,7 +27,7 @@ classdef Config
         TICKSHIFT = Config.SHIFT_SPEED / Config.SRATE;                % Meters to shift per tick
         NAMES = ["F_x" "F_y" "F_z" "M_x" "M_y" "M_z"];                % Labels for plots and outputs
         BOXES = ["Total" "Inertial" "Lift" "Tare" "Lock" "Equalize"]; % Available force plots
-        SSH = 'anoop@172.18.129.172';                                 % Linux computer SSH address
+        SSH = 'anoop@172.18.141.97';                                  % Linux computer SSH address
         SENSOR = 'FT9042';                                            % Nano17 serial number
     end
 
@@ -60,12 +60,19 @@ classdef Config
             end
 
             % Input channel (position encoder)
-            encoder = addinput(daq_obj, 'Dev2', 'ctr0', 'Position');
-            encoder.EncoderType = 'X4';
-            encoder.ZResetEnable = 0;
-            encoder.ZResetCondition = 'BothLow';
-            encoder.ZResetValue = 0;
-            encoder.Name = 'Encoder';
+            encoder_plus = addinput(daq_obj, 'Dev2', 'ctr0', 'Position');
+            encoder_plus.EncoderType = 'X4';
+            encoder_plus.ZResetEnable = 0;
+            encoder_plus.ZResetCondition = 'BothLow';
+            encoder_plus.ZResetValue = 0;
+            encoder_plus.Name = 'EncoderPlus';
+
+            encoder_minus = addinput(daq_obj, 'Dev2', 'ctr1', 'Position');
+            encoder_minus.EncoderType = 'X4';
+            encoder_minus.ZResetEnable = 0;
+            encoder_minus.ZResetCondition = 'BothLow';
+            encoder_minus.ZResetValue = 0;
+            encoder_minus.Name = 'EncoderMinus';
         end
     end
 end

@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------
-% Script to determine static hover throttle using force data
+% Plots all force cycles, phase averaged forces, and encoder
 % -------------------------------------------------------------------------
 
 clear; clc; close all hidden;
@@ -13,10 +13,10 @@ pause;
 % DAQ setup
 daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
 
-CF = 50;
+CF = 0;
 SD = 0.005;
 F = 1;
-A = 0.05;
+A = 0;
 T = 1 / F;
 FC = 20;
 

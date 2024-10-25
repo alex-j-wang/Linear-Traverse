@@ -12,7 +12,7 @@ function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_op
     if CF ~= 0
         disp('Starting Crazyflie.');
         Process.run_drone(CF);
-        pause(1);
+        pause(3);
     end
 
     profile = shift + generate_profile(F, A);
@@ -41,7 +41,7 @@ function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_op
     voltages = data(:, 1:6) - tare_voltages;
     target = data(:, 7);
     measured = data(:, 8);
-    encoder = data(:, 9);
+    encoder = data(:, 9) + data(:, 10);
 end
 
 function position = generate_profile(traverse_freq, amplitude)

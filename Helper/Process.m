@@ -14,6 +14,7 @@ classdef Process
             end
             data(:, 7:8) = data(:, 7:8) * scale;
             data(:, 9) = Process.encoder_convert(data(:, 9), lpi);
+            data(:, 10) = Process.encoder_convert(data(:, 10), lpi);
         end
 
         function [to, encoder] = gradual_move(daq_obj, from, to)
@@ -22,12 +23,12 @@ classdef Process
                 gradual_shift = from : -Config.TICKSHIFT : to;
                 fprintf('Moving to %g cm.\n', to * 100);
                 data = readwrite(daq_obj, gradual_shift' * Config.DTOV, 'OutputFormat', 'Matrix');
-                encoder = typecast(uint32(data(:, 9)), 'int32');
+                encoder = typecast(uint32(data(:, 9)), 'int32') + typecast(uint32(data(:, 10)), 'int32');
             elseif from < to - Config.TICKSHIFT
                 gradual_shift = from : +Config.TICKSHIFT : to;
                 fprintf('Moving to %g cm.\n', to * 100);
                 data = readwrite(daq_obj, gradual_shift' * Config.DTOV, 'OutputFormat', 'Matrix');
-                encoder = typecast(uint32(data(:, 9)), 'int32');
+                encoder = typecast(uint32(data(:, 9)), 'int32') + typecast(uint32(data(:, 10)), 'int32');
             end
         end
 

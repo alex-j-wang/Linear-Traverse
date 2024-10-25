@@ -25,12 +25,12 @@ if abs(read(daq_obj).TargetPosition) > 2 || input('Is traverse at home position 
 else
     position = 0;
 end
-position = Process.gradual_move(daq_obj, position, -0.12);
+position = Process.gradual_move(daq_obj, position, -0.125);
 
 % Encoder calibration
 disp('Calibrating encoder.');
-[position, encoder] = Process.gradual_move(daq_obj, position, 0.13);
-lpi = double(encoder(end) - encoder(1)) / (0.25 * 100 / 2.54);
+[position, encoder] = Process.gradual_move(daq_obj, position, 0.125);
+lpi = double(encoder(1) - encoder(end)) / (0.25 * 100 / 2.54);
 fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 
 % Move to starting position
@@ -40,7 +40,7 @@ pause(1);
 
 CF = 0;
 F = 1;
-A = 0.1;
+A = 0.05;
 
 % Gather data
 [time, voltages, tare_voltages, target, measured, pos_encoder] = ...
