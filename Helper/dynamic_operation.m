@@ -2,7 +2,7 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, mode)
+function [time, voltages, tare_start, tare_end, target, measured, encoder] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, mode)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
@@ -37,7 +37,7 @@ function [time, voltages, tare_voltages, target, measured, encoder] = dynamic_op
     data = data(row_start : row_start + rows - 1, :);
     time = time(1 : rows);
 
-    tare_voltages = (tare_start + tare_end) / 2;
+    tare_voltages = tare_start + linspace(0, 1, rows)' * (tare_end - tare_start);
     voltages = data(:, 1:6) - tare_voltages;
     target = data(:, 7);
     measured = data(:, 8);

@@ -45,7 +45,8 @@ for i = 1 : length(filenames)
     
     load(fullfile('Data', folder, filename));
     forces = (cal_mat * voltages')'; % Conversion to forces and moments
-    tare_forces = (cal_mat * tare_voltages')'; % Conversion to forces and moments
+    force_start = (cal_mat * tare_start')'; % Conversion to forces and moment
+    force_end = (cal_mat * tare_end')'; % Conversion to forces and moment
 
     % Extract and convert parameters
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
@@ -98,7 +99,7 @@ for i = 1 : length(filenames)
     lift_force = total_force - inertial_force;
     forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.BOXES(1:3));
     time = time(1 : length(total_force));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'tare_forces', 'pos_encoder', 'stdev');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'force_start', 'force_end', 'pos_encoder', 'stdev');
 end
 
 d.Value = 1;
