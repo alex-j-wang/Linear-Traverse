@@ -1,7 +1,7 @@
 clear; clc; close all hidden;
 
 folder_path = "Data/2024_10_25_3D/processed_data";
-incr = 250;
+incr = 25;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
@@ -18,17 +18,17 @@ for filename = filenames
     [CF, SD, F, A] = deal(parameters{:});
     SD = SD / 100;
     A = A / 100;
+   
+    offset = (pos_encoder(end) - pos_encoder(1)) / (length(pos_encoder) - 1) * (0:length(pos_encoder) - 1);
+    pos_encoder = pos_encoder - pos_encoder(1) - offset';
 
     if A == 0
         scatter3(SD, 0, mean(forces.Total(:, 3)) / Config.W, 10, 'red', 'filled');
     else
-        if abs(mean(pos_encoder)) > 0.01
-            continue
-        end
         distance = SD + A + pos_encoder(1:incr:end - incr);
         velocity = diff(pos_encoder(1:incr:end)) / incr;
         forces = forces.Total(1:incr:end - incr, 3) / Config.W;
-        h = scatter3(distance, velocity, forces, 10, [0 0 SD/0.07], 'filled');
-        set(h, 'MarkerEdgeAlpha', 0.3, 'MarkerFaceAlpha', 0.3);
+        h = scatter3(distance(10:end-10), velocity(10:end-10), forces(10:end-10), 10, [0 0 SD/0.07], 'filled');
+        set(h, 'MarkerEdgeAlpha', 0.1, 'MarkerFaceAlpha', 0.1);
     end
 end

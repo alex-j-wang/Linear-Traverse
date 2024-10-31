@@ -12,7 +12,7 @@ function [time, voltages, tare_start, tare_end, target, measured, encoder] = dyn
     if CF ~= 0
         disp('Starting Crazyflie.');
         Process.run_drone(CF);
-        pause(3);
+        pause(10);
     end
 
     profile = shift + generate_profile(F, A);
