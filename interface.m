@@ -122,7 +122,7 @@ classdef interface
                 if ~exist(filename, 'file')
                     return;
                 end
-                load(filename, 'time', 'forces', 'tare_start', 'tare_end', 'pos_encoder', 'stdev');
+                load(filename, 'time', 'forces', 'force_start', 'force_end', 'pos_encoder', 'stdev');
         
                 for idx = 1:6
                     ax = nexttile(t, idx);
@@ -145,8 +145,8 @@ classdef interface
                         if plot_config(j)
                             fp = Config.BOXES(j);
                             if j == 4
-                                yline(ax, tare_start(idx) / factor, 'DisplayName', 'Tare Start', 'LineWidth', 1.5);
-                                yline(ax, tare_end(idx) / factor, 'DisplayName', 'Tare End', 'LineWidth', 1.5);
+                                yline(ax, force_start(idx) / factor, 'DisplayName', 'Tare Start', 'LineWidth', 1.5);
+                                yline(ax, force_end(idx) / factor, 'DisplayName', 'Tare End', 'LineWidth', 1.5);
                             else
                                 plot(ax, time, forces.(fp)(:, idx) / factor, 'DisplayName', fp, 'LineWidth', 1.5);
                             end

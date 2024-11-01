@@ -23,7 +23,7 @@ for filename = filenames
     pos_encoder = pos_encoder - pos_encoder(1) - offset';
 
     if A == 0
-        scatter(SD, mean(forces.Total(:, 3)) / Config.W, 10, 0, 'filled');
+        scatter(SD, mean(forces.Total(:, 3)) / Config.W, 10, 'red', 'filled');
     else
         distance = SD + A + pos_encoder(1:incr:end);
         velocity = diff(distance);
