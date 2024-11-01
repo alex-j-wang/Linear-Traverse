@@ -36,10 +36,23 @@ for filename = filenames
     if A == 0
         scatter3(main, SD, 0, mean(forces.Total(:, 3)) / Config.W, 10, 'red', 'filled');
     else
-        distance = SD + A + pos_encoder(1:incr:end - incr);
-        velocity = diff(pos_encoder(1:incr:end)) / incr;
-        forces = forces.Total(1:incr:end - incr, 3) / Config.W;
-        h = scatter3(main, distance(10:end-10), velocity(10:end-10), forces(10:end-10), 10, [0 0 SD/0.07], 'filled');
+        position_fit = fit_sinusoid(time, pos_encoder, A, F);
+        distance = SD + position_fit.A + position_fit(time);
+        velocity = differentiate(position_fit, time);
+        forces = forces.Total(:, 3) / Config.W;
+        h = scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces(1:incr:end), 10, [0 0 SD/0.07], 'filled');
         set(h, 'MarkerEdgeAlpha', 0.1, 'MarkerFaceAlpha', 0.1);
     end
+end
+
+function fitresult = fit_sinusoid(t, s, A, F)
+% Convert to column vectors
+t = t(:);
+s = s(:);
+
+% Define the sinusoidal fit type
+ft = fittype('A*sin(2*pi*B*t + C)', 'independent', 't', 'coefficients', {'A', 'B', 'C'});
+
+% Fit the model to the data
+fitresult = fit(t, s, ft, 'StartPoint', [A, F, 0]);
 end
