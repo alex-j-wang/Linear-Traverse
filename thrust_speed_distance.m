@@ -40,7 +40,7 @@ for filename = filenames
         distance = SD + position_fit.A + position_fit(time);
         velocity = differentiate(position_fit, time);
         forces = forces.Total(:, 3) / Config.W;
-        h = scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces(1:incr:end), 10, [0 0 SD/0.07], 'filled');
+        h = scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces(1:incr:end), 10, 'blue', 'filled');
         set(h, 'MarkerEdgeAlpha', 0.1, 'MarkerFaceAlpha', 0.1);
     end
 end

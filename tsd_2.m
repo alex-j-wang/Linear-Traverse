@@ -5,7 +5,8 @@
 clear; clc; close all hidden;
 
 folder_path = "Data/2024_10_25_3D/processed_data";
-incr = 100;
+incr = 25;
+MAX = 0.643476;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
@@ -23,14 +24,16 @@ for filename = filenames
     pos_encoder = pos_encoder - pos_encoder(1) - offset';
 
     if A == 0
-        scatter(SD, mean(forces.Total(:, 3)) / Config.W, 10, 'red', 'filled');
+        scatter(SD, mean(forces.Total(:, 3)) / Config.W / MAX, 10, 'red', 'filled');
     else
         distance = SD + A + pos_encoder(1:incr:end);
-        velocity = diff(distance);
-        forces = forces.Total(1:incr:end, 3) / Config.W;
-        s = scatter(distance(1:end-1), forces(1:end-1), 10, velocity, 'filled');
-        s.MarkerFaceAlpha = 0.1;
+        velocity = diff(distance) / incr * Config.SRATE;
+        forces = forces.Total(1:incr:end, 3) / Config.W / MAX;
+        s = scatter(distance(10:end-10), forces(10:end-10), 10, velocity(10:end-9), 'filled');
+        s.MarkerFaceAlpha = 1;
     end
 end
 
-colorbar;
+colormap(slanCM('jet'));
+a = colorbar;
+a.Label.String = 'Velocity (m/s)';
