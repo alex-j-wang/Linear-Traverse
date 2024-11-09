@@ -7,7 +7,6 @@ clear; clc; close all hidden;
 
 folder_path = "Data/2024_10_25_3D/processed_data";
 incr = 10;
-buf = 300;
 MAX = 0.643476;
 
 items = dir(fullfile(folder_path, '*.mat'));
@@ -41,10 +40,6 @@ for filename = filenames
         play with this to see which ones to remove without affecting trends
         %}
         
-        mid = (forces_smoothed(buf) + forces_smoothed(end-buf)) / 2;
-        forces_smoothed(1:buf) = linspace(mid, forces_smoothed(buf), buf)';
-        forces_smoothed(end-buf+1:end) = linspace(forces_smoothed(end-buf), mid, buf)';
-
         s = scatter(distance(1:incr:end), velocity(1:incr:end), 3, forces_smoothed(1:incr:end), 'filled');
         s.MarkerFaceAlpha = 0.25;
     end

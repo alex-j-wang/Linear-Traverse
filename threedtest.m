@@ -2,7 +2,6 @@ clear; clc; close all hidden;
 
 folder_path = "Data/2024_10_25_3D/processed_data";
 incr = 100;
-buf = 300;
 MAX = 0.643476;
 
 items = dir(fullfile(folder_path, '*.mat'));
@@ -60,10 +59,6 @@ for i = 1:length(filenames)
         % removing earlier padded points here 
         forces_smoothed = forces_smoothed_padded(1:end-pad_length);
         forces_smoothed(end-50:end) = movmean(forces_smoothed(end-50:end), 10);
-
-        mid = (forces_smoothed(buf) + forces_smoothed(end-buf)) / 2;
-        forces_smoothed(1:buf) = linspace(mid, forces_smoothed(buf), buf)';
-        forces_smoothed(end-buf+1:end) = linspace(forces_smoothed(end-buf), mid, buf)';
 
         if ismember(filename, highlight)
             scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'filled');
