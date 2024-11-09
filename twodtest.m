@@ -16,6 +16,12 @@ filenames = string({items.name});
 Process.format_plot("Crazyflie Thrust Versus Distance", "Distance (m)", "Normalized Thrust");
 
 for filename = filenames
+
+    % Remove outlier
+    if filename == "CF54.275_SD2_F1_A9.mat"
+        continue
+    end
+
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
     [CF, SD, F, A] = deal(parameters{:});
@@ -41,11 +47,11 @@ for filename = filenames
         play with this to see which ones to remove without affecting trends
         %}
         s = scatter(distance(buf:incr:end-buf), forces_smoothed(buf:incr:end-buf), 3, velocity(buf:incr:end-buf), 'filled');
-        s.MarkerFaceAlpha = 0.25;
+        s.MarkerFaceAlpha = 0.5;
     end
 end
 
-colormap(slanCM('jet'));
+colormap(slanCM('bwr'));
 a = colorbar;
 a.Label.String = 'Velocity (m/s)';
 
@@ -88,7 +94,7 @@ err = std(results, 1);
 errorbar(est(:, :, 1), est(:, :, 2) / MAX, err(:, :, 2) / MAX, 'ko', 'LineWidth', 1.5);
 
 xlim([0 0.26]);
-ylim([0.5 1.05]);
+ylim([0.55 1]);
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors

@@ -40,7 +40,12 @@ for filename = filenames
            optional step I considered to remove tangetials, you might want to
         play with this to see which ones to remove without affecting trends
         %}
-        s = scatter(distance(buf:incr:end-buf), velocity(buf:incr:end-buf), 3, forces_smoothed(buf:incr:end-buf), 'filled');
+        
+        mid = (forces_smoothed(buf) + forces_smoothed(end-buf)) / 2;
+        forces_smoothed(1:buf) = linspace(mid, forces_smoothed(buf), buf)';
+        forces_smoothed(end-buf+1:end) = linspace(forces_smoothed(end-buf), mid, buf)';
+
+        s = scatter(distance(1:incr:end), velocity(1:incr:end), 3, forces_smoothed(1:incr:end), 'filled');
         s.MarkerFaceAlpha = 0.25;
     end
 end
