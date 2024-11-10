@@ -40,7 +40,8 @@ for i = 1:length(filenames)
     plot(shifted, time, pos_encoder);
 
     if A == 0
-        scatter3(main, SD, 0, mean(forces.Total(:, 3)) / Config.W / MAX, 10, 'red', 'filled');
+        h = scatter3(main, SD, 0, mean(forces.Total(:, 3)) / Config.W / MAX, 10, 'blue', 'filled');
+        set(h, 'MarkerEdgeAlpha', 0.02, 'MarkerFaceAlpha', 0.02);
     else
         position_fit = fit_sinusoid(time, pos_encoder, A, F);
         distance = SD + position_fit.A + position_fit(time);
@@ -51,17 +52,19 @@ for i = 1:length(filenames)
         them later
         %}
         pad_length = 50; %# points to pad
-        padded_forces = [forces.Total(:, 3) / Config.W / MAX; repmat(forces.Total(end, 3) / Config.W / MAX, pad_length, 1)];
+        padded_forces = [forces.Total(end-pad_length+1:end, 3); forces.Total(:, 3); forces.Total(1:pad_length, 3)] / Config.W / MAX;
         
         %wavelet denoising
         forces_smoothed_padded = wdenoise(padded_forces, 'NoiseEstimate', 'LevelDependent');
         
         % removing earlier padded points here 
-        forces_smoothed = forces_smoothed_padded(1:end-pad_length);
-        forces_smoothed(end-50:end) = movmean(forces_smoothed(end-50:end), 10);
+        forces_smoothed = forces_smoothed_padded(pad_length+1:end-pad_length);
+        mid = (forces_smoothed(1) + forces_smoothed(end)) / 2;
+        forces_smoothed(1:pad_length) = linspace(mid, forces_smoothed(pad_length), pad_length);
+        forces_smoothed(end-pad_length+1:end) = linspace(forces_smoothed(end-pad_length+1), mid, pad_length);
 
         if ismember(filename, highlight)
-            scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'filled');
+            scatter3(main, distance, velocity, forces_smoothed, 10, 'filled');
             labels(i) = sprintf("F = %g", F);
         else
             h = scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'blue', 'filled');
