@@ -58,7 +58,7 @@ for i = 1 : length(filenames)
     FC = 20;
     
     pad_length = 50;
-    padded = vertcat(repmat(mean(forces(1:1000, :)), 50, 1), forces);
+    padded = vertcat(repmat(mean(forces(1:200, :)), 50, 1), forces);
 
     % Apply Butterworth filter
     [b, a] = butter(6, FC / (Config.SRATE / 2));

@@ -61,7 +61,7 @@ for i = 1:length(filenames)
         forces_smoothed(end-50:end) = movmean(forces_smoothed(end-50:end), 10);
 
         if ismember(filename, highlight)
-            scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'filled');
+            scatter3(main, distance, velocity, forces_smoothed, 10, 'filled');
             labels(i) = sprintf("F = %g", F);
         else
             h = scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'blue', 'filled');
