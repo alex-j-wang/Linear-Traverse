@@ -8,11 +8,13 @@ clear; clc; close all hidden;
 folder_path = "Data/2024_10_25_3D/processed_data";
 incr = 10;
 MAX = 0.643476;
+SMAX = 0.605;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
 
-Process.format_plot("Crazyflie Thrust Versus Distance", "Distance (m)", "Normalized Thrust");
+% Crazyflie Thrust Versus Distance
+Process.format_plot("", "{\Delta}z/l", "Normalized Thrust (F_{z}/W)");
 
 for filename = filenames
 
@@ -41,17 +43,14 @@ for filename = filenames
         forces_raw = forces.Total(:, 3) / Config.W / MAX;
         forces_smoothed = wdenoise(forces_raw, 'NoiseEstimate', 'LevelDependent');
 
-        %{
-           optional step I considered to remove tangetials, you might want to
-        play with this to see which ones to remove without affecting trends
-        %}
-        s = scatter(distance(1:incr:end), forces_smoothed(1:incr:end), 3, velocity(1:incr:end), 'filled');
+        s = scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), 3, velocity(1:incr:end), 'filled');
         s.MarkerFaceAlpha = 0.5;
     end
 end
 
 colormap(slanCM('bwr'));
 a = colorbar;
+a.Label.Rotation = 270;
 a.Label.String = 'Velocity (m/s)';
 
 %% Static
@@ -90,9 +89,8 @@ est = mean(results, 1);
 err = std(results, 1);
 
 % Plot results (error bars)
-errorbar(est(:, :, 1), est(:, :, 2) / MAX, err(:, :, 2) / MAX, 'ko', 'LineWidth', 1.5);
-
-xlim([0 0.26]);
+errorbar(est(:, :, 1) / (Config.L / 1000), est(:, :, 2) / SMAX, err(:, :, 2) / SMAX, 'ko', 'LineWidth', 1.5);
+xlim([0 8]);
 ylim([0.55 1]);
 
 function fitresult = fit_sinusoid(t, s, A, F)

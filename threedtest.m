@@ -8,10 +8,11 @@ items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
 highlight = ["CF54.275_SD3_F0.2_A7.mat", "CF54.275_SD3_F0.5_A7.mat", "CF54.275_SD3_F1_A7.mat"];
 
-title("Crazyflie Thrust Versus Distance and Velocity");
-xlabel("Distance (m)");
+% title("Crazyflie Thrust Versus Distance and Velocity");
+set(gca,"FontSize", 18)
+xlabel("{\Delta}z/l");
 ylabel("Velocity (m/s)");
-zlabel("Normalized Thrust");
+zlabel("Normalized Thrust (F_{z}/W)");
 view(3)
 hold on;
 
@@ -64,10 +65,10 @@ for i = 1:length(filenames)
         forces_smoothed(end-pad_length+1:end) = linspace(forces_smoothed(end-pad_length+1), mid, pad_length);
 
         if ismember(filename, highlight)
-            scatter3(main, distance, velocity, forces_smoothed, 10, 'filled');
+            scatter3(main, distance / (Config.L / 1000), velocity, forces_smoothed, 10, 'filled');
             labels(i) = sprintf("F = %g", F);
         else
-            h = scatter3(main, distance(1:incr:end), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'blue', 'filled');
+            h = scatter3(main, distance(1:incr:end) / (Config.L / 1000), velocity(1:incr:end), forces_smoothed(1:incr:end), 10, 'blue', 'filled');
             set(h, 'MarkerEdgeAlpha', 0.02, 'MarkerFaceAlpha', 0.02);
         end
     end

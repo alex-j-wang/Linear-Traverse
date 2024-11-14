@@ -54,6 +54,7 @@ classdef Process
             ylabel(p_y);
             hold on
             grid on
+            set(gca,"FontSize", 18)
         end
         
         function run_drone(throttle)

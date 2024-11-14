@@ -5,7 +5,7 @@
 classdef Config
     properties (Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
-        L = 33;          % Motor-center distance, mm
+        L = 32.5;          % Motor-center distance, mm
         FCM = 10;       % Cutoff frequency multiplier
         
         DATA_CYCLES = 40; % Cycles of data for phase averaging
