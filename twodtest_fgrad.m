@@ -12,7 +12,8 @@ MAX = 0.643476;
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
 
-Process.format_plot("Crazyflie Thrust Gradient", "Distance (m)", "Velocity (m/s)");
+% Crazyflie Thrust Gradient
+Process.format_plot("", "{\Delta}z/l", "Velocity (m/s)");
 
 for filename = filenames
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
@@ -40,16 +41,16 @@ for filename = filenames
         play with this to see which ones to remove without affecting trends
         %}
         
-        s = scatter(distance(1:incr:end), velocity(1:incr:end), 3, forces_smoothed(1:incr:end), 'filled');
+        s = scatter(distance(1:incr:end) / (Config.L / 1000), velocity(1:incr:end), 3, forces_smoothed(1:incr:end), 'filled');
         s.MarkerFaceAlpha = 0.25;
     end
 end
 
 colormap(slanCM('jet'));
 a = colorbar;
-a.Label.String = 'Normalized Thrust';
-
-xlim([0 0.26]);
+a.Limits = [0.6, 1];
+a.Label.Rotation = 270;
+a.Label.String = 'Normalized Thrust (F_{z}/W)';
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors
