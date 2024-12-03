@@ -4,12 +4,13 @@
 
 clear; clc; close all hidden;
 
-Process.format_plot("Static", "{\Delta}z/l", "Thrust");
+Process.format_plot("", "Separation, {\Delta}z/l", "Thrust (AU)");
 xlim([0 8]);
 ylim([0 1]);
+set(gcf, 'Renderer', 'painters');
 
-MAX = 0.643476;
-SMAX = 0.605;
+MAX = 0.594776;
+BASE_POINTS = 500;
 
 %% Static
 
@@ -47,13 +48,13 @@ est = mean(results, 1);
 err = std(results, 1);
 
 % Plot results (error bars)
-static = errorbar(est(:, :, 1) / (Config.L / 1000), est(:, :, 2) / SMAX, err(:, :, 2) / SMAX, 'ko', 'LineWidth', 1.5);
+static = errorbar(est(:, :, 1) / (Config.L / 1000), est(:, :, 2) / MAX, err(:, :, 2) / MAX, 'ko', 'LineWidth', 1.5);
 xlim([0 8]);
-ylim([0.55 1]);
+ylim([0.55 1.1]);
 p = gca();
 p.OuterPosition(3) = 0.95;
 
-exportgraphics(gcf, "C:\Users\awang127\Downloads\twodtest\twodtest-static.eps", 'ContentType', 'vector');
+print(gcf, "/Users/alexwang/Downloads/twodtest/twodtest-static.svg", "-dsvg");
 
 %% Dynamic
 
@@ -66,14 +67,12 @@ highlight = ["CF54.275_SD3_F0.2_A7.mat" "CF54.275_SD3_F1_A7.mat"];
 
 a = colorbar;
 a.Label.Rotation = 270;
-a.Label.String = 'Velocity (ż/U_i)';
+a.Label.String = 'Velocity ({\Delta}ż/U_i)';
 a.Label.FontSize = 18;
-a.Limits = [-0.0639 0.0639];
-colormap(slanCM('bwr'));
+colormap(slanCM('coolwarm'));
 
+% Set colormap limits
 scatter([9 9], [0 0], [1 1], [0.0639 -0.0639]);
-
-title("Low Frequency");
 
 for filename = highlight
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
@@ -89,21 +88,17 @@ for filename = highlight
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    %using wavelet denoising to smooth out data
-    forces_raw = forces.Total(:, 3) / Config.W / MAX;
-    forces_smoothed = wdenoise(forces_raw, 'NoiseEstimate', 'LevelDependent');
+    forces_smoothed = smooth(forces.Total(:, 3), length(forces.Total) / 10) / Config.W / MAX;
 
-    s = scatter(distance / (Config.L / 1000), forces_smoothed, 3, velocity / Config.U_i, 'filled');
+    s = scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), 3, velocity(1:incr:end) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
 
-    if filename == "CF54.275_SD3_F0.2_A7.mat"
-        exportgraphics(gcf, "C:\Users\awang127\Downloads\twodtest\twodtest-lowfreq.eps", 'ContentType', 'vector');
-        title("High Frequency");
+    if filename == highlight(1)
+        print(gcf, "/Users/alexwang/Downloads/twodtest/twodtest-lowfreq.svg", "-dsvg");
     end
 end
 
-exportgraphics(gcf, "C:\Users\awang127\Downloads\twodtest\twodtest-highfreq.eps", 'ContentType', 'vector');
-title("All Plots");
+print(gcf, "/Users/alexwang/Downloads/twodtest/twodtest-highfreq.svg", "-dsvg");
 
 for filename = filenames
 
@@ -128,18 +123,17 @@ for filename = filenames
         distance = SD + position_fit.A + position_fit(time);
         velocity = differentiate(position_fit, time);
 
-        %using wavelet denoising to smooth out data
-        forces_raw = forces.Total(:, 3) / Config.W / MAX;
-        forces_smoothed = wdenoise(forces_raw, 'NoiseEstimate', 'LevelDependent');
-
-        s = scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), 3, velocity(1:incr:end) / Config.U_i, 'filled');
+        forces_smoothed = smooth(forces.Total(:, 3), length(forces.Total) / 10) / Config.W / MAX;
+        
+        idx = floor(linspace(1, length(distance), BASE_POINTS * A / 0.05));
+        s = scatter(distance(idx) / (Config.L / 1000), forces_smoothed(idx), 3, velocity(idx) / Config.U_i, 'filled');
         s.MarkerFaceAlpha = 0.5;
     end
 end
 
 chH = get(gca,'Children');
 set(gca,'Children',flipud(chH));
-exportgraphics(gcf, "C:\Users\awang127\Downloads\twodtest\twodtest-all.pdf", 'ContentType', 'auto');
+print(gcf, "/Users/alexwang/Downloads/twodtest/twodtest-all.svg", "-dsvg");
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors
@@ -147,8 +141,8 @@ function fitresult = fit_sinusoid(t, s, A, F)
     s = s(:);
 
     % Define the sinusoidal fit type
-    ft = fittype('A*sin(2*pi*B*t + C)', 'independent', 't', 'coefficients', {'A', 'B', 'C'});
+    ft = fittype(@(A, C, t) A*sin(2*pi*F*t + C), 'independent', 't', 'coefficients', {'A', 'C'});
 
     % Fit the model to the data
-    fitresult = fit(t, s, ft, 'StartPoint', [A, F, 0]);
+    fitresult = fit(t, s, ft, 'StartPoint', [A, 0]);
 end

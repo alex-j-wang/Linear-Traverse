@@ -48,21 +48,7 @@ for i = 1:length(filenames)
         distance = SD + position_fit.A + position_fit(time);
         velocity = differentiate(position_fit, time);
 
-        %{
-        padding to smooth out points before and after filter and removing
-        them later
-        %}
-        pad_length = 50; %# points to pad
-        padded_forces = [forces.Total(end-pad_length+1:end, 3); forces.Total(:, 3); forces.Total(1:pad_length, 3)] / Config.W / MAX;
-        
-        %wavelet denoising
-        forces_smoothed_padded = wdenoise(padded_forces, 'NoiseEstimate', 'LevelDependent');
-        
-        % removing earlier padded points here 
-        forces_smoothed = forces_smoothed_padded(pad_length+1:end-pad_length);
-        mid = (forces_smoothed(1) + forces_smoothed(end)) / 2;
-        forces_smoothed(1:pad_length) = linspace(mid, forces_smoothed(pad_length), pad_length);
-        forces_smoothed(end-pad_length+1:end) = linspace(forces_smoothed(end-pad_length+1), mid, pad_length);
+        forces_smoothed = smooth(forces.Total(:, 3), length(forces.Total) / 10) / Config.W / MAX;
 
         if ismember(filename, highlight)
             scatter3(main, distance / (Config.L / 1000), velocity / Config.U_i, forces_smoothed, 10, 'filled');
@@ -82,8 +68,8 @@ function fitresult = fit_sinusoid(t, s, A, F)
     s = s(:);
 
     % Define the sinusoidal fit type
-    ft = fittype('A*sin(2*pi*B*t + C)', 'independent', 't', 'coefficients', {'A', 'B', 'C'});
+    ft = fittype(@(A, C, t) A*sin(2*pi*F*t + C), 'independent', 't', 'coefficients', {'A', 'C'});
 
     % Fit the model to the data
-    fitresult = fit(t, s, ft, 'StartPoint', [A, F, 0]);
+    fitresult = fit(t, s, ft, 'StartPoint', [A, 0]);
 end

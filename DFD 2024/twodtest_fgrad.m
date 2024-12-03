@@ -1,5 +1,6 @@
 % -------------------------------------------------------------------------
 % Plots speed versus distance with color to represent thrust
+% NOTE: OUTDATED, SEE OTHER FILES FOR BETTER SMOOTHING
 % -------------------------------------------------------------------------
 
 %% Dynamic
