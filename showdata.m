@@ -3,8 +3,9 @@ clear; clc; close all hidden;
 % Load the calibration matrix for the force transducer
 load(['cal_' Config.SENSOR '.mat']);
 
-folder = "/Users/alexwang/Documents/MATLAB/Linear Traverse/Data/2024_10_25_3D";
+folder = "C:\Users\awang127\Documents\MATLAB\Linear-Traverse\Data\2024_10_25_3D";
 filename = "CF54.275_SD3_F1_A7.mat";
+MAX =  0.5840;
 
 load(fullfile(folder, filename));
 
@@ -19,9 +20,9 @@ T = 1 / F;
 % FC = Config.FCM * F;
 FC = 20;
 
-figure('Position', [476 360 560 120]);
-Process.format_plot("Raw Thrust", "Time (s)", "Thrust (N)");
-plot(time, forces(:, 3));
+% figure('Position', [476 360 560 120]);
+% Process.format_plot("Raw Thrust", "Time (s)", "Thrust (N)");
+% plot(time, forces(:, 3));
 
 pad_length = 50;
 padded = vertcat(repmat(mean(forces(1:200, :)), 50, 1), forces);
@@ -34,9 +35,9 @@ for col = 1:6
     filtered(:, col) = filt(pad_length + 1:end);
 end
 
-figure('Position', [476 360 560 120]);
-Process.format_plot("Filtered Thrust (FC = 20)", "Time (s)", "Thrust (N)");
-plot(time, filtered(:, 3));
+% figure('Position', [476 360 560 120]);
+% Process.format_plot("Filtered Thrust (FC = 20)", "Time (s)", "Thrust (N)");
+% plot(time, filtered(:, 3));
 
 % Phase average forces
 phase_width = T * Config.SRATE;
@@ -57,12 +58,14 @@ end
 stacked = pagetranspose(reshape(filtered', 6, phase_width, []));
 total_force = mean(stacked, 3);
 
-figure
-Process.format_plot('', 'Time (s)', 'Normalized Thrust');
-plot(time(1 : phase_width), squeeze(stacked(:, 3, :)) / Config.W, 'Color', [0 0.4470 0.7410 0.2])
-plot(time(1 : phase_width), total_force(:, 3 ) / Config.W, 'Color', [0.8500 0.3250 0.0980], 'LineWidth', 1.5);
+figure('Position', [680 458 560*1.35 420*1.35])
+Process.format_plot('', 'Time (t/T)', 'Thrust (AU)');
+plot(time(1 : phase_width), squeeze(stacked(:, 3, :)) / Config.W / MAX, 'Color', [161, 201, 227] / 255)
+plot(time(1 : phase_width), total_force(:, 3 ) / Config.W / MAX, 'Color', [0.8500 0.3250 0.0980], 'LineWidth', 1.5);
 
 % % Phase average position
 % stacked = reshape(pos_encoder, phase_width, []);
 % pos_encoder = mean(stacked, 2);
 % plot(time(1 : phase_width), pos_encoder * 10, 'Color', '#EDB120', 'LineWidth', 1.5);
+
+set(gcf, 'Renderer', 'painters');

@@ -11,11 +11,12 @@ MAX = 0.643476;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
+highlight = ["CF54.275_SD3_F0.2_A7.mat", "CF54.275_SD3_F1_A7.mat"];
 
 % Crazyflie Thrust Gradient
-Process.format_plot("", "{\Delta}z/l", "Velocity (m/s)");
+Process.format_plot("", "{\Delta}z/l", "Normalized Velocity (ż/U_i)");
 
-for filename = filenames
+for filename = highlight % Set to filenames to plot all
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
     [CF, SD, F, A] = deal(parameters{:});
@@ -26,7 +27,7 @@ for filename = filenames
     pos_encoder = pos_encoder - pos_encoder(1) - offset';
 
     if A == 0
-        scatter(SD, 0, 3, mean(forces.Total(:, 3)) / Config.W / MAX, 'filled');
+        % scatter(SD, 0, 3, mean(forces.Total(:, 3)) / Config.W / MAX, 'filled');
     else
         position_fit = fit_sinusoid(time, pos_encoder, A, F);
         distance = SD + position_fit.A + position_fit(time);
@@ -35,14 +36,15 @@ for filename = filenames
         %using wavelet denoising to smooth out data
         forces_raw = forces.Total(:, 3) / Config.W / MAX;
         forces_smoothed = wdenoise(forces_raw, 'NoiseEstimate', 'LevelDependent');
-
-        %{
-           optional step I considered to remove tangetials, you might want to
-        play with this to see which ones to remove without affecting trends
-        %}
         
-        s = scatter(distance(1:incr:end) / (Config.L / 1000), velocity(1:incr:end), 3, forces_smoothed(1:incr:end), 'filled');
-        s.MarkerFaceAlpha = 0.25;
+        if ismember(filename, highlight)
+            scatter(distance / (Config.L / 1000), velocity / Config.U_i, 3, forces_smoothed, 'filled');
+            text(mean(distance / (Config.L / 1000)), min(velocity / Config.U_i), sprintf("F = %g Hz", F), 'HorizontalAlignment', 'center', ...
+                VerticalAlignment='bottom', FontSize=14);
+        else
+            s = scatter(distance(1:incr:end) / (Config.L / 1000), velocity(1:incr:end) / Config.U_i, 3, forces_smoothed(1:incr:end), 'filled');
+            s.MarkerFaceAlpha = 0.01;
+        end
     end
 end
 
@@ -51,6 +53,11 @@ a = colorbar;
 a.Limits = [0.6, 1];
 a.Label.Rotation = 270;
 a.Label.String = 'Normalized Thrust (F_{z}/W)';
+a.Label.FontSize = 18;
+p = gca();
+p.OuterPosition(3) = 0.98;
+
+saveas(gca(), "C:\Users\awang127\Downloads\twodtest_fgrad.svg")
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors
