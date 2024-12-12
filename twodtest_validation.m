@@ -95,7 +95,7 @@ for CF = 54.275
                 scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), '.', 'DisplayName', ['F = ' num2str(F)]);
             end
             lines = get(gca, 'Children');
-            uistack(lines(end),'top');
+            uistack(lines(end), 'top');
             legend('Location', 'eastoutside');
             title(sprintf("Thrust Versus Distance (CF%g SD%g A%g)", CF, SD, A));
             fileout = fullfile(OUT_FOLDER, sprintf("CF%g_SD%g_A%g.svg", CF, SD, A));
