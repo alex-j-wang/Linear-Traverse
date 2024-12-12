@@ -6,30 +6,37 @@ clear; clc; close all hidden;
 
 Process.format_plot("", "Separation, {\Delta}z/l", "Thrust (AU)");
 xlim([0 8]);
-ylim([0 1]);
-set(gcf, 'Renderer', 'painters');
+ylim([0.3 0.7]);
+axis("square");
+set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
-MAX = 0.594776;
+MAX = 1;
 BASE_POINTS = 500;
+ERRORBAR = true;
+
+STATIC_FOLDER = "2024_12_09_STAT";
+DYNAMIC_FOLDER = "2024_12_06_DYN";
+OUT_FOLDER = "C:/Users/awang127/Downloads/validation-inertial/";
 
 %% Static
 
 % Load the calibration matrix for the force transducer
 load(['cal_' Config.SENSOR '.mat']);
 
-results = zeros([3 10 2]);
-folders = ["T1", "T2", "T3"];
+items = dir(fullfile('Data', STATIC_FOLDER));
+folders = string({items(3:end).name});
+results = zeros([length(folders) 10 2]);
 
 % Choose data folder
-for f = 1:3
+for f = 1:length(folders)
     folder = folders(f);
-    items = dir(fullfile('Data', '2024_10_31', folder, '*.mat'));
+    items = dir(fullfile('Data', STATIC_FOLDER, folder, '*.mat'));
     filenames = sort({items.name});
 
     for i = 1:10
         filename = filenames{i};
         
-        load(fullfile('Data', '2024_10_31', folder, filename), 'voltages');
+        load(fullfile('Data', STATIC_FOLDER, folder, filename), 'voltages');
         forces = (cal_mat * voltages')'; % Conversion to forces and moments
         
         % Extract and convert parameters
@@ -47,18 +54,21 @@ end
 est = mean(results, 1);
 err = std(results, 1);
 
-% Plot results (error bars)
-errorbar(est(:, :, 1) / (Config.L / 1000), est(:, :, 2) / MAX, err(:, :, 2) / MAX, 'ko', 'LineWidth', 1.5, 'DisplayName', 'Static');
-xlim([0 8]);
-ylim([0.55 1.1]);
-p = gca();
-p.OuterPosition(3) = 0.95;
+if ERRORBAR
+    % Plot results (error bars)
+    errorbar(est(:, :, 1) / (Config.L / 1000), est(:, :, 2) / MAX, err(:, :, 2) / MAX, 'ko', 'LineWidth', 1.5, 'DisplayName', 'Static');
+else
+    % Plot results (data)
+    SD = results(:, :, 1);
+    Fz = results(:, :, 2);
+    plot(SD(:) / (Config.L / 1000), Fz(:) / MAX, "kx", "DisplayName", 'Static', "MarkerSize", 8, "LineWidth", 1.5);
+end
 
 static = gcf;
 
 %% Dynamic
 
-folder_path = "Data/2024_10_25_3D/processed_data";
+folder_path = fullfile('Data', DYNAMIC_FOLDER, 'processed_data');
 base_incr = 10;
 
 items = dir(fullfile(folder_path, '*.mat'));
@@ -68,8 +78,8 @@ for CF = 54.275
     for SD = [0.5 1 2 3 5 7]
         for A = [2.5 5 7 9]
             fig = copyobj(static, 0);
-            for F = [0.2 0.5 1]
-                incr = base_incr / F;
+            for F = [0.1 0.2 0.5 0.75 1]
+                incr = round(base_incr / F);
                 filein = sprintf('CF%g_SD%g_F%g_A%g', CF, SD, F, A);
                 load(fullfile(folder_path, filein), 'time', 'forces', 'pos_encoder');
                 
@@ -84,9 +94,11 @@ for CF = 54.275
 
                 scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), '.', 'DisplayName', ['F = ' num2str(F)]);
             end
-            legend();
+            lines = get(gca, 'Children');
+            uistack(lines(end),'top');
+            legend('Location', 'eastoutside');
             title(sprintf("Thrust Versus Distance (CF%g SD%g A%g)", CF, SD, A));
-            fileout = sprintf('/Users/alexwang/Downloads/validation/CF%g_SD%g_A%g.svg', CF, SD, A);
+            fileout = fullfile(OUT_FOLDER, sprintf("CF%g_SD%g_A%g.svg", CF, SD, A));
             print(gcf, fileout, "-dsvg");
             close gcf;
         end
