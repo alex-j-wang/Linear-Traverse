@@ -6,50 +6,23 @@ clear; clc; close all hidden;
 
 Process.format_plot("", "Separation, {\Delta}z/l", "Thrust (AU)");
 xlim([0 8]);
-% ylim([0 1.1]);
+ylim([0.5 1.4]);
 axis("square");
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
-% MAX = 0.7;
 MAX = 1;
 BASE_POINTS = 500;
-ERRORBAR = true;
+ERRORBAR = false;
 
-STATIC_FOLDER = "2024_12_09_STAT";
-DYNAMIC_FOLDER = "2024_12_06_DYN";
-OUT_FOLDER = "/Users/alexwang/Downloads/twodtest";
+STATIC_FOLDER = "2024_12_11_STAT_TRAV-CF-OFF";
+DYNAMIC_FOLDER = "2024_12_12_DYN_TRAV-CF-OFF";
+OUT_FOLDER = "/Users/awang127/Downloads/twodtest";
 
 %% Static
 
-% Load the calibration matrix for the force transducer
-load(['cal_' Config.SENSOR '.mat']);
-
-items = dir(fullfile('Data', STATIC_FOLDER));
-folders = string({items(3:end).name});
-results = zeros([length(folders) 10 2]);
-
-% Choose data folder
-for f = 1:length(folders)
-    folder = folders(f);
-    items = dir(fullfile('Data', STATIC_FOLDER, folder, '*.mat'));
-    filenames = sort({items.name});
-
-    for i = 1:10
-        filename = filenames{i};
-        
-        load(fullfile('Data', STATIC_FOLDER, folder, filename), 'voltages');
-        forces = (cal_mat * voltages')'; % Conversion to forces and moments
-        
-        % Extract and convert parameters
-        parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
-        [~, SD, ~, ~] = deal(parameters{:});
-        SD = SD / 100;
-        
-        Fz = mean(forces(:, 3)) / Config.W;
-        results(f, i, 1) = SD;
-        results(f, i, 2) = Fz;
-    end
-end
+load(fullfile('Data', STATIC_FOLDER, 'processed_data'), 'results');
+SDS = results.F_z.SD / (Config.L / 1000);
+static = table2array(results.F_z(:, 2:end)) / Config.W / MAX;
 
 % Calculate mean and standard deviation
 est = mean(results, 1);
@@ -57,18 +30,17 @@ err = std(results, 1);
 
 if ERRORBAR
     % Plot results (error bars)
-    errorbar(est(:, :, 1) / (Config.L / 1000), est(:, :, 2) / MAX, err(:, :, 2) / MAX, 'ko', 'LineWidth', 1.5);
+    errorbar(SDS, mean(static, 2), std(static'), 'ko', 'LineWidth', 1.5);
 else
     % Plot results (data)
-    SD = results(:, :, 1);
-    Fz = results(:, :, 2);
-    plot(SD(:) / (Config.L / 1000), Fz(:) / MAX, "kx", "MarkerSize", 8, "LineWidth", 1.5);
+    plot(SDS, static, "kx", "MarkerSize", 8, "LineWidth", 1.5);
 end
 
 p = gca();
 p.OuterPosition(3) = 0.95;
 
-print(gcf, fullfile(OUT_FOLDER, "twodtest-static.svg"), "-dsvg");
+% print(gcf, fullfile(OUT_FOLDER, "twodtest-static.svg"), "-dsvg");
+savefig(gcf, fullfile(OUT_FOLDER, "twodtest-static.fig"));
 
 %% Dynamic
 
@@ -108,11 +80,13 @@ for filename = highlight
     s.MarkerFaceAlpha = 0.5;
 
     if filename == highlight(1)
-        print(gcf, fullfile(OUT_FOLDER, "twodtest-lowfreq.svg"), "-dsvg");
+        % print(gcf, fullfile(OUT_FOLDER, "twodtest-lowfreq.svg"), "-dsvg");
+        savefig(gcf, fullfile(OUT_FOLDER, "twodtest-lowfreq.fig"));
     end
 end
 
-print(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.svg"), "-dsvg");
+% print(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.svg"), "-dsvg");
+savefig(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.fig"));
 
 for filename = filenames
 
@@ -139,11 +113,19 @@ for filename = filenames
     idx = floor(linspace(1, length(distance), BASE_POINTS * A / 0.05));
     s = scatter(distance(idx) / (Config.L / 1000), forces_smoothed(idx), 3, velocity(idx) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
+    
+    % if any(abs(distance(idx) / (Config.L / 1000) - 3.11231) < 0.0001 & abs(forces_smoothed(idx) - 0.900324) < 0.0001)
+    %     disp(filename)
+    % end
 end
 
-lines = get(gca, 'Children');
-uistack(lines(end), 'top');
-print(gcf, fullfile(OUT_FOLDER, "twodtest-all.svg"), "-dsvg");
+% lines = get(gca, 'Children');
+% uistack(lines(end), 'top');
+chH = get(gca,'Children');
+set(gca,'Children',flipud(chH));
+
+% print(gcf, fullfile(OUT_FOLDER, "twodtest-all.svg"), "-dsvg");
+savefig(gcf, fullfile(OUT_FOLDER, "twodtest-all.fig"));
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors

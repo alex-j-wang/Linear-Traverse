@@ -6,7 +6,7 @@ clear; clc; close all hidden;
 
 Process.format_plot("", "Separation, {\Delta}z/l", "Thrust (AU)");
 xlim([0 8]);
-ylim([0.3 0.7]);
+ylim([0 1.25]);
 axis("square");
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
@@ -14,8 +14,8 @@ MAX = 1;
 BASE_POINTS = 500;
 ERRORBAR = true;
 
-STATIC_FOLDER = "2024_12_09_STAT";
-DYNAMIC_FOLDER = "2024_12_06_DYN";
+STATIC_FOLDER = "2024_12_11_STAT_TRAV-CF-OFF";
+DYNAMIC_FOLDER = "2024_12_12_DYN_TRAV-CF-OFF";
 OUT_FOLDER = "C:/Users/awang127/Downloads/validation-inertial/";
 
 %% Static
