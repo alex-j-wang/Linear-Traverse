@@ -49,9 +49,9 @@ classdef Process
 
         function format_plot(p_title, p_x, p_y)
             % FORMAT_PLOT  Format the plot with title, x-axis, y-axis, and grid
-            title(p_title);
-            xlabel(p_x);
-            ylabel(p_y);
+            title(p_title, "Interpreter", "latex");
+            xlabel(p_x, "Interpreter", "latex");
+            ylabel(p_y, "Interpreter", "latex");
             hold on
             grid on
             set(gca,"FontSize", 18)

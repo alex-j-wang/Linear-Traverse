@@ -6,8 +6,8 @@ clear; clc; close all hidden;
 
 % Test parameters
 CFS = 54.275; % Crazyflie throttle, %
-SDS = [0.005 0.01 0.02 0.03 0.05 0.07]; % Stopping distance, m
-FS = [0.1 0.2 0.5 0.75 1];  % Traverse frequency, Hz
+SDS = [0.005 0.01 0.04 0.07]; % Stopping distance, m
+FS = [0.2 0.5 0.75 1];  % Traverse frequency, Hz
 AS = [.025 0.05 0.07 0.09];  % Traverse amplitude, m
 
 % DAQ setup

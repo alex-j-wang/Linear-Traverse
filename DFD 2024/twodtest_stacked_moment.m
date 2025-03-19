@@ -4,9 +4,9 @@
 
 clear; clc; close all hidden;
 
-Process.format_plot("", "Separation, $\Delta z/l$", "Moment, $\bar{M_y}/(Wl)$");
-xlim([0 8]);
-ylim([0 0.25]);
+Process.format_plot("", "Separation, {\Delta}z/l", "Moment, M_y/(Wl)");
+% xlim([0 8]); % TODO: set
+% ylim([0 1.1]); % TODO: set
 axis("square");
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
@@ -14,17 +14,17 @@ MAX = 1;
 BASE_POINTS = 500;
 ERRORBAR = true;
 
-STATIC_FOLDER = "2025_03_19_STAT";
-DYNAMIC_FOLDER = "2025_03_19_DYN";
-% STATIC_FOLDER = "2024_12_16_STAT";
-% DYNAMIC_FOLDER = "2024_12_06_DYN";
-OUT_FOLDER = "C:/Users/awang127/Downloads/twodtest-offset-moment/";
+% STATIC_FOLDER = "2025_03_19_STAT";
+% DYNAMIC_FOLDER = "2025_03_19_DYN";
+STATIC_FOLDER = "2024_12_16_STAT";
+DYNAMIC_FOLDER = "2024_12_06_DYN";
+OUT_FOLDER = "C:/Users/awang127/Downloads/twodtest-stacked-moment/";
 
 %% Static
 
 load(fullfile('Data', STATIC_FOLDER, 'processed_data'), 'results');
-SDS = results.M_x.SD / (Config.L / 1000);
-static = table2array(results.M_x(:, 2:end)) / Config.W / Config.L / MAX;
+SDS = results.F_z.SD / (Config.L / 1000);
+static = table2array(results.M_x(:, 2:end)) / Config.W / (Config.L / 1000) / MAX;
 
 % Calculate mean and standard deviation
 est = mean(results, 1);
@@ -51,25 +51,18 @@ incr = 10;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
-highlight = [""];
-
-IGNORE = ["CF54.275_SD0.5_F0.1_A2.5.mat"];
-SHIFT =  filenames(49:end);
+highlight = ["CF54.275_SD4_F0.2_A5.mat" "CF54.275_SD4_F1_A5.mat"];
 
 a = colorbar;
 a.Label.Rotation = 270;
-a.Label.String = 'Velocity $(\Delta \dot{z}/U_i)$';
+a.Label.String = 'Velocity ({\Delta}ż/U_i)';
 a.Label.FontSize = 18;
-a.Label.Interpreter = "latex";
 colormap(slanCM('coolwarm'));
 
 % Set colormap limits
-scatter([9 9], [0 0], [1 1], 2 * pi * 1 * 0.09 / Config.U_i * [1 -1]);
+scatter([9 9], [0 0], [1 1], 2 * pi * 1 * 0.09 / Config.U_i * [1 -1]); % TODO: set
 
 for filename = highlight
-    if filename == ""
-        break
-    end
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
     [CF, SD, F, A] = deal(parameters{:});
@@ -83,7 +76,7 @@ for filename = highlight
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / Config.L / MAX;
+    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / (Config.L / 1000) / MAX;
 
     s = scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), 3, velocity(1:incr:end) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
@@ -104,7 +97,7 @@ for filename = filenames
     SD = SD / 100;
     A = A / 100;
 
-    if A == 0 || ismember(filename, highlight) || ismember(filename, IGNORE)
+    if A == 0 || ismember(filename, highlight)
         continue
     end
 
@@ -117,17 +110,13 @@ for filename = filenames
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / Config.L / MAX;
-
-    if ismember(filename, SHIFT)
-        forces_smoothed = forces_smoothed + 0.025;
-    end
+    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / (Config.L / 1000) / MAX;
     
     idx = floor(linspace(1, length(distance), BASE_POINTS * A / 0.05));
     s = scatter(distance(idx) / (Config.L / 1000), forces_smoothed(idx), 3, velocity(idx) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
     
-    % if any(forces_smoothed > 1)
+    % if any(abs(distance(idx) / (Config.L / 1000) - 3.11231) < 0.0001 & abs(forces_smoothed(idx) - 0.900324) < 0.0001)
     %     disp(filename)
     % end
 end
