@@ -4,25 +4,25 @@
 
 clear; clc; close all hidden;
 
-Process.format_plot("", "Separation, {\Delta}z/l", "Thrust (AU)");
-xlim([0 8]);
-ylim([0.5 1.4]);
+Process.format_plot("", "Separation, {\Delta}z/l", "Torque (A.U.)");
+% xlim([0 8]); % TODO: set
+% ylim([0 1.1]); % TODO: set
 axis("square");
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
 MAX = 1;
 BASE_POINTS = 500;
-ERRORBAR = false;
+ERRORBAR = true;
 
-STATIC_FOLDER = "2024_12_11_STAT_TRAV-CF-OFF";
-DYNAMIC_FOLDER = "2024_12_12_DYN_TRAV-CF-OFF";
-OUT_FOLDER = "/Users/awang127/Downloads/twodtest";
+STATIC_FOLDER = "2025_03_19_STAT";
+DYNAMIC_FOLDER = "2025_03_19_DYN";
+OUT_FOLDER = "C:/Users/awang127/Downloads/twodtest-moment/";
 
 %% Static
 
 load(fullfile('Data', STATIC_FOLDER, 'processed_data'), 'results');
 SDS = results.F_z.SD / (Config.L / 1000);
-static = table2array(results.F_z(:, 2:end)) / Config.W / MAX;
+static = table2array(results.M_x(:, 2:end)) / Config.W / (Config.L / 1000) / MAX;
 
 % Calculate mean and standard deviation
 est = mean(results, 1);
@@ -49,7 +49,7 @@ incr = 10;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
-highlight = ["CF54.275_SD5_F0.1_A5.mat" "CF54.275_SD5_F1_A5.mat"];
+highlight = ["CF54.275_SD4_F0.2_A5.mat" "CF54.275_SD4_F1_A5.mat"];
 
 a = colorbar;
 a.Label.Rotation = 270;
@@ -58,7 +58,7 @@ a.Label.FontSize = 18;
 colormap(slanCM('coolwarm'));
 
 % Set colormap limits
-scatter([9 9], [0 0], [1 1], 2 * pi * 1 * 0.09 / Config.U_i * [1 -1]);
+scatter([9 9], [0 0], [1 1], 2 * pi * 1 * 0.09 / Config.U_i * [1 -1]); % TODO: set
 
 for filename = highlight
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
@@ -74,7 +74,7 @@ for filename = highlight
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    forces_smoothed = smooth(forces.Total(:, 3), length(forces.Total) / 10) / Config.W / MAX;
+    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / (Config.L / 1000) / MAX;
 
     s = scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), 3, velocity(1:incr:end) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
@@ -108,7 +108,7 @@ for filename = filenames
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    forces_smoothed = smooth(forces.Total(:, 3), length(forces.Total) / 10) / Config.W / MAX;
+    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / (Config.L / 1000) / MAX;
     
     idx = floor(linspace(1, length(distance), BASE_POINTS * A / 0.05));
     s = scatter(distance(idx) / (Config.L / 1000), forces_smoothed(idx), 3, velocity(idx) / Config.U_i, 'filled');
