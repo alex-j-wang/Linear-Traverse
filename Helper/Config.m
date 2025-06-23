@@ -17,10 +17,12 @@ classdef Config
         SHIFT_SPEED = 0.05;   % Speed while shifting, m/s
         CAL_SAMPLES = 3000;   % Samples for position calibration
 
-        SRATE = 20000;   % Data sampling rate, Hz
-        DTOV = 1 / 0.02; % Conversion factor from distance to voltage, V/m
-        VTOD = 0.02;     % Conversion factor from voltage to distance, m/V
-        VTOI = 0.25;     % Conversion factor from voltage to current, A/V
+        SRATE = 20000;      % Data sampling rate, Hz
+        DTOV = 1 / 0.02;    % Conversion factor from distance to voltage, V/m
+        VTOD = 0.02;        % Conversion factor from voltage to distance, m/V
+        VTOI = 0.25;        % Conversion factor from voltage to current, A/V
+        CFVTOV = 5 / 3.3;   % Conversion factor from AI voltage to CF voltage, V/V
+        CFVTOI = 3.3 / 3.3; % Conversion factor from AI voltage to CF current, A/V
         
         LPI = 3933.571; % Approximate encoder lines per inch
         NBITS = 32;     % Encoder channel resolution
@@ -48,17 +50,28 @@ classdef Config
             output.Name = 'voutput';
             
             % Input channels (force sensor and position)
-            input_channels = addinput(daq_obj, 'Dev2', 0:7, 'Voltage');
+            input_channels = addinput(daq_obj, 'Dev2', 0:5, 'Voltage');
             for i = 1:6
                 input_channels(i).Name = "ForceSensor" + i;
             end
-            if nargin == 2
-                input_channels(7).Name = ch6;
-                input_channels(8).Name = ch7;
-            else
-                input_channels(7).Name = 'TargetPosition';
-                input_channels(8).Name = 'MeasuredPosition';
-            end
+            
+            % NB: deprecated to make room for Crazyflie power
+            % if nargin == 2
+            %     input_channels(7).Name = ch6;
+            %     input_channels(8).Name = ch7;
+            % else
+            %     input_channels(7).Name = 'TargetPosition';
+            %     input_channels(8).Name = 'MeasuredPosition';
+            % end
+
+            % Input channels (Crazyflie voltage and current)
+            cf_voltage = addinput(daq_obj, 'Dev2', 'ai6', 'Voltage');
+            cf_voltage.Name = 'CFVoltage';
+            cf_voltage.TerminalConfig = 'SingleEnded';
+            
+            cf_current = addinput(daq_obj, 'Dev2', 'ai7', 'Voltage');
+            cf_current.Name = 'CFCurrent';
+            cf_current.TerminalConfig = 'SingleEnded';
 
             % Input channel (position encoder)
             encoder_plus = addinput(daq_obj, 'Dev2', 'ctr0', 'Position');

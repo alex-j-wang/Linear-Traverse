@@ -12,7 +12,10 @@ classdef Process
             else
                 scale = Config.VTOI;
             end
-            data(:, 7:8) = data(:, 7:8) * scale;
+            % NB: deprecated to make room for Crazyflie power
+            % data(:, 7:8) = data(:, 7:8) * scale;
+            data(:, 7) = data(:, 7) * Config.CFVTOV;
+            data(:, 8) = data(:, 8) * Config.CFVTOI;
             data(:, 9) = Process.encoder_convert(data(:, 9), lpi);
             data(:, 10) = Process.encoder_convert(data(:, 10), lpi);
         end
