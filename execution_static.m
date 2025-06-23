@@ -80,12 +80,12 @@ for TRIAL = 1:TRIALS
             pause(1);
     
             % Gather data
-            [time, voltages, tare_start, tare_end, ~, ~, pos_encoder] = ...
+            [time, voltages, tare_start, tare_end, ~, ~, pos_encoder, cf_current] = ...
                 dynamic_operation(CF, shift, F, A, daq_obj, lpi, Config.Position);
     
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
-            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'pos_encoder');
+            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'pos_encoder', 'cf_current');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
     
             if d.CancelRequested

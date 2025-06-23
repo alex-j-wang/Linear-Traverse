@@ -4,9 +4,25 @@
 
 classdef Process
     methods(Static)
+        function serial_callback(src, ~)
+            src.UserData.time(end + 1) = datetime('now');
+            src.UserData.current(end + 1) = read(src, 1, 'single');
+        end
+
         function [data, time] = conv_readwrite(daq_obj, position, lpi, mode)
             % CONV_READWRITE  Read signal data and write position data with necessary conversions
+            s = serialport(Config.ESPCOM, Config.BAUD);
+            s.UserData = struct('time', datetime.empty(), 'current', []);
+            
+            line = readline(s);
+            while ~contains(line, 'INA3221 Found!')
+                line = readline(s);
+            end
+
+            configureCallback(s, 'byte', 4, @Process.serial_callback);
             [data, time] = readwrite(daq_obj, position * Config.DTOV, 'OutputFormat', 'Matrix');
+            configureCallback(s, 'off');
+            
             if mode == Config.Position
                 scale = Config.VTOD;
             else
@@ -15,6 +31,9 @@ classdef Process
             data(:, 7:8) = data(:, 7:8) * scale;
             data(:, 9) = Process.encoder_convert(data(:, 9), lpi);
             data(:, 10) = Process.encoder_convert(data(:, 10), lpi);
+            
+            t_serial = seconds(s.UserData.time - s.UserData.time(1));
+            data(:, 11) = interp1(t_serial, s.UserData.current, time, 'nearest', 'extrap');
         end
 
         function [to, encoder] = gradual_move(daq_obj, from, to)

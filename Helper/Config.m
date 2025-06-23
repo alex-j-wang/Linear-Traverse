@@ -30,6 +30,8 @@ classdef Config
         BOXES = ["Total" "Inertial" "Lift" "Tare" "Lock" "Equalize"]; % Available force plots
         SSH = 'anoop@anoop-g3-3579.devices.brown.edu';                % Linux computer SSH address
         SENSOR = 'FT9042';                                            % Nano17 serial number
+        ESPCOM = 'COM10';                                             % ESP32 COM port
+        BAUD = 115200;                                                % ESP32 baud rate
     end
 
     enumeration
