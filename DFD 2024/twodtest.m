@@ -4,25 +4,29 @@
 
 clear; clc; close all hidden;
 
-Process.format_plot("", "Separation, {\Delta}z/l", "Thrust (AU)");
+Process.format_plot("", "Separation, $\Delta z/l$", "Thrust, $\bar{F_z}/W$");
 xlim([0 8]);
 ylim([0.5 1.4]);
 axis("square");
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
 MAX = 1;
+MAX_STATIC = 1;
 BASE_POINTS = 500;
-ERRORBAR = false;
+ERRORBAR = true;
 
-STATIC_FOLDER = "2024_12_11_STAT_TRAV-CF-OFF";
-DYNAMIC_FOLDER = "2024_12_12_DYN_TRAV-CF-OFF";
-OUT_FOLDER = "/Users/awang127/Downloads/twodtest";
+% STATIC_FOLDER = "2024_12_16_STAT";
+% DYNAMIC_FOLDER = "2024_12_06_DYN";
+STATIC_FOLDER = "2025_03_19_STAT";
+DYNAMIC_FOLDER = "2025_03_19_DYN";
+
+OUT_FOLDER = "/Users/awang127/Downloads/twodtest-offset-force";
 
 %% Static
 
 load(fullfile('Data', STATIC_FOLDER, 'processed_data'), 'results');
 SDS = results.F_z.SD / (Config.L / 1000);
-static = table2array(results.F_z(:, 2:end)) / Config.W / MAX;
+static = table2array(results.F_z(:, 2:end)) / Config.W / MAX_STATIC;
 
 % Calculate mean and standard deviation
 est = mean(results, 1);
@@ -49,18 +53,23 @@ incr = 10;
 
 items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
-highlight = ["CF54.275_SD5_F0.1_A5.mat" "CF54.275_SD5_F1_A5.mat"];
+% highlight = ["CF54.275_SD4_F0.2_A5.mat" "CF54.275_SD4_F1_A5.mat"];
+highlight = [""];
 
 a = colorbar;
 a.Label.Rotation = 270;
-a.Label.String = 'Velocity ({\Delta}ż/U_i)';
+a.Label.String = 'Velocity $(\Delta \dot{z}/U_i)$';
 a.Label.FontSize = 18;
+a.Label.Interpreter = "latex";
 colormap(slanCM('coolwarm'));
 
 % Set colormap limits
 scatter([9 9], [0 0], [1 1], 2 * pi * 1 * 0.09 / Config.U_i * [1 -1]);
 
 for filename = highlight
+    if filename == ""
+        break
+    end
     load(fullfile(folder_path, filename), 'time', 'forces', 'pos_encoder');
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
     [CF, SD, F, A] = deal(parameters{:});
@@ -88,6 +97,11 @@ end
 % print(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.svg"), "-dsvg");
 savefig(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.fig"));
 
+case_all = {};
+distance_all = [];
+thrust_all = [];
+velocity_all = [];
+
 for filename = filenames
 
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
@@ -113,6 +127,11 @@ for filename = filenames
     idx = floor(linspace(1, length(distance), BASE_POINTS * A / 0.05));
     s = scatter(distance(idx) / (Config.L / 1000), forces_smoothed(idx), 3, velocity(idx) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
+
+    case_all = [case_all; repmat(filename, [length(idx) 1])];
+    distance_all = [distance_all; distance(idx) / (Config.L / 1000)];
+    thrust_all = [thrust_all; forces_smoothed(idx)];
+    velocity_all = [velocity_all; velocity(idx) / Config.U_i];
     
     % if any(abs(distance(idx) / (Config.L / 1000) - 3.11231) < 0.0001 & abs(forces_smoothed(idx) - 0.900324) < 0.0001)
     %     disp(filename)
@@ -126,6 +145,11 @@ set(gca,'Children',flipud(chH));
 
 % print(gcf, fullfile(OUT_FOLDER, "twodtest-all.svg"), "-dsvg");
 savefig(gcf, fullfile(OUT_FOLDER, "twodtest-all.fig"));
+
+static = results.F_z;
+dynamic = table(case_all, distance_all, thrust_all, velocity_all, ...
+    'VariableNames', {'case' 'distance' 'thrust' 'velocity'});
+save(fullfile(OUT_FOLDER, "twodtest-all.mat"), 'static', 'dynamic');
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors

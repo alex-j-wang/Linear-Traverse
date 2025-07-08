@@ -4,9 +4,11 @@
 
 clear; clc; close all hidden;
 
-Process.format_plot("", "Separation, $\Delta z/l$", "Moment, $\bar{M_y}/(Wl)$");
+AXIS = 4;
+
+Process.format_plot("", "Separation, $\Delta z/l$", "Moment, $\bar{M_x}/(Wl)$");
 xlim([0 8]);
-ylim([0 0.25]);
+ylim([-0.1 0.1]);
 axis("square");
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
@@ -23,8 +25,8 @@ OUT_FOLDER = "C:/Users/awang127/Downloads/twodtest-offset-moment/";
 %% Static
 
 load(fullfile('Data', STATIC_FOLDER, 'processed_data'), 'results');
-SDS = results.M_x.SD / (Config.L / 1000);
-static = table2array(results.M_x(:, 2:end)) / Config.W / Config.L / MAX;
+SDS = results.(Config.NAMES(AXIS)).SD / (Config.L / 1000);
+static = table2array(results.(Config.NAMES(AXIS))(:, [3 10 11])) / Config.W / Config.L / MAX;
 
 % Calculate mean and standard deviation
 est = mean(results, 1);
@@ -53,8 +55,10 @@ items = dir(fullfile(folder_path, '*.mat'));
 filenames = string({items.name});
 highlight = [""];
 
-IGNORE = ["CF54.275_SD0.5_F0.1_A2.5.mat"];
+% IGNORE = ["CF54.275_SD0.5_F0.1_A2.5.mat" "CF54.275_SD5_F1_A9.mat" "CF54.275_SD7_F1_A9.mat" "CF54.275_SD2_F1_A7.mat"];
+IGNORE = [""];
 SHIFT =  filenames(49:end);
+% SHIFT = [""];
 
 a = colorbar;
 a.Label.Rotation = 270;
@@ -83,7 +87,7 @@ for filename = highlight
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / Config.L / MAX;
+    forces_smoothed = smooth(forces.Total(:, AXIS), length(forces.Total) / 10) / Config.W / Config.L / MAX;
 
     s = scatter(distance(1:incr:end) / (Config.L / 1000), forces_smoothed(1:incr:end), 3, velocity(1:incr:end) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
@@ -96,6 +100,11 @@ end
 
 % print(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.svg"), "-dsvg");
 savefig(gcf, fullfile(OUT_FOLDER, "twodtest-highfreq.fig"));
+
+case_all = {};
+distance_all = [];
+thrust_all = [];
+velocity_all = [];
 
 for filename = filenames
 
@@ -117,7 +126,7 @@ for filename = filenames
     distance = SD + position_fit.A + position_fit(time);
     velocity = differentiate(position_fit, time);
 
-    forces_smoothed = smooth(forces.Total(:, 4), length(forces.Total) / 10) / Config.W / Config.L / MAX;
+    forces_smoothed = smooth(forces.Total(:, AXIS), length(forces.Total) / 10) / Config.W / Config.L / MAX;
 
     if ismember(filename, SHIFT)
         forces_smoothed = forces_smoothed + 0.025;
@@ -127,9 +136,14 @@ for filename = filenames
     s = scatter(distance(idx) / (Config.L / 1000), forces_smoothed(idx), 3, velocity(idx) / Config.U_i, 'filled');
     s.MarkerFaceAlpha = 0.5;
     
-    % if any(forces_smoothed > 1)
-    %     disp(filename)
-    % end
+    case_all = [case_all; repmat(filename, [length(idx) 1])];
+    distance_all = [distance_all; distance(idx) / (Config.L / 1000)];
+    thrust_all = [thrust_all; forces_smoothed(idx)];
+    velocity_all = [velocity_all; velocity(idx) / Config.U_i];
+
+    if any(forces_smoothed > 0.0267)
+        disp(filename)
+    end
 end
 
 % lines = get(gca, 'Children');
@@ -139,6 +153,11 @@ set(gca,'Children',flipud(chH));
 
 % print(gcf, fullfile(OUT_FOLDER, "twodtest-all.svg"), "-dsvg");
 savefig(gcf, fullfile(OUT_FOLDER, "twodtest-all.fig"));
+
+static = results.(Config.NAMES(AXIS));
+dynamic = table(case_all, distance_all, thrust_all, velocity_all, ...
+    'VariableNames', {'case' 'distance' 'moment' 'velocity'});
+save(fullfile(OUT_FOLDER, "twodtest-all.mat"), 'static', 'dynamic');
 
 function fitresult = fit_sinusoid(t, s, A, F)
     % Convert to column vectors
