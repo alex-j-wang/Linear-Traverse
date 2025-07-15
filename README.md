@@ -25,3 +25,6 @@ MATLAB system commands from properly configured computers should now transmit to
 * Now Enable the traverse.
 * Run [execution.m](execution.m)
 * Run [dynamic_processing.m](dynamic_processing.m)
+* Run [execution_static.m](execution_static.m)
+* Run [static_processing.m](static_processing.m)
+* Run analysis scripts

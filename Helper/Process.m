@@ -9,7 +9,7 @@ classdef Process
             src.UserData.current(end + 1) = read(src, 1, 'single');
         end
 
-        function [data, time] = conv_readwrite(daq_obj, position, lpi, mode)
+        function [data, time] = conv_readwrite(daq_obj, position, lpi)
             % CONV_READWRITE  Read signal data and write position data with necessary conversions
             s = serialport(Config.ESPCOM, Config.BAUD);
             s.UserData = struct('time', datetime.empty(), 'current', []);
@@ -23,12 +23,6 @@ classdef Process
             [data, time] = readwrite(daq_obj, position * Config.DTOV, 'OutputFormat', 'Matrix');
             configureCallback(s, 'off');
             
-            if mode == Config.Position
-                scale = Config.VTOD;
-            else
-                scale = Config.VTOI;
-            end
-            data(:, 7:8) = data(:, 7:8) * scale;
             data(:, 9) = Process.encoder_convert(data(:, 9), lpi);
             data(:, 10) = Process.encoder_convert(data(:, 10), lpi);
             

@@ -7,12 +7,12 @@ clear; clc; close all hidden;
 % Test parameters
 TRIALS = 10;
 CFS = 54.275; % Crazyflie throttle, %
-SDS = [0.005 0.01 0.02 0.03 0.05 0.07 0.10 0.15 0.20 0.25];  % Stopping distance, m
+SDS = [0.005 0.01 0.04 0.07 0.10 0.15 0.20 0.25];  % Stopping distance, m
 F = 1;
 A = 0;
 
 % DAQ setup
-daq_obj = Config.initialize('TargetPosition', 'MeasuredPosition');
+daq_obj = Config.initialize();
 
 % Create folder for record-keeping
 data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_STAT']);
@@ -80,12 +80,12 @@ for TRIAL = 1:TRIALS
             pause(1);
     
             % Gather data
-            [time, voltages, tare_start, tare_end, ~, ~, pos_encoder, cf_current] = ...
-                dynamic_operation(CF, shift, F, A, daq_obj, lpi, Config.Position);
+            [time, voltages, tare_start, tare_end, audio, pos_encoder, cf_current] = ...
+                dynamic_operation(CF, shift, F, A, daq_obj, lpi);
     
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
-            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'pos_encoder', 'cf_current');
+            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'audio', 'pos_encoder', 'cf_current');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
     
             if d.CancelRequested

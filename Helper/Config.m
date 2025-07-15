@@ -34,12 +34,8 @@ classdef Config
         BAUD = 115200;                                                % ESP32 baud rate
     end
 
-    enumeration
-        Position, Current % Modes for voltage conversion
-    end
-
     methods(Static)
-        function daq_obj = initialize(ch6, ch7)
+        function daq_obj = initialize
             % INITIALIZE  Initialize a DAQ object with input and output channels
             disp('Setting up DAQ.');
             daq_obj = daq('ni');
@@ -54,13 +50,8 @@ classdef Config
             for i = 1:6
                 input_channels(i).Name = "ForceSensor" + i;
             end
-            if nargin == 2
-                input_channels(7).Name = ch6;
-                input_channels(8).Name = ch7;
-            else
-                input_channels(7).Name = 'TargetPosition';
-                input_channels(8).Name = 'MeasuredPosition';
-            end
+            input_channels(7).TerminalConfig = "SingleEnded";
+            input_channels(7).Name = 'Microphone';
 
             % Input channel (position encoder)
             encoder_plus = addinput(daq_obj, 'Dev2', 'ctr0', 'Position');

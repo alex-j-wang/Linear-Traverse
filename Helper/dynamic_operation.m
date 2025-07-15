@@ -2,11 +2,11 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, voltages, tare_start, tare_end, target, measured, encoder, cf_current] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, mode)
+function [time, voltages, tare_start, tare_end, audio, encoder, cf_current] = dynamic_operation(CF, shift, F, A, daq_obj, lpi)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
-    tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
+    tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, lpi));
     tare_start = tare_start(1:6);
 
     if CF ~= 0
@@ -18,7 +18,7 @@ function [time, voltages, tare_start, tare_end, target, measured, encoder, cf_cu
     profile = shift + generate_profile(F, A);
 
     disp('Collecting data.');
-    [data, time] = Process.conv_readwrite(daq_obj, profile, lpi, mode);
+    [data, time] = Process.conv_readwrite(daq_obj, profile, lpi);
     disp('Data collected.');
 
     if CF ~= 0
@@ -28,7 +28,7 @@ function [time, voltages, tare_start, tare_end, target, measured, encoder, cf_cu
     end
 
     disp('Taring output.');
-    tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, lpi, Config.Position));
+    tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, lpi));
     tare_end = tare_end(1:6);
     
     disp('Extracting data.');
@@ -39,8 +39,7 @@ function [time, voltages, tare_start, tare_end, target, measured, encoder, cf_cu
 
     tare_voltages = tare_start + linspace(0, 1, rows)' * (tare_end - tare_start);
     voltages = data(:, 1:6) - tare_voltages;
-    target = data(:, 7);
-    measured = data(:, 8);
+    audio = data(:, 7);
     encoder = data(:, 9) + data(:, 10);
     cf_current = data(:, 11);
 end
