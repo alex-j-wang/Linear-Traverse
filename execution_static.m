@@ -7,7 +7,7 @@ clear; clc; close all hidden;
 % Test parameters
 TRIALS = 10;
 CFS = 54.275; % Crazyflie throttle, %
-SDS = [0.005 0.01 0.04 0.07 0.10 0.15 0.20 0.25];  % Stopping distance, m
+SDS = [0.005 0.01 0.04 0.07 0.10 0.15 0.20 0.25] + (0.035 / 100);  % Stopping distance, m
 F = 1;
 A = 0;
 
