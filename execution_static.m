@@ -7,7 +7,7 @@ clear; clc; close all hidden;
 % Test parameters
 TRIALS = 10;
 CFS = 54.275; % Crazyflie throttle, %
-SDS = [0.005 0.01 0.04 0.07 0.10 0.15 0.20 0.25] + (0.035 / 100);  % Stopping distance, m
+SDS = [0.035 0.04 0.07 0.10 0.13 0.18 0.23 0.28];  % Stopping distance, m
 F = 1;
 A = 0;
 
@@ -75,7 +75,7 @@ for TRIAL = 1:TRIALS
             d.Message = message;
     
             % Move to starting position
-            shift = ground + A + SD;
+            shift = ground + A + SD - Config.H / 1000;
             position = Process.gradual_move(daq_obj, position, shift);
             pause(1);
     

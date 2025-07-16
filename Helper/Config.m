@@ -6,6 +6,7 @@ classdef Config
     properties (Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
         L = 32.5;        % Motor-center distance, mm
+        H = 29.65;       % Height of Crazyflie, mm
         U_i = sqrt((Config.L / 1000 * 9.81) / (2 * 1.293 * pi * (22.5 / 1000)^2));
         FCM = 10;       % Cutoff frequency multiplier
         

@@ -11,12 +11,13 @@ CONFIGURATION = "stacked"; %[control:dropdown:8fc3]{"position":[17,26]}
 MAX = 1; %[control:slider:32c3]{"position":[7,8]}
 BASE_POINTS = 500; %[control:slider:40cd]{"position":[15,18]}
 ERRORBAR = true; %[control:checkbox:3bbe]{"position":[12,16]}
+CF_VOLTAGE = 4;
 %%
 name = Config.NAMES(AXIS);
 conv = dictionary(Config.NAMES, ["F_y" "F_x" "F_z" "M_y" "M_x" "M_z"]);
 disp_name = conv(name);
 
-out_folder = fullfile(OUT_FOLDER, strjoin(["twodtest", CONFIGURATION, disp_name], "-"));
+out_folder = fullfile(OUT_FOLDER, strjoin(["analysis", CONFIGURATION, disp_name], "-"));
 
 if ~exist(out_folder, "dir")
     mkdir(out_folder);
@@ -138,7 +139,11 @@ end
 %[text] ## Crazyflie Power
 figure; %[output:3e281d56]
 Process.format_plot("", "Separation, $\Delta z/l$", "Power, W"); %[output:3e281d56]
-CF_VOLTAGE = 4;
+
+axis("square");
+xlim([0 8]);
+ylim([5 10]);
+set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
 load(fullfile(STATIC_FOLDER, 'processed_data'), 'results');
 SDS = results.(name).SD / (Config.L / 1000);
@@ -151,14 +156,19 @@ if ERRORBAR == true
 else
     % Plot results (data)
     plot(SDS, power, "kx", "MarkerSize", 8, "LineWidth", 1.5);
-end
+end %[output:3e281d56]
 
-xlim([0 8]); %[output:3e281d56]
-ylim([5 10]); %[output:3e281d56]
+%% Save
+print(gcf, fullfile(out_folder, "power.svg"), "-dsvg");
+savefig(gcf, fullfile(out_folder, "power.fig"));
 %%
 %[text] ## Peak Frequencies
 figure %[output:7f083d93]
-Process.format_plot("", "Separation, $\Delta z/l$", "Peak Audio Frequencies, Hz"); %[output:7f083d93]
+Process.format_plot("", "Separation, $\Delta z/l$", "Audio Peaks, Hz"); %[output:7f083d93]
+
+axis("square");
+xlim([0 8]);
+set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]);
 
 load(fullfile(STATIC_FOLDER, 'processed_data'), 'results');
 SDS = results.(name).SD / (Config.L / 1000);
@@ -168,6 +178,10 @@ second = table2array(results.("Second Peak")(:, 2:end));
 scatter(SDS, median(first, 2), "filled", "DisplayName", "First Peak"); %[output:7f083d93]
 scatter(SDS, median(second, 2), "filled", "DisplayName", "Second Peak"); %[output:7f083d93]
 legend(); %[output:7f083d93]
+
+%% Save
+print(gcf, fullfile(out_folder, "frequency.svg"), "-dsvg");
+savefig(gcf, fullfile(out_folder, "frequency.fig"));
 
 %[appendix]{"version":"1.0"}
 %---
