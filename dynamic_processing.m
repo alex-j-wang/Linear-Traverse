@@ -38,11 +38,11 @@ for i = 1 : length(filenames)
     filename = filenames{i};
     d.Value = (i - 1) / length(filenames);
     d.Message = strrep(filename, '_', ' ');
-    
+
     if ~reprocess && isfile(fullfile(processed_folder, filename))
         continue;
     end
-    
+
     load(fullfile('Data', folder, filename));
     forces = (cal_mat * voltages')'; % Conversion to forces and moments
     force_start = (cal_mat * tare_start')'; % Conversion to forces and moment
@@ -56,7 +56,7 @@ for i = 1 : length(filenames)
     T = 1 / F;
     % FC = Config.FCM * F;
     FC = 20;
-    
+
     pad_length = 50;
     padded = vertcat(repmat(mean(forces(1:200, :)), 50, 1), forces);
 
@@ -81,21 +81,26 @@ for i = 1 : length(filenames)
         keep(range(select)) = false;
         filtered = filtered(keep, :);
         pos_encoder = pos_encoder(keep);
+        cf_current = cf_current(keep);
         phase_width = floor(phase_width);
     end
 
     stacked = pagetranspose(reshape(filtered', 6, phase_width, []));
     total_force = mean(stacked, 3);
     stdev = std(stacked, 0, 3);
-    
+
     % Phase average position
     stacked = reshape(pos_encoder, phase_width, []);
     pos_encoder = mean(stacked, 2);
 
+    % Phase average current
+    stacked = reshape(cf_current, phase_width, []);
+    cf_current = mean(stacked, 2);
+
     % Retrieve inertial, calculate lift, save data
     start = strtok(filename, '_');
     key = extractAfter(filename, start);
-    if CF == 0   
+    if CF == 0
         inert(key) = total_force;
     end
     % inertial_force = inert(key);
@@ -103,7 +108,7 @@ for i = 1 : length(filenames)
     lift_force = total_force - inertial_force;
     forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.BOXES(1:3));
     time = time(1 : length(total_force));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'force_start', 'force_end', 'pos_encoder', 'stdev');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'force_start', 'force_end', 'pos_encoder', 'cf_current', 'stdev');
 end
 
 d.Value = 1;
