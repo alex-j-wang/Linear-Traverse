@@ -52,7 +52,7 @@ tic
 
 % Acquire data
 for TRIAL = 1:TRIALS
-    trial_folder = fullfile(data_folder, ['T' num2str(TRIAL)]);
+    trial_folder = fullfile(data_folder, ['T' num2str(TRIAL, "%02.f")]);
     if exist(trial_folder, 'dir')
         disp('Experiment may overwrite data. Press ENTER to continue...');
         pause;
