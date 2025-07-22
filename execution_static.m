@@ -16,10 +16,7 @@ daq_obj = Config.initialize();
 
 % Create folder for record-keeping
 data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_STAT']);
-if exist(data_folder, 'dir')
-    disp('Experiment may overwrite data. Press ENTER to continue...');
-    pause;
-else
+if ~exist(data_folder, 'dir')
     mkdir(data_folder);
 end
 
@@ -48,7 +45,7 @@ est_elapsed.Format = 'hh:mm:ss';
 h = uifigure('Name', 'Static Testing');
 d = uiprogressdlg(h, 'Title', 'Static Testing', 'Cancelable', 'on', 'CancelText', '️️️️⏸');
 
-tic
+start_time = tic;
 
 % Acquire data
 for TRIAL = 1:TRIALS
@@ -65,7 +62,7 @@ for TRIAL = 1:TRIALS
             disp(['Running <strong>T' num2str(TRIAL) ' ' strrep(case_name, '_', ' ') '</strong>.']);
     
             % Update waitbar
-            actual_elapsed = seconds(toc);
+            actual_elapsed = seconds(toc(start_time ));
             actual_elapsed.Format = 'hh:mm:ss';
             est_remaining = est_time - est_elapsed;
             est_remaining.Format = 'hh:mm:ss';
@@ -101,7 +98,7 @@ for TRIAL = 1:TRIALS
     end
 end
 
-actual_elapsed = seconds(toc);
+actual_elapsed = seconds(toc(start_time));
 actual_elapsed.Format = 'hh:mm:ss';
 message = sprintf('Estimated time: %s / %s\nElapsed time: %s', est_elapsed, est_time, actual_elapsed);
 d.Value = 1;

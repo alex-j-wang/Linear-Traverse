@@ -47,7 +47,7 @@ est_elapsed.Format = 'hh:mm:ss';
 h = uifigure('Name', 'Dynamic Testing');
 d = uiprogressdlg(h, 'Title', 'Dynamic Testing', 'Cancelable', 'on', 'CancelText', '️️️️⏸');
 
-tic
+start_time = tic;
 
 % Acquire data
 for CF = CFS
@@ -58,7 +58,7 @@ for CF = CFS
                 disp(['Running <strong>' strrep(case_name, '_', ' ') '</strong>.']);
 
                 % Update waitbar
-                actual_elapsed = seconds(toc);
+                actual_elapsed = seconds(toc(start_time));
                 actual_elapsed.Format = 'hh:mm:ss';
                 est_remaining = est_time - est_elapsed;
                 est_remaining.Format = 'hh:mm:ss';
@@ -95,7 +95,7 @@ for CF = CFS
     end
 end
 
-actual_elapsed = seconds(toc);
+actual_elapsed = seconds(toc(start_time));
 actual_elapsed.Format = 'hh:mm:ss';
 message = sprintf('Estimated time: %s / %s\nElapsed time: %s', est_elapsed, est_time, actual_elapsed);
 d.Value = 1;
