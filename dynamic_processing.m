@@ -45,8 +45,8 @@ for i = 1 : length(filenames)
 
     load(fullfile('Data', folder, filename));
     forces = (cal_mat * voltages')'; % Conversion to forces and moments
-    force_start = (cal_mat * tare_start')'; % Conversion to forces and moment
-    force_end = (cal_mat * tare_end')'; % Conversion to forces and moment
+    force_start = (cal_mat * tare_start')'; % Conversion to forces and moments
+    force_end = (cal_mat * tare_end')'; % Conversion to forces and moments
 
     % Extract and convert parameters
     parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
