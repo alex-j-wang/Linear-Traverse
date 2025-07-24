@@ -60,7 +60,7 @@ for TRIAL = 1:TRIALS
         for SD = SDS
             case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
             disp(['Running <strong>T' num2str(TRIAL) ' ' strrep(case_name, '_', ' ') '</strong>.']);
-    
+
             % Update waitbar
             actual_elapsed = seconds(toc(start_time ));
             actual_elapsed.Format = 'hh:mm:ss';
@@ -70,21 +70,21 @@ for TRIAL = 1:TRIALS
                 est_elapsed, est_time, est_remaining, actual_elapsed, strrep(case_name, '_', ' '));
             d.Value = est_elapsed / est_time;
             d.Message = message;
-    
+
             % Move to starting position
             shift = ground + A + SD - Config.H / 1000;
             position = Process.gradual_move(daq_obj, position, shift);
             pause(1);
-    
+
             % Gather data
             [time, voltages, tare_start, tare_end, audio, pos_encoder, cf_current] = ...
                 dynamic_operation(CF, shift, F, A, daq_obj, lpi);
-    
+
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
             save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'audio', 'pos_encoder', 'cf_current');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
-    
+
             if d.CancelRequested
                 disp('Execution paused.');
                 set(d, 'CancelRequested', false, 'CancelText', '▶');
@@ -92,7 +92,7 @@ for TRIAL = 1:TRIALS
                 disp('Execution resuming.');
                 set(d, 'CancelRequested', false, 'CancelText', '⏸');
             end
-    
+
             est_elapsed = est_elapsed + seconds(Config.TOTAL_CYCLES * (1 / F) + 2 * Config.OFFSET_DURATION);
         end
     end
@@ -104,6 +104,11 @@ message = sprintf('Estimated time: %s / %s\nElapsed time: %s', est_elapsed, est_
 d.Value = 1;
 d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
+
+loadenv(".env")
+url = getenv("SLACK_WEBHOOK_URL");
+msg = struct('text', ['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
+webwrite(url, msg, weboptions('MediaType','application/json'));
 
 pause(3);
 close(h);
