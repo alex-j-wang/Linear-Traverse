@@ -34,7 +34,7 @@ else
 end
 
 axis("square"); %[output:9e8392b6]
-xlim([0 8]); %[output:9e8392b6]
+xlim([0 9]); %[output:9e8392b6]
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]); %[output:9e8392b6]
 
 p = gca();
@@ -141,7 +141,7 @@ figure; %[output:3e281d56]
 Process.format_plot("", "Separation, $\Delta z/l$", "Power, W"); %[output:3e281d56]
 
 axis("square"); %[output:3e281d56]
-xlim([0 8]); %[output:3e281d56]
+xlim([0 9]); %[output:3e281d56]
 ylim([5 10]); %[output:3e281d56]
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]); %[output:3e281d56]
 
@@ -167,7 +167,7 @@ figure %[output:7f083d93]
 Process.format_plot("", "Separation, $\Delta z/l$", "Rotation Speed, Hz"); %[output:7f083d93]
 
 axis("square"); %[output:7f083d93]
-xlim([0 8]); %[output:7f083d93]
+xlim([0 9]); %[output:7f083d93]
 set(gcf, 'Renderer', 'painters', 'Position', [100 100 1000 750]); %[output:7f083d93]
 
 load(fullfile(STATIC_FOLDER, 'processed_data'), 'results');

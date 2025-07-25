@@ -8,17 +8,14 @@ clear; clc; close all hidden;
 load(['cal_' Config.SENSOR '.mat']);
 
 % Choose data folder
-items = dir('Data');
-dir_names = {items([items.isdir]).name};
-matching_folders = dir_names(~ismember(dir_names, {'.', '..'}));
-
-folder = interface.dropdown(matching_folders, 'Select a folder');
-items = dir(fullfile('Data', folder));
+folder = uigetdir();
+[~, foldername, ~] = fileparts(folder);
+items = dir(folder);
 folders = {items([items.isdir]).name};
 folders = folders(3:end);
 
 % Assume all folders contain the same number of files
-items = dir(fullfile('Data', folder, folders{1}, '*.mat'));
+items = dir(fullfile(folder, folders{1}, '*.mat'));
 filenames = {items.name};
 SDS = sort(cellfun(@(x) str2double(regexp(x, '(?<=SD)[\d\.]+', 'match')), filenames)) / 100;
 dummy = array2table(zeros(length(SDS), length(folders) + 1), 'VariableNames', ["SD" string(folders)]);
@@ -28,8 +25,8 @@ results.Properties.VariableNames = [Config.NAMES "Current" "Transducer RPS" "Tra
 
 % Create progress bar
 fig = uifigure('Name', 'Static Processing');
-d = uiprogressdlg(fig, 'Title', sprintf('Processing (%s)', folder));
-disp(['Processing <strong>' folder '</strong>.']);
+d = uiprogressdlg(fig, 'Title', sprintf('Processing (%s)', foldername));
+disp(['Processing <strong>' foldername '</strong>.']);
 
 % Frequency analysis parameters
 window = hamming(10000);
@@ -43,14 +40,14 @@ num_sd = length(SDS);
 
 for t = 1 : length(folders)
     trial = folders{t};
-    items = dir(fullfile('Data', folder, trial, '*.mat'));
+    items = dir(fullfile(folder, trial, '*.mat'));
     filenames = sort({items.name});
     for i = 1 : length(filenames)
         filename = filenames{i};
         d.Value = ((t - 1) * length(filenames) + (i - 1)) / length(folders) / length(filenames);
         d.Message = [folders{t} ' ' strrep(filename, '_', ' ')];
 
-        load(fullfile('Data', folder, trial, filename), 'voltages', 'cf_current', 'audio') % Includes tare
+        load(fullfile(folder, trial, filename), 'voltages', 'cf_current', 'audio') % Includes tare
         forces = (cal_mat * voltages')'; % Conversion to forces and moments
 
         % Extract and convert parameters
@@ -104,7 +101,7 @@ for t = 1 : length(folders)
     end
 end
 
-save(fullfile('Data', folder, 'processed_data.mat'), 'results', '-mat');
+save(fullfile(folder, 'processed_data.mat'), 'results', '-mat');
 
 d.Value = 1;
 d.Message = 'All files processed';
