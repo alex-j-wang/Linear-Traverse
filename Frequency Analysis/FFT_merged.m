@@ -3,7 +3,7 @@ clear; clc; close all hidden;
 % Load calibration matrix
 load(['cal_' Config.SENSOR '.mat']);
 
-% Choose data folder
+% Choose static data folder
 items = dir('Data');
 dir_names = {items([items.isdir]).name};
 matching_folders = dir_names(~ismember(dir_names, {'.', '..'}));
