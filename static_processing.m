@@ -33,9 +33,9 @@ cmin = 1e-3;
 cmax = 5;
 
 % Frequency analysis parameters
-window = hamming(10000);
-nfft = 4 * Config.SRATE;
-overlap = 5000;
+nfft = Config.SRATE;
+window = hamming(nfft);
+overlap = nfft / 2;
 fmin = 200;
 fmax = 350;
 
