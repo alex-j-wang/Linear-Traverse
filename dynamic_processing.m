@@ -54,7 +54,6 @@ for i = 1 : length(filenames)
     SD = SD / 100;
     A = A / 100;
     T = 1 / F;
-    % FC = Config.FCM * F;
     FC = 20;
 
     pad_length = 50;

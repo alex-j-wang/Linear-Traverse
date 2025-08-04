@@ -70,10 +70,12 @@ classdef Process
             set(gca,"FontSize", 18)
         end
         
-        function run_drone(throttle)
-            % RUN_DRONE  Run the drone with a specified throttle and timeout protection
+        function run_drone(throttle, varargin)
+            % RUN_DRONE  Run at input throttle, excluding drones listed
+            disable = strjoin(string(varargin), ' ');
+            cmd = sprintf('ssh %s ./throttle.sh %g %s', Config.SSH, throttle, disable);
             runtime = java.lang.Runtime.getRuntime();
-            process = runtime.exec(sprintf('ssh %s ./throttle.sh %g', Config.SSH, throttle));
+            process = runtime.exec(cmd);
             process.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
             if process.isAlive()
                 process.destroyForcibly();

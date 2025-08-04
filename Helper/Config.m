@@ -3,12 +3,13 @@
 % --------------------------------------------------------------------
 
 classdef Config
-    properties (Constant = true)
+    properties(Constant = true)
         W = 0.032 * 9.8; % Weight of Crazyflie, N
         L = 32.5;        % Motor-center distance, mm
         H = 29.65;       % Height of Crazyflie, mm
         U_i = sqrt((Config.L / 1000 * 9.81) / (2 * 1.293 * pi * (22.5 / 1000)^2));
-        FCM = 10;       % Cutoff frequency multiplier
+        
+        HOVER_TOLERANCE = 0.01; % Tolerance while determining hover throttle, N
         
         DATA_CYCLES = 40; % Cycles of data for phase averaging
         RAMP_CYCLES = 4;  % Cycles for ramping up and down
@@ -33,6 +34,10 @@ classdef Config
         SENSOR = 'FT9042';                                            % Nano17 serial number
         ESPCOM = 'COM10';                                             % ESP32 COM port
         BAUD = 115200;                                                % ESP32 baud rate
+    end
+
+    properties
+        hover_throttle = 50; % Throttle value producing hover thrust
     end
 
     methods(Static)

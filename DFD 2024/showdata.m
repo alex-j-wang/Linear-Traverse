@@ -17,7 +17,6 @@ parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
 SD = SD / 100;
 A = A / 100;
 T = 1 / F;
-% FC = Config.FCM * F;
 FC = 20;
 
 % figure('Position', [476 360 560 120]);

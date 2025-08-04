@@ -1,3 +1,6 @@
+# Usage: python3 throttle.py <thrust> [<disabled_cf> ...]
+# Example: python3 throttle.py 0.5 CF65
+
 import sys
 import time
 import json
@@ -7,6 +10,7 @@ from crazyflie_py import *
 
 logging.basicConfig(filename="flight.log", level=logging.INFO, format='[%(asctime)s] %(message)s')
 thrust = float(sys.argv[1])
+disabled = sys.argv[2:]
 
 def to_pwm(thrust):
     A = 0.409E-3
@@ -22,6 +26,8 @@ def main():
     pwm = to_pwm(thrust)
 
     for cf in allcfs.crazyflies:
+        if 'CF' + cf.prefix[3:] in disabled:
+            continue
         cf.setParam("motorPowerSet.m1", pwm)
         cf.setParam("motorPowerSet.m2", pwm)
         cf.setParam("motorPowerSet.m3", pwm)
