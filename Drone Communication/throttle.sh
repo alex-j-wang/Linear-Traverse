@@ -8,4 +8,4 @@ export LD_LIBRARY_PATH=/home/anoop/ros2_ws/install/motion_capture_tracking_inter
 export PATH=/home/anoop/.local/bin:/opt/ros/humble/bin:/home/anoop/mambaforge/bin:/home/anoop/mambaforge/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 
 cd ros2_ws/src/Brown-crazyswarm2/crazyflie_examples/crazyflie_examples
-python3 throttle.py $1
+python3 throttle.py "$@"

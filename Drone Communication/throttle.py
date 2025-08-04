@@ -1,5 +1,5 @@
 # Usage: python3 throttle.py <thrust> [<disabled_cf> ...]
-# Example: python3 throttle.py 0.5 CF65
+# Example: python3 throttle.py 50 CF65
 
 import sys
 import time

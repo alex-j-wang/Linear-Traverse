@@ -5,19 +5,22 @@
 clear; clc; close all hidden;
 
 % Test parameters
-TRIALS = 10;
+TRIALS = 3;
 CFS = 1; % Normalized Crazyflie thrust
 SDS = [0.035 0.04 0.07 0.10 0.13 0.18 0.23 0.28];  % Stopping distance, m
 F = 1;
 A = 0;
-
+YAW = 0;
 TRAV = 'CF65'; % Disabled during hover normalization
+
+% Load the calibration matrix for the force transducer
+load(['cal_' Config.SENSOR '.mat']);
 
 % DAQ setup
 daq_obj = Config.initialize();
 
 % Create folder for record-keeping
-data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_STAT']);
+data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_Y' num2str(YAW) '_STAT']);
 if ~exist(data_folder, 'dir')
     mkdir(data_folder);
 end
@@ -36,28 +39,26 @@ disp('Calibrating encoder.');
 lpi = double(encoder(1) - encoder(end)) / (0.25 * 100 / 2.54);
 fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 
-% Hover throttle determination
-disp('Determining hover throttle.');
-hover_throttle = Config.hover_throttle;
+% Hover throttle calibration
+disp('Calibrating hover throttle.');
+hover_throttle = Config.get_hover;
 hover_thrust = [];
 shift = ground + 0.28 - Config.H / 1000;
 position = Process.gradual_move(daq_obj, position, shift);
 while true
     pause(1);
-    [~, voltages, tare_start, tare_end] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, TRAV);
+    [~, voltages] = dynamic_operation(hover_throttle(end), shift, 4, 0, daq_obj, lpi, TRAV);
     forces = mean(cal_mat * voltages', 2);
-    force_start = (cal_mat * tare_start')';
-    force_end = (cal_mat * tare_end')';
-    hover_thrust(end + 1) = forces(3) - (force_start(3) + force_end(3)) / 2;
+    hover_thrust(end + 1) = forces(3);
     fprintf('T%g -> %g N\n', hover_throttle(end), hover_thrust(end));
-    if abs(hover_throttle(end) - Config.W) < Config.HOVER_TOLERANCE
-        fprintf('Hover throttle: %g\%.\n', hover_throttle);
+    if abs(hover_thrust(end) - Config.W) < Config.HOVER_TOLERANCE
+        fprintf('Hover throttle: %g%%\n', hover_throttle);
         break;
     else
         hover_throttle(end + 1) = Config.W / hover_thrust(end) * hover_throttle(end);
     end
 end
-Config.hover_throttle = hover_throttle(end);
+Config.set_hover(hover_throttle(end));
 
 save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'hover_thrust', 'lpi');
 
@@ -105,7 +106,7 @@ for TRIAL = 1:TRIALS
 
             % Gather data
             [time, voltages, tare_start, tare_end, audio, pos_encoder, cf_current] = ...
-                dynamic_operation(CF * Config.hover_throttle, shift, F, A, daq_obj, lpi);
+                dynamic_operation(CF * Config.get_hover, shift, F, A, daq_obj, lpi);
 
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);

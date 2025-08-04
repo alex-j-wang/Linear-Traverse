@@ -36,11 +36,24 @@ classdef Config
         BAUD = 115200;                                                % ESP32 baud rate
     end
 
-    properties
-        hover_throttle = 50; % Throttle value producing hover thrust
-    end
-
     methods(Static)
+        function set_hover(throttle)
+            save(Config.disk_file, 'throttle');
+        end
+
+        function throttle = get_hover
+            if isfile(Config.disk_file)
+                load(Config.disk_file, 'throttle');
+            else
+                throttle = 50;
+                Config.set_hover(throttle);
+            end
+        end
+
+        function path = disk_file
+            path = fullfile(tempdir, 'traverse.mat');
+        end
+
         function daq_obj = initialize
             % INITIALIZE  Initialize a DAQ object with input and output channels
             disp('Setting up DAQ.');
