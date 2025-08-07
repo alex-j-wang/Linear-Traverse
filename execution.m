@@ -36,6 +36,29 @@ disp('Calibrating encoder.');
 lpi = double(encoder(1) - encoder(end)) / (0.25 * 100 / 2.54);
 fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 
+% Hover throttle calibration
+disp('Calibrating hover throttle.');
+hover_throttle = Config.get_hover;
+hover_thrust = [];
+shift = ground + 0.28 - Config.H / 1000;
+position = Process.gradual_move(daq_obj, position, shift);
+while true
+    pause(1);
+    [~, voltages] = dynamic_operation(hover_throttle(end), shift, 4, 0, daq_obj, lpi, TRAV);
+    forces = mean(cal_mat * voltages', 2);
+    hover_thrust(end + 1) = forces(3);
+    fprintf('T%g -> %g N\n', hover_throttle(end), hover_thrust(end));
+    if abs(hover_thrust(end) - Config.W) < Config.HOVER_TOLERANCE
+        fprintf('Hover throttle: %g%%\n', hover_throttle(end));
+        break;
+    else
+        hover_throttle(end + 1) = Config.W / hover_thrust(end) * hover_throttle(end);
+    end
+end
+Config.set_hover(hover_throttle(end));
+
+save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'hover_thrust', 'lpi');
+
 % Estimate execution time
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
     (Config.TOTAL_CYCLES * sum(1 ./ FS) + 2 * Config.OFFSET_DURATION * length(FS)));
@@ -73,12 +96,12 @@ for CF = CFS
                 pause(1);
 
                 % Gather data
-                [time, voltages, tare_start, tare_end, audio, pos_encoder, cf_current] = ...
+                [time, voltages, tare_start, tare_end, motor_voltage, audio, pos_encoder, cf_current] = ...
                     dynamic_operation(CF, shift, F, A, daq_obj, lpi);
 
                 % Save data
                 filename = fullfile(data_folder, [case_name '.mat']);
-                save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'audio', 'pos_encoder', 'cf_current');
+                save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'motor_voltage', 'audio', 'pos_encoder', 'cf_current');
                 fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
                 if d.CancelRequested
@@ -101,6 +124,11 @@ message = sprintf('Estimated time: %s / %s\nElapsed time: %s', est_elapsed, est_
 d.Value = 1;
 d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
+
+loadenv(".env")
+url = getenv("SLACK_WEBHOOK_URL");
+msg = struct('text', ['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
+webwrite(url, msg, weboptions('MediaType','application/json'));
 
 pause(3);
 close(h);

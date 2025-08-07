@@ -52,7 +52,7 @@ while true
     hover_thrust(end + 1) = forces(3);
     fprintf('T%g -> %g N\n', hover_throttle(end), hover_thrust(end));
     if abs(hover_thrust(end) - Config.W) < Config.HOVER_TOLERANCE
-        fprintf('Hover throttle: %g%%\n', hover_throttle);
+        fprintf('Hover throttle: %g%%\n', hover_throttle(end));
         break;
     else
         hover_throttle(end + 1) = Config.W / hover_thrust(end) * hover_throttle(end);
@@ -105,12 +105,12 @@ for TRIAL = 1:TRIALS
             pause(1);
 
             % Gather data
-            [time, voltages, tare_start, tare_end, audio, pos_encoder, cf_current] = ...
+            [time, voltages, tare_start, tare_end, motor_voltage, audio, pos_encoder, cf_current] = ...
                 dynamic_operation(CF * Config.get_hover, shift, F, A, daq_obj, lpi);
 
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
-            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'audio', 'pos_encoder', 'cf_current');
+            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'motor_voltage', 'audio', 'pos_encoder', 'cf_current');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
             if d.CancelRequested
