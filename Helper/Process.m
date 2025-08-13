@@ -81,6 +81,10 @@ classdef Process
                 process.destroyForcibly();
                 fprintf('Unable to contact drone. Manually set %g throttle.\n', throttle);
                 disp('Press ENTER when ready...');
+                loadenv(".env")
+                url = getenv("SLACK_WEBHOOK_URL");
+                msg = struct('text', 'Unable to contact drone');
+                webwrite(url, msg, weboptions('MediaType','application/json'));
                 pause;
             end
         end

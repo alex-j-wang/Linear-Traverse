@@ -7,7 +7,7 @@ clear; clc; close all hidden;
 % Test parameters
 TRIALS = 3;
 CFS = 1; % Normalized Crazyflie thrust
-SDS = [0.035 0.04 0.07 0.10 0.13 0.18 0.23 0.28];  % Stopping distance, m
+SDS = Config.L / 1000 * (1:8); % Stopping distance, m
 F = 1;
 A = 0;
 YAW = 0;
@@ -43,7 +43,7 @@ fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 disp('Calibrating hover throttle.');
 hover_throttle = Config.get_hover;
 hover_thrust = [];
-shift = ground + 0.28 - Config.H / 1000;
+shift = ground + SDS(end) - Config.H / 1000;
 position = Process.gradual_move(daq_obj, position, shift);
 while true
     pause(1);
@@ -61,6 +61,10 @@ end
 Config.set_hover(hover_throttle(end));
 
 save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'hover_thrust', 'lpi');
+loadenv(".env")
+url = getenv("SLACK_WEBHOOK_URL");
+msg = struct('text', sprintf('Hover throttle identified as %g%%', Config.get_hover));
+webwrite(url, msg, weboptions('MediaType','application/json'));
 
 % Estimate execution time
 est_time = seconds(TRIALS * length(CFS) * length(SDS) * ...
@@ -133,9 +137,7 @@ d.Value = 1;
 d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
 
-loadenv(".env")
-url = getenv("SLACK_WEBHOOK_URL");
-msg = struct('text', ['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
+msg = struct('text', ['Static testing for ' data_folder ' completed in ' char(actual_elapsed)]);
 webwrite(url, msg, weboptions('MediaType','application/json'));
 
 pause(3);
