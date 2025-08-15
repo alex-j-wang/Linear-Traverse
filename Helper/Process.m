@@ -69,24 +69,27 @@ classdef Process
             grid on
             set(gca,"FontSize", 18)
         end
-        
-        function run_drone(throttle, varargin)
+
+        function success = run_drone(throttle, varargin)
             % RUN_DRONE  Run at input throttle, excluding drones listed
             disable = strjoin(string(varargin), ' ');
             cmd = sprintf('ssh %s ./throttle.sh %g %s', Config.SSH, throttle, disable);
             runtime = java.lang.Runtime.getRuntime();
             process = runtime.exec(cmd);
-            process.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
-            if process.isAlive()
+            success = process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+            if ~success
                 process.destroyForcibly();
-                fprintf('Unable to contact drone. Manually set %g throttle.\n', throttle);
-                disp('Press ENTER when ready...');
-                loadenv(".env")
-                url = getenv("SLACK_WEBHOOK_URL");
-                msg = struct('text', 'Unable to contact drone');
-                webwrite(url, msg, weboptions('MediaType','application/json'));
-                pause;
+                fprintf('Unable to contact drone');
+                Process.alert_slack('Unable to contact drone');
             end
+        end
+
+        function alert_slack(message)
+            % ALERT_SLACK  Send a message to Slack via webhook
+            loadenv(".env");
+            url = getenv("SLACK_WEBHOOK_URL");
+            msg = struct('text', message);
+            webwrite(url, msg, weboptions('MediaType','application/json'));
         end
     end
 end

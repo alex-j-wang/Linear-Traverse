@@ -11,8 +11,14 @@ function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, c
 
     if CF ~= 0
         disp('Starting Crazyflie.');
-        Process.run_drone(CF, varargin{:});
-        pause(5);
+        if Process.run_drone(CF, varargin{:})
+            pause(5);
+        else
+            Process.alert_slack('Connection restored, restarting case');
+            [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, cf_current] = ...
+                dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
+            return;
+        end
     end
 
     profile = shift + generate_profile(F, A);
@@ -23,8 +29,16 @@ function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, c
 
     if CF ~= 0
         disp('Stopping Crazyflie.')
-        Process.run_drone(0, varargin{:});
-        pause(CF / 20);
+        if Process.run_drone(0, varargin{:})
+            pause(CF / 20);
+        else
+            while ~Process.run_drone(0, varargin{:}); end
+            pause(CF / 20);
+            Process.alert_slack('Connection restored, restarting case');
+            [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, cf_current] = ...
+                dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
+            return;
+        end
     end
 
     disp('Taring output.');
