@@ -25,6 +25,30 @@ if ~exist(data_folder, 'dir')
     mkdir(data_folder);
 end
 
+% Warn about overwriting data
+overwritten = [];
+for TRIAL = 1:TRIALS
+    trial_folder = fullfile(data_folder, ['T' num2str(TRIAL, "%02.f")]);
+    for CF = CFS
+        for SD = SDS
+            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
+            filename = fullfile(trial_folder, [case_name '.mat']);
+            if isfile(filename)
+                overwritten = [overwritten; string(filename)]; %#ok<AGROW>
+            end
+        end
+    end
+end
+
+if ~isempty(overwritten)
+    disp("The following file(s) will be overwritten:");
+    Config.print_tree(overwritten);
+    if ~strcmpi(input('Do you want to continue? (y/n): ', 's'), 'y')
+        disp('Execution aborted.');
+        return;
+    end
+end
+
 % Wait for DAQ setup to stabilize
 disp('Ensure traverse is at zero position. Press ENTER to continue...');
 pause;
@@ -82,10 +106,7 @@ start_time = tic;
 % Acquire data
 for TRIAL = 1:TRIALS
     trial_folder = fullfile(data_folder, ['T' num2str(TRIAL, "%02.f")]);
-    if exist(trial_folder, 'dir')
-        disp('Experiment may overwrite data. Press ENTER to continue...');
-        pause;
-    else
+    if ~exist(trial_folder, 'dir')
         mkdir(trial_folder);
     end
     for CF = CFS

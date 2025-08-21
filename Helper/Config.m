@@ -88,5 +88,39 @@ classdef Config
             encoder_minus.ZResetValue = 0;
             encoder_minus.Name = 'EncoderMinus';
         end
+
+        function print_tree(filepaths)
+            % PRINT_TREE  Pretty-print a tree from a list of file paths
+            filepaths = string(filepaths);
+            parts = cellfun(@(f) strsplit(f, filesep), cellstr(filepaths), 'UniformOutput', false);
+            Config.print_node(parts, '', 1);
+        end
+
+        function print_node(paths, prefix, level)
+            % Get all unique items at current level
+            items = unique(cellfun(@(x) x{level}, paths, 'UniformOutput', false), 'stable');
+
+            for i = 1:numel(items)
+                item = items{i};
+                is_last = (i == numel(items));
+                connector = Config.ternary(is_last, '└── ', '├── ');
+                disp([prefix connector item]);
+
+                matching = paths(cellfun(@(x) numel(x) >= level && strcmp(x{level}, item), paths));
+                % Recurse if there are deeper levels
+                if any(cellfun(@(x) numel(x), matching) > level)
+                    new_prefix = [prefix Config.ternary(is_last, '    ', '│   ')];
+                    Config.print_node(matching, new_prefix, level + 1);
+                end
+            end
+        end
+
+        function out = ternary(cond, a, b)
+            if cond
+                out = a;
+            else
+                out = b;
+            end
+        end
     end
 end
