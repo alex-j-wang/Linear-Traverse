@@ -115,7 +115,7 @@ for TRIAL = 1:TRIALS
             disp(['Running <strong>T' num2str(TRIAL) ' ' strrep(case_name, '_', ' ') '</strong>.']);
 
             % Update waitbar
-            actual_elapsed = seconds(toc(start_time ));
+            actual_elapsed = seconds(toc(start_time));
             actual_elapsed.Format = 'hh:mm:ss';
             est_remaining = est_time - est_elapsed;
             est_remaining.Format = 'hh:mm:ss';
