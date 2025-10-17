@@ -14,7 +14,7 @@ function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, c
         if Process.run_drone(CF, varargin{:})
             pause(5);
         else
-            Process.alert_slack('Connection restored, restarting case');
+            Process.alert_slack('Restarting case');
             [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, cf_current] = ...
                 dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;

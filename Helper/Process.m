@@ -79,7 +79,7 @@ classdef Process
             success = process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
             if ~success
                 process.destroyForcibly();
-                fprintf('Unable to contact drone');
+                disp('Unable to contact drone.');
                 Process.alert_slack('Unable to contact drone');
             end
         end

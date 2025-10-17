@@ -125,10 +125,6 @@ d.Value = 1;
 d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
 
-loadenv(".env")
-url = getenv("SLACK_WEBHOOK_URL");
-msg = struct('text', ['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
-webwrite(url, msg, weboptions('MediaType','application/json'));
-
+Process.alert_slack(['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
 pause(3);
 close(h);
