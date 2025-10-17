@@ -141,12 +141,12 @@ exportgraphics(gca, fullfile(out_folder, "power.svg"), 'ContentType', 'vector');
 exportgraphics(gca, fullfile(out_folder, "power.png")); %[output:8a62d2ef]
 savefig(gcf, fullfile(out_folder, "power.fig"));
 %%
-%[text] ## Motor Voltage
+%[text] ## Crazyflie Voltage
 figure; %[output:54be919c]
-Process.format_plot("", "Separation, $\Delta z/l$", "Motor Voltage, V"); %[output:54be919c]
+Process.format_plot("", "Separation, $\Delta z/l$", "Crazyflie Voltage, V"); %[output:54be919c]
 
 xlim([0 17]); %[output:54be919c]
-ylim([1.5 2]); %[output:54be919c]
+ylim([0 5]); %[output:54be919c]
 set(gcf, 'Position', [100 100 750 750]); %[output:54be919c]
 
 handles = gobjects(length(FOLDERS), 1);
@@ -155,7 +155,7 @@ for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    voltage = table2array(results.("Motor Voltage")(:, 2:end));
+    voltage = table2array(results.("Crazyflie Voltage")(:, 2:end));
 
     if ERRORBAR == true
         % Plot results (error bars)
@@ -203,7 +203,7 @@ savefig(gcf, fullfile(out_folder, "frequency.fig"));
 %[appendix]{"version":"1.0"}
 %---
 %[metadata:view]
-%   data: {"layout":"hidecode"}
+%   data: {"layout":"onright"}
 %---
 %[control:dropdown:7ac0]
 %   data: {"defaultValue":"1","itemLabels":["F_x","F_y","F_z","M_x","M_y","M_z"],"items":["1","2","3","4","5","6"],"label":"Axis","run":"Section"}

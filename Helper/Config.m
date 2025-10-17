@@ -64,12 +64,12 @@ classdef Config
             output = addoutput(daq_obj, 'Dev2', 'ao0', 'Voltage');
             output.Name = 'voutput';
             
-            % Input channels (force sensor, motor voltage, microphone)
+            % Input channels (force sensor, crazyflie voltage, microphone)
             input_channels = addinput(daq_obj, 'Dev2', 0:7, 'Voltage');
             for i = 1:6
                 input_channels(i).Name = "ForceSensor" + i;
             end
-            input_channels(7).Name = 'MotorVoltage';
+            input_channels(7).Name = 'CrazyflieVoltage';
             input_channels(8).TerminalConfig = "SingleEnded";
             input_channels(8).Name = 'Microphone';
 

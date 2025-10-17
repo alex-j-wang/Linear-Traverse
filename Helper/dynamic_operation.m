@@ -2,7 +2,7 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, cf_current] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
+function [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_current] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
@@ -15,7 +15,7 @@ function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, c
             pause(5);
         else
             Process.alert_slack('Restarting case');
-            [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, cf_current] = ...
+            [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_current] = ...
                 dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;
         end
@@ -35,7 +35,7 @@ function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, c
             while ~Process.run_drone(0, varargin{:}); end
             pause(CF / 20);
             Process.alert_slack('Connection restored, restarting case');
-            [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, cf_current] = ...
+            [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_current] = ...
                 dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;
         end
@@ -53,7 +53,7 @@ function [time, voltages, tare_start, tare_end, motor_voltage, audio, encoder, c
 
     tare_voltages = tare_start + linspace(0, 1, rows)' * (tare_end - tare_start);
     voltages = data(:, 1:6) - tare_voltages;
-    motor_voltage = data(:, 7);
+    cf_voltage = data(:, 7);
     audio = data(:, 8);
     encoder = data(:, 9) + data(:, 10);
     cf_current = data(:, 11);

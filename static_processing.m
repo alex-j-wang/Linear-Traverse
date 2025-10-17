@@ -22,7 +22,7 @@ for folder = uigetdirs
     dummy = array2table(zeros(length(SDS), length(folders) + 1), 'VariableNames', ["SD" string(folders)]);
     dummy.SD = SDS';
     results = repmat(table(dummy), 1, 9);
-    results.Properties.VariableNames = [Config.NAMES "Motor Voltage" "Current" "Transducer RPS"];
+    results.Properties.VariableNames = [Config.NAMES "Crazyflie Voltage" "Current" "Transducer RPS"];
     
     % Create progress bar
     fig = uifigure('Name', 'Static Processing');
@@ -52,7 +52,7 @@ for folder = uigetdirs
             d.Value = ((t - 1) * length(filenames) + (i - 1)) / length(folders) / length(filenames);
             d.Message = [folders{t} ' ' strrep(filename, '_', ' ')];
     
-            load(fullfile(folder, trial, filename), 'voltages', 'motor_voltage', 'cf_current', 'audio') % Includes tare
+            load(fullfile(folder, trial, filename), 'voltages', 'cf_voltage', 'cf_current', 'audio') % Includes tare
             forces = (cal_mat * voltages')'; % Conversion to forces and moments
     
             % Extract and convert parameters
@@ -64,8 +64,8 @@ for folder = uigetdirs
                 results.(Config.NAMES(a)).(trial)(idx) = mean(forces(:, a));
             end
     
-            % Mean motor voltage
-            results.("Motor Voltage").(trial)(idx) = mean(motor_voltage);
+            % Mean Crazyflie voltage
+            results.("Crazyflie Voltage").(trial)(idx) = mean(cf_voltage);
 
             % Mean current
             current_mask = cf_current >= cmin & cf_current <= cmax;

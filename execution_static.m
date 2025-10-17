@@ -7,12 +7,20 @@ clear; clc; close all hidden;
 % Test parameters
 TRIALS = 3;
 CFS = 50;
-% TODO: refactor into switch case for each traverse position
-NEAR = false;
-if NEAR == true
-    SDS = Config.L / 1000 * (1:1:9); % Stopping distance, m
-else
-    SDS = Config.L / 1000 * [8 9 11 13 15]; % Stopping distance, m
+TPOS = 1;
+switch TPOS
+    case 1
+        SDS = Config.L / 1000 * (1:1:9); % Stopping distance, m
+    case 2
+        SDS = Config.L / 1000 * (10:2:18); % Stopping distance, m
+    case 3
+        SDS = Config.L / 1000 * (19:4:27); % Stopping distance, m
+    case 4
+        SDS = Config.L / 1000 * (28:4:36); % Stopping distance, m
+    case 5
+        SDS = Config.L / 1000 * (37:4:45); % Stopping distance, m
+    otherwise
+        error('Invalid traverse position selection.');
 end
 F = 1;
 A = 0;
@@ -38,12 +46,7 @@ for TRIAL = 1:TRIALS
     trial_folder = fullfile(data_folder, ['T' num2str(TRIAL, "%02.f")]);
     for CF = CFS
         for SD = SDS
-            SD_name = SD;
-            % TODO: more elegant way to distinguish duplicate case
-            if NEAR == false && (SD == Config.L / 1000 * 8 || SD == Config.L / 1000 * 9)
-                SD_name = SD_name + Config.L / 1000 * 0.25;
-            end
-            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD_name * 100, F, A * 100);
+            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
             filename = fullfile(trial_folder, [case_name '.mat']);
             if isfile(filename)
                 overwritten = [overwritten; string(filename)]; %#ok<AGROW>
@@ -108,12 +111,7 @@ for TRIAL = 1:TRIALS
     end
     for CF = CFS
         for SD = SDS
-            SD_name = SD;
-            % TODO: more elegant way to distinguish duplicate case
-            if NEAR == false && (SD == Config.L / 1000 * 8 || SD == Config.L / 1000 * 9)
-                SD_name = SD_name + Config.L / 1000 * 0.25;
-            end
-            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD_name * 100, F, A * 100);
+            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
             disp(['Running <strong>T' num2str(TRIAL) ' ' strrep(case_name, '_', ' ') '</strong>.']);
 
             % Update waitbar
@@ -132,12 +130,12 @@ for TRIAL = 1:TRIALS
             pause(1);
 
             % Gather data
-            [time, voltages, tare_start, tare_end, motor_voltage, audio, pos_encoder, cf_current] = ...
+            [time, voltages, tare_start, tare_end, cf_voltage, audio, pos_encoder, cf_current] = ...
                 dynamic_operation(CF, shift, F, A, daq_obj, lpi);
 
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
-            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'motor_voltage', 'audio', 'pos_encoder', 'cf_current');
+            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'cf_voltage', 'audio', 'pos_encoder', 'cf_current');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
             if d.CancelRequested

@@ -5,12 +5,34 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = 1; % Normalized Crazyflie thrust
-SDS = [0.035 0.04 0.07 0.10]; % Stopping distance, m
-FS = [0.2 0.5 0.75 1];  % Traverse frequency, Hz
-AS = [.025 0.05 0.07 0.09];  % Traverse amplitude, m
+CFS = 50;   % Crazyflie throttle, %
+TPOS = 1.1; % Traverse position selection
+switch TPOS
+    case 1.1
+        SDS = Config.L / 1000 * [1 1.5 2 3]; % Stopping distance, m
+        AS = Config.L / 1000 * [0.5 1 2 3];  % Traverse amplitude, m
+    case 1.2
+        SDS = Config.L / 1000 * 1; % Stopping distance, m
+        AS = Config.L / 1000 * 4;  % Traverse amplitude, m
+    case 2
+        SDS = Config.L / 1000 * 10;  % Stopping distance, m
+        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+    case 3
+        SDS = Config.L / 1000 * 19; % Stopping distance, m
+        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+    case 4
+        SDS = Config.L / 1000 * 28; % Stopping distance, m
+        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+    case 5
+        SDS = Config.L / 1000 * 37; % Stopping distance, m
+        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+    otherwise
+        error('Invalid traverse position selection.');
+end
+FS = [0.2 0.5 0.75 1]; % Traverse frequency, Hz
 YAW = 0;
-TRAV = 'CF65'; % Disabled during hover normalization
+TRAV = 'CF81'; % Disabled during hover normalization
+FT = 'CF80';
 
 % Load the calibration matrix for the force transducer
 load(['cal_' Config.SENSOR '.mat']);
@@ -20,7 +42,7 @@ daq_obj = Config.initialize();
 
 % Create folder for record-keeping
 data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_DYN']);
-if exist(data_folder, 'dir')
+if ~exist(data_folder, 'dir')
     mkdir(data_folder);
 end
 
@@ -31,7 +53,7 @@ for CF = CFS
         for F = FS
             for A = AS
                 case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
-                filename = fullfile(trial_folder, [case_name '.mat']);
+                filename = fullfile(data_folder, [case_name '.mat']);
                 if isfile(filename)
                     overwritten = [overwritten; string(filename)]; %#ok<AGROW>
                 end
@@ -64,31 +86,16 @@ lpi = double(encoder(1) - encoder(end)) / (0.25 * 100 / 2.54);
 fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 
 % Hover throttle calibration
-disp('Calibrating hover throttle.');
+disp('Checking hover thrust.');
 hover_throttle = Config.get_hover;
-hover_thrust = [];
 shift = ground + SDS(end) - Config.H / 1000;
 position = Process.gradual_move(daq_obj, position, shift);
-while true
-    pause(1);
-    [~, voltages] = dynamic_operation(hover_throttle(end), shift, 4, 0, daq_obj, lpi, TRAV);
-    forces = mean(cal_mat * voltages', 2);
-    hover_thrust(end + 1) = forces(3);
-    fprintf('T%g -> %g N\n', hover_throttle(end), hover_thrust(end));
-    if abs(hover_thrust(end) - Config.W) < Config.HOVER_TOLERANCE
-        fprintf('Hover throttle: %g%%\n', hover_throttle(end));
-        break;
-    else
-        hover_throttle(end + 1) = Config.W / hover_thrust(end) * hover_throttle(end);
-    end
-end
-Config.set_hover(hover_throttle(end));
+[~, voltages] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, FT);
+forces = mean(cal_mat * voltages', 2);
+hover_thrust = forces(3);
 
 save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'hover_thrust', 'lpi');
-loadenv(".env")
-url = getenv("SLACK_WEBHOOK_URL");
-msg = struct('text', sprintf('Hover throttle identified as %g%%', Config.get_hover));
-webwrite(url, msg, weboptions('MediaType','application/json'));
+Process.alert_slack(sprintf('T%g -> %g N', hover_throttle, hover_thrust));
 
 % Estimate execution time
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
@@ -127,12 +134,12 @@ for CF = CFS
                 pause(1);
 
                 % Gather data
-                [time, voltages, tare_start, tare_end, motor_voltage, audio, pos_encoder, cf_current] = ...
-                    dynamic_operation(CF * Config.get_hover, shift, F, A, daq_obj, lpi);
+                [time, voltages, tare_start, tare_end, cf_voltage, audio, pos_encoder, cf_current] = ...
+                    dynamic_operation(CF, shift, F, A, daq_obj, lpi);
 
                 % Save data
                 filename = fullfile(data_folder, [case_name '.mat']);
-                save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'motor_voltage', 'audio', 'pos_encoder', 'cf_current');
+                save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'cf_voltage', 'audio', 'pos_encoder', 'cf_current');
                 fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
                 if d.CancelRequested
@@ -157,6 +164,5 @@ d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
 
 Process.alert_slack(['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
-
 pause(3);
 close(h);
