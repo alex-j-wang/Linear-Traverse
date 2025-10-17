@@ -2,13 +2,14 @@
 % Script for finding mean and standard deviation of static test data
 % -------------------------------------------------------------------------
 
-clear; clc; close all hidden;
+clear; clc;
 
 % Load the calibration matrix for the force transducer
 load(['cal_' Config.SENSOR '.mat']);
 
 % Choose data folders
 for folder = uigetdirs
+    close all hidden;
     [~, foldername, ~] = fileparts(folder);
     items = dir(folder);
     folders = {items([items.isdir]).name};

@@ -5,21 +5,48 @@
 clear; clc; close all hidden;
 
 % Test parameters
-CFS = 54.275; % Crazyflie throttle, %
+CFS = 1; % Normalized Crazyflie thrust
 SDS = [0.035 0.04 0.07 0.10]; % Stopping distance, m
 FS = [0.2 0.5 0.75 1];  % Traverse frequency, Hz
 AS = [.025 0.05 0.07 0.09];  % Traverse amplitude, m
+YAW = 0;
+TRAV = 'CF65'; % Disabled during hover normalization
+
+% Load the calibration matrix for the force transducer
+load(['cal_' Config.SENSOR '.mat']);
 
 % DAQ setup
 daq_obj = Config.initialize();
 
 % Create folder for record-keeping
-data_folder = fullfile('Data', string(datetime('now', 'Format', 'yyyy_MM_dd')) + "_DYN");
+data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_DYN']);
 if exist(data_folder, 'dir')
-    disp('Experiment may overwrite data. Press ENTER to continue...');
-    pause;
-else
     mkdir(data_folder);
+end
+
+% Warn about overwriting data
+overwritten = [];
+for CF = CFS
+    for SD = SDS
+        for F = FS
+            for A = AS
+                case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
+                filename = fullfile(trial_folder, [case_name '.mat']);
+                if isfile(filename)
+                    overwritten = [overwritten; string(filename)]; %#ok<AGROW>
+                end
+            end
+        end
+    end
+end
+
+if ~isempty(overwritten)
+    disp("The following file(s) will be overwritten:");
+    Config.print_tree(overwritten);
+    if ~strcmpi(input('Do you want to continue? (y/n): ', 's'), 'y')
+        disp('Execution aborted.');
+        return;
+    end
 end
 
 % Wait for DAQ setup to stabilize
@@ -40,7 +67,7 @@ fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 disp('Calibrating hover throttle.');
 hover_throttle = Config.get_hover;
 hover_thrust = [];
-shift = ground + 0.28 - Config.H / 1000;
+shift = ground + SDS(end) - Config.H / 1000;
 position = Process.gradual_move(daq_obj, position, shift);
 while true
     pause(1);
@@ -58,6 +85,10 @@ end
 Config.set_hover(hover_throttle(end));
 
 save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'hover_thrust', 'lpi');
+loadenv(".env")
+url = getenv("SLACK_WEBHOOK_URL");
+msg = struct('text', sprintf('Hover throttle identified as %g%%', Config.get_hover));
+webwrite(url, msg, weboptions('MediaType','application/json'));
 
 % Estimate execution time
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...
@@ -97,7 +128,7 @@ for CF = CFS
 
                 % Gather data
                 [time, voltages, tare_start, tare_end, motor_voltage, audio, pos_encoder, cf_current] = ...
-                    dynamic_operation(CF, shift, F, A, daq_obj, lpi);
+                    dynamic_operation(CF * Config.get_hover, shift, F, A, daq_obj, lpi);
 
                 % Save data
                 filename = fullfile(data_folder, [case_name '.mat']);
@@ -126,5 +157,6 @@ d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
 
 Process.alert_slack(['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
+
 pause(3);
 close(h);
