@@ -11,21 +11,31 @@ load(['cal_' Config.SENSOR '.mat']);
 inert = containers.Map();
 
 % Choose data folder
-items = dir('Data');
-is_dir = [items.isdir];
-dir_names = {items(is_dir).name};
-matching_folders = dir_names(~ismember(dir_names, {'.', '..'}));
-
-folder = interface.dropdown(matching_folders, 'Select a folder');
-items = dir(fullfile('Data', folder, '*.mat'));
+folder = uigetdir();
+[~, foldername, ~] = fileparts(folder);
+items = dir(fullfile(folder, '*.mat'));
 filenames = sort({items.name});
 
 % Set up processed data folder
-processed_folder = fullfile('Data', folder, 'processed_data');
-if exist(processed_folder, 'dir')
-    reprocess = input('Skip files that have already been converted [y/n]? ', 's') ~= 'y';
-else
+processed_folder = fullfile(folder, 'processed_data');
+if ~exist(processed_folder, 'dir')
     mkdir(processed_folder);
+end
+
+% Ask about reprocessing data
+overwritten = [];
+for filename = filenames
+    processed_filepath = fullfile(processed_folder, filename);
+    if isfile(processed_filepath)
+        overwritten = [overwritten; string(processed_filepath)]; %#ok<AGROW>
+    end
+end
+
+if ~isempty(overwritten)
+    disp("The following file(s) have already been converted:");
+    Config.print_tree(overwritten);
+    reprocess = ~strcmpi(input('Do you want to skip them? (y/n): ', 's'), 'y');
+else
     reprocess = true;
 end
 
@@ -43,7 +53,7 @@ for i = 1 : length(filenames)
         continue;
     end
 
-    load(fullfile('Data', folder, filename));
+    load(fullfile(folder, filename), 'time', 'voltages', 'tare_start', 'tare_end', 'pos_encoder', 'audio', 'cf_voltage', 'cf_current')
     forces = (cal_mat * voltages')'; % Conversion to forces and moments
     force_start = (cal_mat * tare_start')'; % Conversion to forces and moments
     force_end = (cal_mat * tare_end')'; % Conversion to forces and moments
@@ -92,6 +102,10 @@ for i = 1 : length(filenames)
     stacked = reshape(pos_encoder, phase_width, []);
     pos_encoder = mean(stacked, 2);
 
+    % Phase average voltage
+    stacked = reshape(cf_voltage, phase_width, []);
+    cf_voltage = mean(stacked, 2);
+    
     % Phase average current
     stacked = reshape(cf_current, phase_width, []);
     cf_current = mean(stacked, 2);
@@ -107,7 +121,7 @@ for i = 1 : length(filenames)
     lift_force = total_force - inertial_force;
     forces = table(total_force, inertial_force, lift_force, 'VariableNames', Config.BOXES(1:3));
     time = time(1 : length(total_force));
-    save(fullfile(processed_folder, filename), 'time', 'forces', 'force_start', 'force_end', 'pos_encoder', 'cf_current', 'stdev');
+    save(fullfile(processed_folder, filename), 'time', 'forces', 'force_start', 'force_end', 'pos_encoder', 'cf_voltage', 'cf_current', 'stdev');
 end
 
 d.Value = 1;
