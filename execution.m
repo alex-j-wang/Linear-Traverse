@@ -30,7 +30,6 @@ switch TPOS
         error('Invalid traverse position selection.');
 end
 FS = [0.2 0.5 0.75 1]; % Traverse frequency, Hz
-YAW = 0;
 TRAV = 'CF81'; % Disabled during hover normalization
 FT = 'CF80';
 
@@ -90,7 +89,7 @@ disp('Checking hover thrust.');
 hover_throttle = Config.get_hover;
 shift = ground + SDS(end) - Config.H / 1000;
 position = Process.gradual_move(daq_obj, position, shift);
-[~, voltages] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, FT);
+[~, voltages] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, TRAV);
 forces = mean(cal_mat * voltages', 2);
 hover_thrust = forces(3);
 

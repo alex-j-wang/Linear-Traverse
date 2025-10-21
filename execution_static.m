@@ -7,7 +7,7 @@ clear; clc; close all hidden;
 % Test parameters
 TRIALS = 3;
 CFS = 50;
-TPOS = 1;
+TPOS = 1; % Traverse position selection
 switch TPOS
     case 1
         SDS = Config.L / 1000 * (1:1:9); % Stopping distance, m
@@ -32,7 +32,7 @@ FT = 'CF80';
 load(['cal_' Config.SENSOR '.mat']);
 
 % DAQ setup
-daq_obj = Config.initialize();
+daq_obj = Config.initialize;
 
 % Create folder for record-keeping
 data_folder = fullfile('Data', [char(datetime('now', 'Format', 'yyyy_MM_dd')) '_Y' num2str(YAW) '_STAT']);
@@ -83,7 +83,7 @@ disp('Checking hover thrust.');
 hover_throttle = Config.get_hover;
 shift = ground + SDS(end) - Config.H / 1000;
 position = Process.gradual_move(daq_obj, position, shift);
-[~, voltages] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, FT);
+[~, voltages] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, TRAV);
 forces = mean(cal_mat * voltages', 2);
 hover_thrust = forces(3);
 
