@@ -163,6 +163,6 @@ d.Value = 1;
 d.Message = message;
 position = Process.gradual_move(daq_obj, position, 0);
 
-Process.alert_slack(['Static testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
+Process.alert_slack(['Dynamic testing for ' data_folder ' completed in ' char(actual_elapsed) '.']);
 pause(3);
 close(h);
