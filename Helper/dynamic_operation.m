@@ -2,12 +2,12 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_current] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
+function data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
-    tare_start = mean(Process.conv_readwrite(daq_obj, tare_output, lpi));
-    tare_start = tare_start(1:6);
+    tare_start = Process.conv_readwrite(daq_obj, tare_output, lpi);
+    tare_start = mean(tare_start(:, Config.FT_CH)).Variables;
 
     if CF ~= 0
         disp('Starting Crazyflie.');
@@ -15,8 +15,7 @@ function [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_c
             pause(5);
         else
             Process.alert_slack('Restarting case');
-            [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_current] = ...
-                dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
+            data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;
         end
     end
@@ -24,7 +23,7 @@ function [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_c
     profile = shift + generate_profile(F, A);
 
     disp('Collecting data.');
-    [data, time] = Process.conv_readwrite(daq_obj, profile, lpi);
+    data = Process.conv_readwrite(daq_obj, profile, lpi);
     disp('Data collected.');
 
     if CF ~= 0
@@ -35,28 +34,25 @@ function [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_c
             while ~Process.run_drone(0, varargin{:}); end
             pause(CF / 20);
             Process.alert_slack('Connection restored, restarting case');
-            [time, voltages, tare_start, tare_end, cf_voltage, audio, encoder, cf_current] = ...
-                dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
+            data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;
         end
     end
 
     disp('Taring output.');
-    tare_end = mean(Process.conv_readwrite(daq_obj, tare_output, lpi));
-    tare_end = tare_end(1:6);
-    
+    tare_end = Process.conv_readwrite(daq_obj, tare_output, lpi);
+    tare_end = mean(tare_end(:, Config.FT_CH)).Variables;
+
     disp('Extracting data.');
+    % Truncate to data cycles
     row_start = floor(Config.RAMP_CYCLES / F * Config.SRATE) + 1;
     rows = floor(Config.DATA_CYCLES / F * Config.SRATE);
     data = data(row_start : row_start + rows - 1, :);
-    time = time(1 : rows);
+    data.Time = data.Time - data.Time(1);
 
+    % Apply linear tare
     tare_voltages = tare_start + linspace(0, 1, rows)' * (tare_end - tare_start);
-    voltages = data(:, 1:6) - tare_voltages;
-    cf_voltage = data(:, 7);
-    audio = data(:, 8);
-    encoder = data(:, 9) + data(:, 10);
-    cf_current = data(:, 11);
+    data{:, FT_CH} = data{:, FT_CH} - tare_voltages;
 end
 
 function position = generate_profile(traverse_freq, amplitude)

@@ -24,7 +24,13 @@ void setup() {
 }
 
 void loop() {
-  float current = ina3221.getCurrentAmps(0);
-  Serial.write((byte*)&current, sizeof(current));
+  float ch1 = ina3221.getCurrentAmps(0);
+  float ch2 = ina3221.getCurrentAmps(1);
+
+  uint8_t start = 0xAA;
+  Serial.write(&start, 1);
+  Serial.write((byte*)&ch1, sizeof(ch1));
+  Serial.write((byte*)&ch2, sizeof(ch2));
+  
   delay(5);
 }
