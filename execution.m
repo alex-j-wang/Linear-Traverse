@@ -12,20 +12,20 @@ switch TPOS
         SDS = Config.L / 1000 * [1 1.5 2 3]; % Stopping distance, m
         AS = Config.L / 1000 * [0.5 1 2 3];  % Traverse amplitude, m
     case 1.2
-        SDS = Config.L / 1000 * 1; % Stopping distance, m
-        AS = Config.L / 1000 * 4;  % Traverse amplitude, m
+        SDS = Config.L / 1000 * 1.5;  % Stopping distance, m
+        AS = Config.L / 1000 * 3.5; % Traverse amplitude, m
     case 2
-        SDS = Config.L / 1000 * 10;  % Stopping distance, m
-        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+        SDS = Config.L / 1000 * 10.5; % Stopping distance, m
+        AS = Config.L / 1000 * 3.5; % Traverse amplitude, m
     case 3
-        SDS = Config.L / 1000 * 19; % Stopping distance, m
-        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+        SDS = Config.L / 1000 * 19.5; % Stopping distance, m
+        AS = Config.L / 1000 * 3.5; % Traverse amplitude, m
     case 4
-        SDS = Config.L / 1000 * 28; % Stopping distance, m
-        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+        SDS = Config.L / 1000 * 28.5; % Stopping distance, m
+        AS = Config.L / 1000 * 3.5; % Traverse amplitude, m
     case 5
-        SDS = Config.L / 1000 * 37; % Stopping distance, m
-        AS = Config.L / 1000 * 4; % Traverse amplitude, m
+        SDS = Config.L / 1000 * 37.5; % Stopping distance, m
+        AS = Config.L / 1000 * 3.5; % Traverse amplitude, m
     otherwise
         error('Invalid traverse position selection.');
 end

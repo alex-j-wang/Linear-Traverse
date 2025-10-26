@@ -15,6 +15,7 @@ folder = uigetdir();
 [~, foldername, ~] = fileparts(folder);
 items = dir(fullfile(folder, '*.mat'));
 filenames = sort({items.name});
+filenames = filenames(filenames ~= "calibration.mat");
 
 % Set up processed data folder
 processed_folder = fullfile(folder, 'processed_data');
@@ -25,7 +26,7 @@ end
 % Ask about reprocessing data
 overwritten = [];
 for filename = filenames
-    processed_filepath = fullfile(processed_folder, filename);
+    processed_filepath = fullfile('Data', foldername, 'processed_data', filename);
     if isfile(processed_filepath)
         overwritten = [overwritten; string(processed_filepath)]; %#ok<AGROW>
     end
@@ -90,6 +91,7 @@ for i = 1 : length(filenames)
         keep(range(select)) = false;
         filtered = filtered(keep, :);
         pos_encoder = pos_encoder(keep);
+        cf_voltage = cf_voltage(keep);
         cf_current = cf_current(keep);
         phase_width = floor(phase_width);
     end
