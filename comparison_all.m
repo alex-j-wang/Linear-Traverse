@@ -6,7 +6,7 @@ clear; clc; close all hidden;
 AXIS = 3; %[control:dropdown:7ac0]{"position":[8,9]}
 BASE_FOLDER = "/Users/alexwang/Documents/MATLAB/Linear Traverse/Data"; %[control:filebrowser:1a7f]{"position":[15,70]}
 OUT_FOLDER = "/Users/alexwang/Downloads"; %[control:filebrowser:2fa5]{"position":[14,41]}
-DRONE = "Upper "; %[control:dropdown:7ade]{"position":[9,17]}
+DRONE = "Lower "; %[control:dropdown:7ade]{"position":[9,17]}
 MAX = 1; %[control:slider:32c3]{"position":[7,8]}
 ERRORBAR = true; %[control:checkbox:3bbe]{"position":[12,16]}
 CF_VOLTAGE = 4;
@@ -58,24 +58,22 @@ LABELS = containers.Map(FOLDERS, { ...
 colors = slanCM('GnBu', 2 + length(FOLDERS)); %[output:704af998]
 %%
 name = DRONE + Config.NAMES(AXIS);
-conv = dictionary(DRONE + Config.NAMES, ["F_y" "F_x" "F_z" "M_y" "M_x" "M_z"]);
-disp_name = conv(name);
 colors = colors(3:end, :);
 
-out_folder = fullfile(OUT_FOLDER, strjoin(["comparison", "stacked", disp_name], "-"));
+out_folder = fullfile(OUT_FOLDER, strjoin(["comparison", "stacked", name], "-"));
 
 if ~exist(out_folder, "dir")
     mkdir(out_folder);
 end
 %%
 %[text] ## FT Comparison
-%[text] Plot chosen axis versus distance.
+%[text] Plot chosen axis versus distance. FT data pre-processing should account for orientation.
 if AXIS <= 3
     DENOMINATOR = Config.W * MAX;
-    Process.format_plot("", "Separation, $\Delta z/l$", "Force, $\bar{" + disp_name + "}/W$"); %[output:0ca06341]
+    Process.format_plot("", "Separation, $\Delta z/l$", "Force, $\bar{" + name + "}/W$"); %[output:0ca06341]
 else
     DENOMINATOR = Config.W * Config.L * MAX;
-    Process.format_plot("", "Separation, $\Delta z/l$", "Moment, $\bar{" + disp_name + "}/(Wl)$");
+    Process.format_plot("", "Separation, $\Delta z/l$", "Moment, $\bar{" + name + "}/(Wl)$");
 end
 %[output:0ca06341]
 set(gcf, 'Position', [100 100 750 750]); %[output:0ca06341]
@@ -180,7 +178,7 @@ for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    rps = table2array(results.(DRONE + " RPS")(:, 2:end));
+    rps = table2array(results.(DRONE + "RPS")(:, 2:end));
 
     plot(SDS, median(rps, 2), ".-", 'Color', colors(k, :), 'LineWidth', 1.5, 'MarkerSize', 15); %[output:00141bb4]
 end

@@ -31,6 +31,9 @@ for folder = uigetdirs
     fig = uifigure('Name', 'Static Processing');
     d = uiprogressdlg(fig, 'Title', sprintf('Processing (%s)', foldername));
     fprintf("Processing <strong>%s</strong>.\n", foldername);
+
+    % Force analysis parameter
+    yaw = str2double(regexp(foldername, '(?<=Y)[\d\-]+', 'match'));
     
     % Current analysis parameters
     % TODO: remove?
@@ -64,9 +67,9 @@ for folder = uigetdirs
             idx = find(SDS == SD / 100);
 
             voltages = data{:, Config.LOWER_FT_CH};
-            lower_forces = (lower_cal * voltages')';
+            lower_forces = (Config.lower_to_world * lower_cal * voltages')';
             voltages = data{:, Config.UPPER_FT_CH};
-            upper_forces = (upper_cal * voltages')';
+            upper_forces = (Config.upper_to_world(yaw) * upper_cal * voltages')';
 
             for a = 1 : length(Config.NAMES)
                 results.("Lower " + Config.NAMES(a)).(trial)(idx) = mean(lower_forces(:, a));

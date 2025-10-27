@@ -2,7 +2,7 @@
 % Script for averaging, normalizing, and plotting dynamic test data
 % -------------------------------------------------------------------------
 
-% [10/26/25] TODO: update to support two force transducers and timetable data format
+% [10/26/25] TODO: update to support two force transducers, timetable data format, and FT orientation
 
 clear; clc; close all hidden;
 

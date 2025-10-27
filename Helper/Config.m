@@ -134,5 +134,40 @@ classdef Config
                 out = b;
             end
         end
+
+        function R = lower_to_world
+            % LOWER_TO_WORLD  Rotation matrix from lower Nano17 to world frame
+            % If BB represents two body frame column vectors (stacked vertically),
+            % WW = R*BB represents the corresponding world frame vectors
+            R = Config.rotz(90);
+            R = blkdiag(R, R);
+        end
+
+        function R = upper_to_world(yaw)
+            % UPPER_TO_WORLD  Rotation matrix from upper Nano17 to world frame
+            % YAW is degrees turned ccw looking down the world Z-axis
+            % If BB represents two body frame column vectors (stacked vertically),
+            % WW = R*BB represents the corresponding world frame vectors
+            R = Config.rotz(yaw) * Config.rotz(-90) * Config.roty(180);
+            R = blkdiag(R, R);
+        end
+
+        function R = rotx(degrees)
+            % ROTX  Create rotation matrix for rotation about the X-axis
+            radians = deg2rad(degrees);
+            R = [1 0 0; 0 cos(radians) -sin(radians); 0 sin(radians) cos(radians)];
+        end
+
+        function R = roty(degrees)
+            % ROTY  Create rotation matrix for rotation about the Y-axis
+            radians = deg2rad(degrees);
+            R = [cos(radians) 0 sin(radians); 0 1 0; -sin(radians) 0 cos(radians)];
+        end
+
+        function R = rotz(degrees)
+            % ROTZ  Create rotation matrix for rotation about the Z-axis
+            radians = deg2rad(degrees);
+            R = [cos(radians) -sin(radians) 0; sin(radians) cos(radians) 0; 0 0 1];
+        end
     end
 end
