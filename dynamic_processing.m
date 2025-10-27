@@ -2,6 +2,8 @@
 % Script for averaging, normalizing, and plotting dynamic test data
 % -------------------------------------------------------------------------
 
+% [10/26/25] TODO: update to support two force transducers and timetable data format
+
 clear; clc; close all hidden;
 
 % Load the calibration matrix for the force transducer

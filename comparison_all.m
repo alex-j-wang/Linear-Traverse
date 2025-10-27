@@ -6,6 +6,7 @@ clear; clc; close all hidden;
 AXIS = 3; %[control:dropdown:7ac0]{"position":[8,9]}
 BASE_FOLDER = "/Users/alexwang/Documents/MATLAB/Linear Traverse/Data"; %[control:filebrowser:1a7f]{"position":[15,70]}
 OUT_FOLDER = "/Users/alexwang/Downloads"; %[control:filebrowser:2fa5]{"position":[14,41]}
+DRONE = "Upper "; %[control:dropdown:7ade]{"position":[9,17]}
 MAX = 1; %[control:slider:32c3]{"position":[7,8]}
 ERRORBAR = true; %[control:checkbox:3bbe]{"position":[12,16]}
 CF_VOLTAGE = 4;
@@ -56,8 +57,8 @@ LABELS = containers.Map(FOLDERS, { ...
 
 colors = slanCM('GnBu', 2 + length(FOLDERS)); %[output:704af998]
 %%
-name = Config.NAMES(AXIS);
-conv = dictionary(Config.NAMES, ["F_y" "F_x" "F_z" "M_y" "M_x" "M_z"]);
+name = DRONE + Config.NAMES(AXIS);
+conv = dictionary(DRONE + Config.NAMES, ["F_y" "F_x" "F_z" "M_y" "M_x" "M_z"]);
 disp_name = conv(name);
 colors = colors(3:end, :);
 
@@ -76,10 +77,8 @@ else
     DENOMINATOR = Config.W * Config.L * MAX;
     Process.format_plot("", "Separation, $\Delta z/l$", "Moment, $\bar{" + disp_name + "}/(Wl)$");
 end
-
-xlim([0 17]); %[output:0ca06341]
+%[output:0ca06341]
 set(gcf, 'Position', [100 100 750 750]); %[output:0ca06341]
-
 handles = gobjects(length(FOLDERS), 1);
 
 for k = 1:length(FOLDERS)
@@ -109,19 +108,17 @@ savefig(gcf, fullfile(out_folder, "FT.fig"));
 %[text] ## Crazyflie Power
 figure; %[output:8a62d2ef]
 Process.format_plot("", "Separation, $\Delta z/l$", "Power, W"); %[output:8a62d2ef]
-
-xlim([0 17]); %[output:8a62d2ef]
-ylim([5 7]); %[output:8a62d2ef]
+%[output:8a62d2ef]
 set(gcf, 'Position', [100 100 750 750]); %[output:8a62d2ef]
-
 handles = gobjects(length(FOLDERS), 1);
 
 for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    current = table2array(results.Current(:, 2:end));
-    power = current * CF_VOLTAGE;
+    current = table2array(results.(DRONE + "Current")(:, 2:end));
+    voltage = table2array(results.(DRONE + "Voltage")(:, 2:end));
+    power = current .* voltage;
 
     if ERRORBAR == true
         % Plot results (error bars)
@@ -143,23 +140,20 @@ savefig(gcf, fullfile(out_folder, "power.fig"));
 %%
 %[text] ## Crazyflie Voltage
 figure; %[output:54be919c]
-Process.format_plot("", "Separation, $\Delta z/l$", "Crazyflie Voltage, V"); %[output:54be919c]
+Process.format_plot("", "Separation, $\Delta z/l$", "Voltage, V");
 
-xlim([0 17]); %[output:54be919c]
-ylim([0 5]); %[output:54be919c]
-set(gcf, 'Position', [100 100 750 750]); %[output:54be919c]
-
+set(gcf, 'Position', [100 100 750 750]);
 handles = gobjects(length(FOLDERS), 1);
 
 for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    voltage = table2array(results.("Crazyflie Voltage")(:, 2:end));
+    voltage = table2array(results.(DRONE + "Voltage")(:, 2:end));
 
     if ERRORBAR == true
         % Plot results (error bars)
-        h = errorbar(SDS, mean(voltage, 2), std(voltage, 0, 2), 'o--', 'Color', colors(k, :), 'MarkerFaceColor', colors(k, :), 'LineWidth', 1.5); %[output:54be919c]
+        h = errorbar(SDS, mean(voltage, 2), std(voltage, 0, 2), 'o--', 'Color', colors(k, :), 'MarkerFaceColor', colors(k, :), 'LineWidth', 1.5);
     else
         % Plot results (data)
         h = plot(SDS, voltage, "x", 'Color', colors(k, :), "MarkerSize", 8, "LineWidth", 1.5);
@@ -168,29 +162,27 @@ for k = 1:length(FOLDERS)
     handles(k) = h(1);
 end
 
-legend(handles, values(LABELS, FOLDERS), 'Location', 'northeast'); %[output:54be919c]
+legend(handles, values(LABELS, FOLDERS), 'Location', 'northeast');
 
 %% Save
-exportgraphics(gca, fullfile(out_folder, "voltage.svg"), 'ContentType', 'vector'); %[output:54be919c]
-exportgraphics(gca, fullfile(out_folder, "voltage.png")); %[output:54be919c]
+exportgraphics(gca, fullfile(out_folder, "voltage.svg"), 'ContentType', 'vector');
+exportgraphics(gca, fullfile(out_folder, "voltage.png"));
 savefig(gcf, fullfile(out_folder, "voltage.fig"));
 %%
 %[text] ## Peak Frequencies
 figure %[output:00141bb4]
 Process.format_plot("", "Separation, $\Delta z/l$", "Propeller Speed, Hz"); %[output:00141bb4]
-
-xlim([0 17]); %[output:00141bb4]
+%[output:00141bb4]
 set(gcf, 'Position', [100 100 750 750]); %[output:00141bb4]
-
 handles = gobjects(length(FOLDERS), 1);
 
 for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    transducer = table2array(results.("Transducer RPS")(:, 2:end));
+    rps = table2array(results.(DRONE + " RPS")(:, 2:end));
 
-    plot(SDS, median(transducer, 2), ".-", 'Color', colors(k, :), 'LineWidth', 1.5, 'MarkerSize', 15); %[output:00141bb4]
+    plot(SDS, median(rps, 2), ".-", 'Color', colors(k, :), 'LineWidth', 1.5, 'MarkerSize', 15); %[output:00141bb4]
 end
 
 legend(values(LABELS, FOLDERS), 'Location', 'northeast'); %[output:00141bb4]
@@ -213,6 +205,9 @@ savefig(gcf, fullfile(out_folder, "frequency.fig"));
 %---
 %[control:filebrowser:2fa5]
 %   data: {"browserType":"Folder","defaultValue":"\"\"","label":"Out Folder","run":"Section"}
+%---
+%[control:dropdown:7ade]
+%   data: {"defaultValue":"\"Lower \"","itemLabels":["Lower","Upper","None (Legacy)"],"items":["\"Lower \"","\"Upper \"","\"\""],"label":"DRONE","run":"Section"}
 %---
 %[control:slider:32c3]
 %   data: {"defaultValue":1,"label":"Max","max":1.5,"min":0.5,"run":"Section","runOn":"ValueChanging","step":0.1}

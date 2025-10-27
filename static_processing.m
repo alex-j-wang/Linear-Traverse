@@ -4,13 +4,14 @@
 
 clear; clc;
 
-% Load the calibration matrix for the force transducer
-load(['cal_' Config.SENSOR '.mat']);
+% Load force transducer calibration matrices
+lower_cal = load(['cal_' Config.LOWER_FT '.mat'], 'cal_mat').('cal_mat');
+upper_cal = load(['cal_' Config.UPPER_FT '.mat'], 'cal_mat').('cal_mat');
 
 % Choose data folders
 for folder = uigetdirs
     close all hidden;
-    [~, foldername, ~] = fileparts(folder);
+    [~, foldername] = fileparts(folder);
     items = dir(folder);
     folders = {items([items.isdir]).name};
     folders = folders(3:end);
@@ -21,8 +22,10 @@ for folder = uigetdirs
     SDS = sort(cellfun(@(x) str2double(regexp(x, '(?<=SD)[\d\.]+', 'match')), filenames)) / 100;
     dummy = array2table(zeros(length(SDS), length(folders) + 1), 'VariableNames', ["SD" string(folders)]);
     dummy.SD = SDS';
-    results = repmat(table(dummy), 1, 9);
-    results.Properties.VariableNames = [Config.NAMES "Crazyflie Voltage" "Current" "Transducer RPS"];
+    lower_names = "Lower " + [Config.NAMES "Voltage" "Current" "RPS"];
+    upper_names = "Upper " + [Config.NAMES "Voltage" "Current" "RPS"];
+    results = repmat(table(dummy), 1, numel(lowerNames) + numel(upperNames));
+    results.Properties.VariableNames = [lower_names upper_names];
     
     % Create progress bar
     fig = uifigure('Name', 'Static Processing');
@@ -30,6 +33,7 @@ for folder = uigetdirs
     fprintf("Processing <strong>%s</strong>.\n", foldername);
     
     % Current analysis parameters
+    % TODO: remove?
     cmin = 1e-3;
     cmax = 5;
     
@@ -37,8 +41,8 @@ for folder = uigetdirs
     nfft = Config.SRATE;
     window = hamming(nfft);
     overlap = nfft / 2;
-    fmin = 200;
-    fmax = 350;
+    fmin = 100;
+    fmax = 500;
     
     num_trials = length(folders);
     num_sd = length(SDS);
@@ -52,42 +56,65 @@ for folder = uigetdirs
             d.Value = ((t - 1) * length(filenames) + (i - 1)) / length(folders) / length(filenames);
             d.Message = [folders{t} ' ' strrep(filename, '_', ' ')];
     
-            load(fullfile(folder, trial, filename), 'voltages', 'cf_voltage', 'cf_current', 'audio') % Includes tare
-            forces = (cal_mat * voltages')'; % Conversion to forces and moments
-    
+            load(fullfile(folder, trial, filename), 'data') % Includes tare
+
             % Extract and convert parameters
             parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
             [~, SD, ~, ~] = deal(parameters{:});
             idx = find(SDS == SD / 100);
-    
+
+            voltages = data{:, Config.LOWER_FT_CH};
+            lower_forces = (lower_cal * voltages')';
+            voltages = data{:, Config.UPPER_FT_CH};
+            upper_forces = (upper_cal * voltages')';
+
             for a = 1 : length(Config.NAMES)
-                results.(Config.NAMES(a)).(trial)(idx) = mean(forces(:, a));
+                results.("Lower " + Config.NAMES(a)).(trial)(idx) = mean(lower_forces(:, a));
+                results.("Upper " + Config.NAMES(a)).(trial)(idx) = mean(upper_forces(:, a));
             end
-    
+
             % Mean Crazyflie voltage
-            results.("Crazyflie Voltage").(trial)(idx) = mean(cf_voltage);
+            results.("Lower Voltage").(trial)(idx) = mean(data.LowerVoltage);
+            results.("Upper Voltage").(trial)(idx) = mean(data.UpperVoltage);
 
             % Mean current
-            current_mask = cf_current >= cmin & cf_current <= cmax;
-            results.Current.(trial)(idx) = mean(cf_current(current_mask));
-    
+            current_mask = data.LowerCurrent >= cmin & data.LowerCurrent <= cmax;
+            results.("Lower Current").(trial)(idx) = mean(data.LowerCurrent(current_mask));
+            current_mask = data.UpperCurrent >= cmin & data.UpperCurrent <= cmax;
+            results.("Upper Current").(trial)(idx) = mean(data.UpperCurrent(current_mask));
+
             % Frequency analysis
-            [P_force, f_force] = pwelch(forces(:, 3), window, overlap, nfft, Config.SRATE);
+            idx = (t - 1) * num_sd + find(SDS == SD / 100);
+            subplot(num_trials, num_sd, idx);
+            title("T" + t + " SD" + SD);
+            xlim([fmin fmax]);
+            hold on;
+
+            % Lower
+            [P_force, f_force] = pwelch(lower_forces(:, 3), window, overlap, nfft, Config.SRATE);
             force_mask = f_force >= fmin & f_force <= fmax;
             f_force_trim = f_force(force_mask);
             P_force_trim = P_force(force_mask);
     
             [~, loc] = max(P_force_trim);
-            transducer_rps = f_force_trim(loc);
-            results.("Transducer RPS").(trial)(idx) = transducer_rps;
-    
-            idx = (t - 1) * num_sd + find(SDS == SD / 100);
-            subplot(num_trials, num_sd, idx);
-            hold on;
+            rps = f_force_trim(loc);
+            results.("Lower RPS").(trial)(idx) = rps;
+
             plot(f_force_trim, 10 * log10(P_force_trim), 'r');
-            xline(transducer_rps, 'g--', 'LineWidth', 1.5);
-            title("T" + t + " SD" + SD);
-            xlim([fmin fmax]);
+            xline(rps, 'g--', 'LineWidth', 1.5);
+            
+            % Upper
+            [P_force, f_force] = pwelch(upper_forces(:, 3), window, overlap, nfft, Config.SRATE);
+            force_mask = f_force >= fmin & f_force <= fmax;
+            f_force_trim = f_force(force_mask);
+            P_force_trim = P_force(force_mask);
+    
+            [~, loc] = max(P_force_trim);
+            rps = f_force_trim(loc);
+            results.("Upper RPS").(trial)(idx) = rps;
+
+            plot(f_force_trim, 10 * log10(P_force_trim), 'r');
+            xline(rps, 'g--', 'LineWidth', 1.5);
         end
     end
     

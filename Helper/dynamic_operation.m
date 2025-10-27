@@ -7,7 +7,7 @@ function data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
     tare_start = Process.conv_readwrite(daq_obj, tare_output, lpi);
-    tare_start = mean(tare_start(:, Config.FT_CH)).Variables;
+    tare_start = mean(tare_start{:, Config.FT_CH});
 
     if CF ~= 0
         disp('Starting Crazyflie.');
@@ -41,7 +41,7 @@ function data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
 
     disp('Taring output.');
     tare_end = Process.conv_readwrite(daq_obj, tare_output, lpi);
-    tare_end = mean(tare_end(:, Config.FT_CH)).Variables;
+    tare_end = mean(tare_end{:, Config.FT_CH});
 
     disp('Extracting data.');
     % Truncate to data cycles

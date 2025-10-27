@@ -2,6 +2,8 @@
 % Class providing methods for creating GUI menus and dropdowns
 % --------------------------------------------------------------------
 
+% [10/26/25] TODO: update to support two force transducers and timetable data format
+
 classdef interface
     methods(Static)
         function selection = dropdown(options, title)

@@ -25,11 +25,12 @@ end
 F = 1;
 A = 0;
 YAW = 0;
-TRAV = 'CF81'; % Disabled during hover normalization
-FT = 'CF80';
+UPPER_CF = 'CF81'; % Disabled during lower hover normalization
+LOWER_CF = 'CF80'; % Disabled during upper hover normalization
 
-% Load the calibration matrix for the force transducer
-load(['cal_' Config.SENSOR '.mat']);
+% Load force transducer calibration matrices
+lower_cal = load(['cal_' Config.LOWER_FT '.mat'], 'cal_mat').('cal_mat');
+upper_cal = load(['cal_' Config.UPPER_FT '.mat'], 'cal_mat').('cal_mat');
 
 % DAQ setup
 daq_obj = Config.initialize;
@@ -81,14 +82,19 @@ fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 % Hover throttle calibration
 disp('Checking hover thrust.');
 hover_throttle = Config.get_hover;
-shift = ground + SDS(end) - Config.H / 1000;
-position = Process.gradual_move(daq_obj, position, shift);
-[~, voltages] = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, TRAV);
-forces = mean(cal_mat * voltages', 2);
-hover_thrust = forces(3);
 
-save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'hover_thrust', 'lpi');
-Process.alert_slack(sprintf('T%g -> %g N', hover_throttle, hover_thrust));
+data = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, UPPER_CF);
+voltages = data{:, LOWER_FT_CH};
+forces = mean(lower_cal * voltages', 2);
+lower_thrust = forces(3);
+
+data = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, LOWER_CF);
+voltages = data{:, UPPER_FT_CH};
+forces = mean(upper_cal * voltages', 2);
+upper_thrust = forces(3);
+
+save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'lower_thrust', 'upper_thrust', 'lpi');
+Process.alert_slack(sprintf('[T%g] %g N (lower) | %g N (upper)', hover_throttle, lower_thrust, upper_thrust));
 
 % Estimate execution time
 est_time = seconds(TRIALS * length(CFS) * length(SDS) * ...
@@ -130,12 +136,11 @@ for TRIAL = 1:TRIALS
             pause(1);
 
             % Gather data
-            [time, voltages, tare_start, tare_end, cf_voltage, audio, pos_encoder, cf_current] = ...
-                dynamic_operation(CF, shift, F, A, daq_obj, lpi);
+            data = dynamic_operation(CF, shift, F, A, daq_obj, lpi);
 
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
-            save(filename, 'time', 'voltages', 'tare_start', 'tare_end', 'cf_voltage', 'audio', 'pos_encoder', 'cf_current');
+            save(filename, 'data');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
             if d.CancelRequested
