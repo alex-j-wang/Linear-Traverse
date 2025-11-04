@@ -52,7 +52,7 @@ function data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
 
     % Apply linear tare
     tare_voltages = tare_start + linspace(0, 1, rows)' * (tare_end - tare_start);
-    data{:, FT_CH} = data{:, FT_CH} - tare_voltages;
+    data{:, Config.FT_CH} = data{:, Config.FT_CH} - tare_voltages;
 end
 
 function position = generate_profile(traverse_freq, amplitude)

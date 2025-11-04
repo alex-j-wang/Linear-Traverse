@@ -24,7 +24,7 @@ for folder = uigetdirs
     dummy.SD = SDS';
     lower_names = "Lower " + [Config.NAMES "Voltage" "Current" "RPS"];
     upper_names = "Upper " + [Config.NAMES "Voltage" "Current" "RPS"];
-    results = repmat(table(dummy), 1, numel(lowerNames) + numel(upperNames));
+    results = repmat(table(dummy), 1, numel(lower_names) + numel(upper_names));
     results.Properties.VariableNames = [lower_names upper_names];
     
     % Create progress bar

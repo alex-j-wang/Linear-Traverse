@@ -45,12 +45,17 @@ classdef Process
             % GRADUAL_MOVE  Gradually move the traverse to a target position
             if from > to + Config.TICKSHIFT
                 gradual_shift = from : -Config.TICKSHIFT : to;
+                fprintf('Moving to %g cm.\n', to * 100);
+                data = readwrite(daq_obj, gradual_shift' * Config.DTOV);
+                encoder = typecast(uint32(data.EncoderPlus), 'int32') + typecast(uint32(data.EncoderMinus), 'int32');
             elseif from < to - Config.TICKSHIFT
                 gradual_shift = from : +Config.TICKSHIFT : to;
+                fprintf('Moving to %g cm.\n', to * 100);
+                data = readwrite(daq_obj, gradual_shift' * Config.DTOV);
+                encoder = typecast(uint32(data.EncoderPlus), 'int32') + typecast(uint32(data.EncoderMinus), 'int32');
+            else
+                fprintf('Already at %g cm!\n', from * 100);
             end
-            fprintf('Moving to %g cm.\n', to * 100);
-            data = readwrite(daq_obj, gradual_shift' * Config.DTOV);
-            encoder = typecast(uint32(data.EncoderPlus), 'int32') + typecast(uint32(data.EncoderMinus), 'int32');
         end
 
         function encoder_pos = encoder_convert(encoder_data, lpi)

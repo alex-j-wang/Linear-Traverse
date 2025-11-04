@@ -30,6 +30,7 @@ switch TPOS
         error('Invalid traverse position selection.');
 end
 FS = [0.2 0.5 0.75 1]; % Traverse frequency, Hz
+YAW = 0;
 UPPER_CF = 'CF81'; % Disabled during lower hover normalization
 LOWER_CF = 'CF80'; % Disabled during upper hover normalization
 
@@ -90,13 +91,13 @@ disp('Checking hover thrust.');
 hover_throttle = Config.get_hover;
 
 data = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, UPPER_CF);
-voltages = data{:, LOWER_FT_CH};
-forces = mean(lower_cal * voltages', 2);
+voltages = data{:, Config.LOWER_FT_CH};
+forces = mean(Config.lower_to_world * lower_cal * voltages', 2);
 lower_thrust = forces(3);
 
 data = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, LOWER_CF);
-voltages = data{:, UPPER_FT_CH};
-forces = mean(upper_cal * voltages', 2);
+voltages = data{:, Config.UPPER_FT_CH};
+forces = mean(Config.upper_to_world(YAW) * upper_cal * voltages', 2);
 upper_thrust = forces(3);
 
 save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'lower_thrust', 'upper_thrust', 'lpi');

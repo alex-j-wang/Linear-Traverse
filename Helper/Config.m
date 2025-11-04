@@ -63,37 +63,37 @@ classdef Config
             daq_obj.Rate = Config.SRATE;
             
             % Output channel (motor voltage)
-            output = addoutput(daq_obj, 'Dev2', "ao0", 'Voltage');
+            output = addoutput(daq_obj, 'Dev4', "ao0", 'Voltage');
             output.Name = 'voutput';
             
             % Lower Crazyflie input channels (force, voltage)
-            lower = addinput(daq_obj, 'Dev2', ["ai0" "ai1" "ai2" "ai3" "ai4" "ai5" "ai6"], 'Voltage');
+            lower = addinput(daq_obj, 'Dev4', 0:6, 'Voltage');
             for i = 1:6
-                lower(i).Name = LOWER_FT_CH(i);
+                lower(i).Name = Config.LOWER_FT_CH(i);
             end
             lower(7).Name = 'LowerVoltage';
 
             % Upper Crazyflie input channels (force, voltage)
-            upper = addinput(daq_obj, 'Dev2', ["ai16" "ai17" "ai18" "ai19" "ai20" "ai21" "ai22"], 'Voltage');
+            upper = addinput(daq_obj, 'Dev4', 16:22, 'Voltage');
             for i = 1:6
-                upper(i).Name = UPPER_FT_CH(i);
+                upper(i).Name = Config.UPPER_FT_CH(i);
             end
             upper(7).Name = 'UpperVoltage';
             
             % Microphone input channel
-            microphone = addinput(daq_obj, 'Dev2', "ai7", 'Voltage');
+            microphone = addinput(daq_obj, 'Dev4', "ai7", 'Voltage');
             microphone.TerminalConfig = "SingleEnded";
             microphone.Name = 'Microphone';
 
             % Input channel (position encoder)
-            encoder_plus = addinput(daq_obj, 'Dev2', 'ctr0', 'Position');
+            encoder_plus = addinput(daq_obj, 'Dev4', 'ctr0', 'Position');
             encoder_plus.EncoderType = 'X4';
             encoder_plus.ZResetEnable = 0;
             encoder_plus.ZResetCondition = 'BothLow';
             encoder_plus.ZResetValue = 0;
             encoder_plus.Name = 'EncoderPlus';
 
-            encoder_minus = addinput(daq_obj, 'Dev2', 'ctr1', 'Position');
+            encoder_minus = addinput(daq_obj, 'Dev4', 'ctr1', 'Position');
             encoder_minus.EncoderType = 'X4';
             encoder_minus.ZResetEnable = 0;
             encoder_minus.ZResetCondition = 'BothLow';
