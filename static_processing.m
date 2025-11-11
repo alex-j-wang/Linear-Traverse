@@ -65,7 +65,7 @@ for folder = uigetdirs
             parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
             [~, SD, ~, ~] = deal(parameters{:});
             idx = find(SDS == SD / 100);
-
+            
             voltages = data{:, Config.LOWER_FT_CH};
             lower_forces = (Config.lower_to_world * lower_cal * voltages')';
             voltages = data{:, Config.UPPER_FT_CH};
@@ -87,8 +87,8 @@ for folder = uigetdirs
             results.("Upper Current").(trial)(idx) = mean(data.UpperCurrent(current_mask));
 
             % Frequency analysis
-            idx = (t - 1) * num_sd + find(SDS == SD / 100);
-            subplot(num_trials, num_sd, idx);
+            subidx = (t - 1) * num_sd + find(SDS == SD / 100);
+            subplot(num_trials, num_sd, subidx);
             title("T" + t + " SD" + SD);
             xlim([fmin fmax]);
             hold on;
