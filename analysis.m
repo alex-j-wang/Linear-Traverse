@@ -1,6 +1,7 @@
 %[text] # Analysis
 %[text] Plots for static and dynamic force, current, and audio data
 %[text] \[10/26/25\] TODO: update to support two force transducers and timetable data format as well as orientation pre-processing
+%[text] \[12/10/25\] TODO: update to support SD-TP filename schema (should we just deprecate?)
 clear; clc; close all hidden;
 %%
 %[text] ## Configuration

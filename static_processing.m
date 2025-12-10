@@ -19,9 +19,15 @@ for folder = uigetdirs
     % Assume all folders contain the same number of files
     items = dir(fullfile(folder, folders{1}, '*.mat'));
     filenames = {items.name};
-    SDS = sort(cellfun(@(x) str2double(regexp(x, '(?<=SD)[\d\.]+', 'match')), filenames)) / 100;
-    dummy = array2table(zeros(length(SDS), length(folders) + 1), 'VariableNames', ["SD" string(folders)]);
-    dummy.SD = SDS';
+    tok = regexp(filenames, 'SD([\d\.]+)_TP([\d\.]+)', 'tokens');
+    tok = cellfun(@(x) x{1}, tok, 'UniformOutput', false);
+    index = sort(str2double(vertcat(tok{:})));
+
+    dummy = array2table(zeros(length(index), length(folders) + 2), ...
+        'VariableNames', ["SD" "TP" string(folders)]);
+    dummy.SD = index(:, 1) / 100;
+    dummy.TP = index(:, 2);
+
     lower_names = "Lower " + [Config.NAMES "Voltage" "Current" "RPS"];
     upper_names = "Upper " + [Config.NAMES "Voltage" "Current" "RPS"];
     results = repmat(table(dummy), 1, numel(lower_names) + numel(upper_names));
@@ -62,9 +68,9 @@ for folder = uigetdirs
             load(fullfile(folder, trial, filename), 'data') % Includes tare
 
             % Extract and convert parameters
-            parameters = num2cell(sscanf(filename, 'CF%f_SD%f_F%f_A%f.mat'));
-            [~, SD, ~, ~] = deal(parameters{:});
-            idx = find(SDS == SD / 100);
+            parameters = num2cell(sscanf(filename, 'CF%f_SD%f_TP%f_F%f.mat'));
+            [~, SD, TP, ~] = deal(parameters{:});
+            idx = find(dummy.SD == SD / 100 & dummy.TP == TP);
             
             voltages = data{:, Config.LOWER_FT_CH};
             lower_forces = (Config.lower_to_world * lower_cal * voltages')';

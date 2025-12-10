@@ -83,7 +83,7 @@ for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    static = table2array(results.(name)(:, 2:end)) / DENOMINATOR;
+    static = table2array(results.(name)(:, 3:end)) / DENOMINATOR;
 
     if ERRORBAR == true
         % Plot results (error bars)
@@ -114,8 +114,8 @@ for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    current = table2array(results.(DRONE + "Current")(:, 2:end));
-    voltage = table2array(results.(DRONE + "Voltage")(:, 2:end));
+    current = table2array(results.(DRONE + "Current")(:, 3:end));
+    voltage = table2array(results.(DRONE + "Voltage")(:, 3:end));
     power = current .* voltage;
 
     if ERRORBAR == true
@@ -147,7 +147,7 @@ for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    voltage = table2array(results.(DRONE + "Voltage")(:, 2:end));
+    voltage = table2array(results.(DRONE + "Voltage")(:, 3:end));
 
     if ERRORBAR == true
         % Plot results (error bars)
@@ -178,7 +178,7 @@ for k = 1:length(FOLDERS)
     folder = FOLDERS{k};
     load(fullfile(BASE_FOLDER, folder, 'processed_data.mat'), 'results');
     SDS = results.(name).SD / (Config.L / 1000);
-    rps = table2array(results.(DRONE + "RPS")(:, 2:end));
+    rps = table2array(results.(DRONE + "RPS")(:, 3:end));
 
     plot(SDS, median(rps, 2), ".-", 'Color', colors(k, :), 'LineWidth', 1.5, 'MarkerSize', 15); %[output:00141bb4]
 end

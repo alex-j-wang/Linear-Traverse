@@ -47,7 +47,7 @@ for TRIAL = 1:TRIALS
     trial_folder = fullfile(data_folder, ['T' num2str(TRIAL, "%02.f")]);
     for CF = CFS
         for SD = SDS
-            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
+            case_name = sprintf('CF%g_SD%g_TP%g_F%g', CF, SD * 100, TPOS, F);
             filename = fullfile(trial_folder, [case_name '.mat']);
             if isfile(filename)
                 overwritten = [overwritten; string(filename)]; %#ok<AGROW>
@@ -132,7 +132,7 @@ for TRIAL = 1:TRIALS
     end
     for CF = CFS
         for SD = SDS
-            case_name = sprintf('CF%g_SD%g_F%g_A%g', CF, SD * 100, F, A * 100);
+            case_name = sprintf('CF%g_SD%g_TP%g_F%g', CF, SD * 100, TPOS, F);
             disp(['Running <strong>T' num2str(TRIAL) ' ' strrep(case_name, '_', ' ') '</strong>.']);
 
             % Update waitbar
