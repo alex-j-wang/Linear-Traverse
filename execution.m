@@ -89,19 +89,34 @@ fprintf('Encoder calibration: %.1f lines per inch.\n', lpi);
 % Hover throttle calibration
 disp('Checking hover thrust.');
 hover_throttle = Config.get_hover;
+cmin = 1e-3;
+cmax = 5;
 
-data = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, UPPER_CF);
+[data, timestamp] = dynamic_operation(hover_throttle, shift, 1/3, 0, daq_obj, lpi, UPPER_CF);
 voltages = data{:, Config.LOWER_FT_CH};
 forces = mean(Config.lower_to_world * lower_cal * voltages', 2);
-lower_thrust = forces(3);
 
-data = dynamic_operation(hover_throttle, shift, 4, 0, daq_obj, lpi, LOWER_CF);
+lower = struct( ...
+    'timestamp', timestamp, ...
+    'thrust', forces(3), ...
+    'voltage', mean(data.LowerVoltage), ...
+    'current', mean(data.LowerCurrent(data.LowerCurrent >= cmin & data.LowerCurrent <= cmax)) ...
+    );
+
+[data, timestamp] = dynamic_operation(hover_throttle, shift, 1/3, 0, daq_obj, lpi, LOWER_CF);
 voltages = data{:, Config.UPPER_FT_CH};
 forces = mean(Config.upper_to_world(YAW) * upper_cal * voltages', 2);
-upper_thrust = forces(3);
 
-save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'lower_thrust', 'upper_thrust', 'lpi');
-Process.alert_slack(sprintf('[T%g] %g N (lower) | %g N (upper)', hover_throttle, lower_thrust, upper_thrust));
+upper = struct( ...
+    'timestamp', timestamp, ...
+    'thrust', forces(3), ...
+    'voltage', mean(data.UpperVoltage), ...
+    'current', mean(data.UpperCurrent(data.UpperCurrent >= cmin & data.UpperCurrent <= cmax)) ...
+    );
+
+save(fullfile(data_folder, 'calibration.mat'), 'hover_throttle', 'lower', 'upper', 'lpi');
+Process.alert_slack(sprintf('[T%g] %g N, %g V, %g A (lower) | %g N, %g V, %g A (upper)', ...
+    hover_throttle, lower.thrust, lower.voltage, lower.current, upper.thrust, upper.voltage, upper.current));
 
 % Estimate execution time
 est_time = seconds(length(CFS) * length(SDS) * length(AS) * ...

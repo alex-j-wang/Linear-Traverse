@@ -2,7 +2,7 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
+function [data, timestamp] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
@@ -23,7 +23,7 @@ function data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
     profile = shift + generate_profile(F, A);
 
     disp('Collecting data.');
-    data = Process.conv_readwrite(daq_obj, profile, lpi);
+    [data, timestamp] = Process.conv_readwrite(daq_obj, profile, lpi);
     disp('Data collected.');
 
     if CF ~= 0

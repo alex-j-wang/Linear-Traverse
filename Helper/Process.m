@@ -16,7 +16,7 @@ classdef Process
             end
         end
 
-        function data = conv_readwrite(daq_obj, position, lpi)
+        function [data, timestamp] = conv_readwrite(daq_obj, position, lpi)
             % CONV_READWRITE  Read signal data and write position data with necessary conversions
             s = serialport(Config.ESPCOM, Config.BAUD);
             s.UserData = struct('time', datetime.empty(), 'current', zeros(0, 2));
@@ -27,7 +27,7 @@ classdef Process
             end
 
             configureCallback(s, 'byte', 9, @Process.serial_callback);
-            [data, trigger] = readwrite(daq_obj, position * Config.DTOV);
+            [data, timestamp] = readwrite(daq_obj, position * Config.DTOV);
             configureCallback(s, 'off');
 
             % TODO: do we still need two encoder channels?
