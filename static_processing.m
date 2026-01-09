@@ -53,8 +53,8 @@ for folder = uigetdirs
     fmin = 100;
     fmax = 500;
     
-    num_trials = length(folders);
-    num_sd = length(SDS);
+    num_rows = length(folders);
+    num_cols = length(index);
     
     for t = 1 : length(folders)
         trial = folders{t};
@@ -93,8 +93,8 @@ for folder = uigetdirs
             results.("Upper Current").(trial)(idx) = mean(data.UpperCurrent(current_mask));
 
             % Frequency analysis
-            subidx = (t - 1) * num_sd + find(SDS == SD / 100);
-            subplot(num_trials, num_sd, subidx);
+            subidx = (t - 1) * num_cols + idx;
+            subplot(num_rows, num_cols, subidx);
             title("T" + t + " SD" + SD);
             xlim([fmin fmax]);
             hold on;
