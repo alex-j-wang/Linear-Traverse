@@ -12,14 +12,16 @@ switch TPOS
     case 1
         SDS = Config.L / 1000 * (1:1:9); % Stopping distance, m
     case 2
-        SDS = Config.L / 1000 * (10:2:18); % Stopping distance, m
+        SDS = Config.L / 1000 * (8:1:16); % Stopping distance, m
     case 3
-        SDS = Config.L / 1000 * (19:4:27); % Stopping distance, m
+        SDS = Config.L / 1000 * (15:2:23); % Stopping distance, m
     case 4
-        SDS = Config.L / 1000 * (28:4:36); % Stopping distance, m
+        SDS = Config.L / 1000 * (22:2:30); % Stopping distance, m
     case 5
-        SDS = Config.L / 1000 * (37:4:45); % Stopping distance, m
-    otherwise
+        SDS = Config.L / 1000 * (29:2:37); % Stopping distance, m
+    case 6
+        SDS = Config.L / 1000 * (37:2:45); % Stopping distance, m
+        otherwise
         error('Invalid traverse position selection.');
 end
 F = 1;
@@ -85,7 +87,7 @@ hover_throttle = Config.get_hover;
 cmin = 1e-3;
 cmax = 5;
 
-[data, timestamp] = dynamic_operation(hover_throttle, shift, 1/3, 0, daq_obj, lpi, UPPER_CF);
+[data, timestamp] = dynamic_operation(hover_throttle, 0.125, 1/3, 0, daq_obj, lpi, UPPER_CF);
 voltages = data{:, Config.LOWER_FT_CH};
 forces = mean(Config.lower_to_world * lower_cal * voltages', 2);
 
@@ -96,7 +98,7 @@ lower = struct( ...
     'current', mean(data.LowerCurrent(data.LowerCurrent >= cmin & data.LowerCurrent <= cmax)) ...
     );
 
-[data, timestamp] = dynamic_operation(hover_throttle, shift, 1/3, 0, daq_obj, lpi, LOWER_CF);
+[data, timestamp] = dynamic_operation(hover_throttle, 0.125, 1/3, 0, daq_obj, lpi, LOWER_CF);
 voltages = data{:, Config.UPPER_FT_CH};
 forces = mean(Config.upper_to_world(YAW) * upper_cal * voltages', 2);
 

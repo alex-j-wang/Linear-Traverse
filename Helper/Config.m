@@ -56,16 +56,23 @@ classdef Config
             path = fullfile(tempdir, 'traverse.mat');
         end
 
-        function daq_obj = initialize
+        function daq_obj = initialize(out)
             % INITIALIZE  Initialize a DAQ object with input and output channels
+            % If OUT is true, include output channel for motor voltage
+            arguments
+                out = true;
+            end
+
             disp('Setting up DAQ.');
             daq_obj = daq('ni');
             daq_obj.Rate = Config.SRATE;
             
             % Output channel (motor voltage)
-            output = addoutput(daq_obj, 'Dev4', "ao0", 'Voltage');
-            output.Name = 'voutput';
-            
+            if out
+                output = addoutput(daq_obj, 'Dev4', "ao0", 'Voltage');
+                output.Name = 'voutput';
+            end
+
             % Lower Crazyflie input channels (force, voltage)
             lower = addinput(daq_obj, 'Dev4', 0:6, 'Voltage');
             for i = 1:6

@@ -36,7 +36,7 @@ classdef Process
             data = removevars(data, {'EncoderPlus', 'EncoderMinus'});
             data.Position = pos_plus + pos_minus;
             
-            I_interp = interp1(s.UserData.time, s.UserData.current, trigger + data.Time, 'nearest', 'extrap');
+            I_interp = interp1(s.UserData.time, s.UserData.current, timestamp + data.Time, 'nearest', 'extrap');
             data.LowerCurrent = I_interp(:, 1);
             data.UpperCurrent = I_interp(:, 2);
         end

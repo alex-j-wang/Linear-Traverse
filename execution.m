@@ -92,7 +92,7 @@ hover_throttle = Config.get_hover;
 cmin = 1e-3;
 cmax = 5;
 
-[data, timestamp] = dynamic_operation(hover_throttle, shift, 1/3, 0, daq_obj, lpi, UPPER_CF);
+[data, timestamp] = dynamic_operation(hover_throttle, 0.125, 1/3, 0, daq_obj, lpi, UPPER_CF);
 voltages = data{:, Config.LOWER_FT_CH};
 forces = mean(Config.lower_to_world * lower_cal * voltages', 2);
 
@@ -103,7 +103,7 @@ lower = struct( ...
     'current', mean(data.LowerCurrent(data.LowerCurrent >= cmin & data.LowerCurrent <= cmax)) ...
     );
 
-[data, timestamp] = dynamic_operation(hover_throttle, shift, 1/3, 0, daq_obj, lpi, LOWER_CF);
+[data, timestamp] = dynamic_operation(hover_throttle, 0.125, 1/3, 0, daq_obj, lpi, LOWER_CF);
 voltages = data{:, Config.UPPER_FT_CH};
 forces = mean(Config.upper_to_world(YAW) * upper_cal * voltages', 2);
 
