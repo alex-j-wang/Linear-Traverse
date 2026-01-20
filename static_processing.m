@@ -21,7 +21,7 @@ for folder = uigetdirs
     filenames = {items.name};
     tok = regexp(filenames, 'SD([\d\.]+)_TP([\d\.]+)', 'tokens');
     tok = cellfun(@(x) x{1}, tok, 'UniformOutput', false);
-    index = sort(str2double(vertcat(tok{:})));
+    index = sortrows(str2double(vertcat(tok{:})));
 
     dummy = array2table(zeros(length(index), length(folders) + 2), ...
         'VariableNames', ["SD" "TP" string(folders)]);
