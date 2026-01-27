@@ -21,7 +21,7 @@ switch TPOS
         SDS = Config.L / 1000 * (29:2:37); % Stopping distance, m
     case 6
         SDS = Config.L / 1000 * (37:2:45); % Stopping distance, m
-        otherwise
+    otherwise
         error('Invalid traverse position selection.');
 end
 F = 1;
@@ -153,11 +153,11 @@ for TRIAL = 1:TRIALS
             pause(1);
 
             % Gather data
-            data = dynamic_operation(CF, shift, F, A, daq_obj, lpi);
+            [data, ~, tare_start, tare_end] = dynamic_operation(CF, shift, F, A, daq_obj, lpi);
 
             % Save data
             filename = fullfile(trial_folder, [case_name '.mat']);
-            save(filename, 'data');
+            save(filename, 'data', 'tare_start', 'tare_end');
             fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
             if d.CancelRequested

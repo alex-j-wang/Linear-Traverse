@@ -2,7 +2,7 @@
 % Function for gathering dynamic test data
 % ------------------------------------------------
 
-function [data, timestamp] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
+function [data, timestamp, tare_start, tare_end] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin)
     % DYNAMIC_OPERATION  Operates traverse and drone based on inputs to acquire data
     tare_output = repmat(shift, Config.OFFSET_DURATION * Config.SRATE, 1);
     disp('Taring output.');
@@ -15,7 +15,7 @@ function [data, timestamp] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, va
             pause(5);
         else
             Process.alert_slack('Restarting case');
-            data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
+            [data, timestamp, tare_start, tare_end] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;
         end
     end
@@ -34,7 +34,7 @@ function [data, timestamp] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, va
             while ~Process.run_drone(0, varargin{:}); end
             pause(CF / 20);
             Process.alert_slack('Connection restored, restarting case');
-            data = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
+            [data, timestamp, tare_start, tare_end] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, varargin{:});
             return;
         end
     end
@@ -53,8 +53,6 @@ function [data, timestamp] = dynamic_operation(CF, shift, F, A, daq_obj, lpi, va
     % Apply linear tare
     tare_voltages = tare_start + linspace(0, 1, rows)' * (tare_end - tare_start);
     data{:, Config.FT_CH} = data{:, Config.FT_CH} - tare_voltages;
-    data.TareStart = tare_start;
-    data.TareEnd = tare_end;
 end
 
 function position = generate_profile(traverse_freq, amplitude)

@@ -155,11 +155,11 @@ for CF = CFS
                 pause(1);
 
                 % Gather data
-                data = dynamic_operation(CF, shift, F, A, daq_obj, lpi);
+                [data, ~, tare_start, tare_end] = dynamic_operation(CF, shift, F, A, daq_obj, lpi);
 
                 % Save data
                 filename = fullfile(data_folder, [case_name '.mat']);
-                save(filename, 'data');
+                save(filename, 'data', 'tare_start', 'tare_end');
                 fprintf('Data saved to <strong>%s</strong>.\n', filename);
 
                 if d.CancelRequested
