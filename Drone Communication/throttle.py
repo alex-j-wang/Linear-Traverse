@@ -1,4 +1,4 @@
-# Usage: python3 throttle.py <thrust> [<disabled_cf> ...]
+# Usage: python3 throttle.py <throttle> [<disabled_cf> ...]
 # Example: python3 throttle.py 50 CF65
 
 import sys
@@ -9,13 +9,13 @@ import logging
 from crazyflie_py import *
 
 logging.basicConfig(filename="flight.log", level=logging.INFO, format='[%(asctime)s] %(message)s')
-thrust = float(sys.argv[1])
+throttle = float(sys.argv[1])
 disabled = sys.argv[2:]
 
-def to_pwm(thrust):
+def to_pwm(throttle):
     A = 0.409E-3
     B = 140.5E-3
-    C = -0.099 - (thrust / 1.59309598 - 0.099)
+    C = -0.099 - (throttle / 1.59309598 - 0.099)
     return round(256 * (-B + (B ** 2 - 4 * A * C) ** 0.5) / (2 * A))
 
 def main():
@@ -23,7 +23,7 @@ def main():
     allcfs = swarm.allcfs
     cfnames = []
 
-    pwm = to_pwm(thrust)
+    pwm = to_pwm(throttle)
 
     for cf in allcfs.crazyflies:
         if 'CF' + cf.prefix[3:] in disabled:
