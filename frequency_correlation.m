@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------
-% Script for copmaring audio and force frequency data
+% Script for comparing audio and force frequency data (plot & table)
 % -------------------------------------------------------------------------
 
 clear; clc; close all hidden;
@@ -21,17 +21,15 @@ filenames = {items.name};
 tok = regexp(filenames, 'SD([\d\.]+)_TP([\d\.]+)', 'tokens');
 tok = cellfun(@(x) x{1}, tok, 'UniformOutput', false);
 index = sortrows(str2double(vertcat(tok{:})));
-index = index(1:10, :);
 
 dummy = array2table(zeros(length(index), length(folders) + 2), ...
     'VariableNames', ["SD" "TP" string(folders)]);
 dummy.SD = index(:, 1) / 100;
 dummy.TP = index(:, 2);
 
-lower_names = "Lower " + ["Force" "Audio"];
-upper_names = "Upper " + ["Force" "Audio"];
-results = repmat(table(dummy), 1, numel(lower_names) + numel(upper_names));
-results.Properties.VariableNames = [lower_names upper_names];
+names = ["Lower Force" "Upper Force" "Audio"];
+results = repmat(table(dummy), 1, numel(names));
+results.Properties.VariableNames = names;
 
 % Create progress bar
 fig = uifigure('Name', 'Static Processing');
@@ -45,8 +43,10 @@ yaw = str2double(regexp(foldername, '(?<=Y)[\d\-]+', 'match'));
 nfft = Config.SRATE;
 window = hamming(nfft);
 overlap = nfft / 2;
-fmin = 100;
-fmax = 500;
+force_fmin = 100;
+force_fmax = 500;
+audio_fmin = 660;
+audio_fmax = 740;
 
 num_rows = length(folders);
 num_cols = length(index);
@@ -75,51 +75,60 @@ for t = 1 : length(folders)
         voltages = data{:, Config.UPPER_FT_CH};
         upper_forces = (Config.upper_to_world(yaw) * upper_cal * voltages')';
 
-        % Frequency analysis
-        subidx = (t - 1) * num_cols + idx;
-        subplot(num_rows, num_cols, subidx);
-        title("T" + t + " SD" + SD);
-        xlim([fmin fmax]);
-        hold on;
-
         % Lower
         [P_force, f_force] = pwelch(lower_forces(:, 3), window, overlap, nfft, Config.SRATE);
-        force_mask = f_force >= fmin & f_force <= fmax;
+        force_mask = f_force >= force_fmin & f_force <= force_fmax;
         f_force_trim = f_force(force_mask);
         P_force_trim = P_force(force_mask);
 
         [~, loc] = max(P_force_trim);
         rps = f_force_trim(loc);
-        results.("Lower Force").(trial)(idx) = rps;
-        xline(rps, 'g--', 'LineWidth', 1.5, 'Alpha', 0.15);
+        results.("Lower Force").(trial)(idx) = 2 * rps;
 
         % Upper
         [P_force, f_force] = pwelch(upper_forces(:, 3), window, overlap, nfft, Config.SRATE);
-        force_mask = f_force >= fmin & f_force <= fmax;
+        force_mask = f_force >= force_fmin & f_force <= force_fmax;
         f_force_trim = f_force(force_mask);
         P_force_trim = P_force(force_mask);
 
         [~, loc] = max(P_force_trim);
         rps = f_force_trim(loc);
-        results.("Upper Force").(trial)(idx) = rps;
-        xline(rps, 'r--', 'LineWidth', 1.5, 'Alpha', 0.15);
+        results.("Upper Force").(trial)(idx) = 2 * rps;
 
         % Audio
         audio = data{:, "Microphone"};
         [P_audio, f_audio] = pwelch(audio, window, overlap, nfft, Config.SRATE);
-        audio_mask = f_audio >= fmin & f_audio <= fmax;
+        audio_mask = f_audio >= audio_fmin & f_audio <= audio_fmax;
         f_audio_trim = f_audio(audio_mask);
         P_audio_trim = P_audio(audio_mask);
 
-        plot(f_audio_trim, 10 * log10(P_audio_trim), 'b');
+        % Blade passage frequency
+        [~, loc] = max(P_audio_trim);
+        bpf = f_audio_trim(loc);
+        results.("Audio").(trial)(idx) = bpf;
     end
 end
-
-set(gcf, 'Renderer', 'painters');
-print(gcf, fullfile(folder, "frequency.svg"), "-dsvg");
 
 d.Value = 1;
 d.Message = 'All files processed';
 pause(1);
 
 close(fig);
+
+save(fullfile(folder, "frequency_comparison.mat"), "results");
+force_lower = median(results.("Lower Force"){:, ["T01" "T02" "T03"]}, 2);
+force_upper = median(results.("Upper Force"){:, ["T01" "T02" "T03"]}, 2);
+audio = median(results.Audio{:, ["T01" "T02" "T03"]}, 2);
+
+title = sprintf("Frequency Comparison ($\\Psi = %d^\\circ$)", yaw);
+Process.format_plot(title, "Separation, $\Delta z/l$", "Peak Frequency (Hz)");
+hold on;
+
+SDS = results.Audio.SD / (Config.L / 1000);
+plot(SDS, force_lower, 'g.-', 'DisplayName', 'Lower Force', 'LineWidth', 1.5, 'MarkerSize', 15);
+plot(SDS, force_upper, 'r.-', 'DisplayName', 'Upper Force', 'LineWidth', 1.5, 'MarkerSize', 15);
+plot(SDS, audio, 'b.-', 'DisplayName', 'Audio', 'LineWidth', 1.5, 'MarkerSize', 15);
+legend('Location', 'best');
+
+set(gcf, 'Renderer', 'painters');
+print(gcf, fullfile(folder, "frequency_comparison.svg"), "-dsvg");
