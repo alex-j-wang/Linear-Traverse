@@ -1,22 +1,22 @@
-syms YAW; % degrees
+syms DPSI; % relative yaw, degrees
 
-D = 43.832; % diameter of propeller, mm
-L = Config.L; % orthogonal motor-center distance, mm
+D = 51; % diameter of propeller, mm
+l = 46; % arm length, mm
 
 R = D/2;
-a = L * sqrt(2) * sind(YAW/2);
-theta = acos(a/R);
+a_1 = l * sind(DPSI/2);
+a_2 = l * sind((90 - DPSI)/2);
 
-sector = (2 * theta) / (2 * pi) * pi * R^2;
-slice = sector - a * R * sin(theta);
+% overlap between two radius-R disks centered 2a apart
+lens = @(a) piecewise(a < R, 2 * R^2 * acos(a/R) - 2 * a * sqrt(R^2 - a^2), 0);
 
-falling_area = piecewise(a < R, 2 * slice, 0);
-rising_area = subs(falling_area, YAW, 90 - YAW);
+beta = (lens(a_1) + lens(a_2)) / (pi * R^2);
+beta_min = double(subs(beta, DPSI, 45));
 
-total = 4 * (falling_area + rising_area);
-maximum = subs(total, YAW, 0);
-
-Process.format_plot("Overlap Versus Yaw Angle", "Yaw (deg)", "Normalized Overlap");
-fplot(total / maximum, [0 90]);
+Process.format_plot("", "$\Delta\psi$ (deg)", "Overlap ratio, $\beta$");
+fplot(beta, [0 90]);
+plot(45, beta_min, "ko", "MarkerFaceColor", "k");
+text(45, beta_min, sprintf("$\\beta_{min} = %.3f$", beta_min), "Interpreter", "latex", ...
+    "HorizontalAlignment", "center", "VerticalAlignment", "top", "FontSize", 18);
 ylim([0 1]);
 print(gcf, "overlap.svg", "-dsvg");
